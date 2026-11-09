@@ -1,0 +1,160 @@
+{
+  "sets": [
+    {
+      "durationSeconds": 7.8,
+      "key": "marea-voice",
+      "owner": 4,
+      "contributor": 2,
+      "project": 12,
+      "work": 4,
+      "title": "Marea Alta \u00b7 studio instrumental",
+      "resultTitle": "Marea Alta \u00b7 Dante\u2019s verse",
+      "need": "Verse",
+      "original": "video/marea-live-original.mp4",
+      "native": "video/marea-vocal-native.mp4",
+      "contribution": "video/marea-vocal-take.mp4",
+      "result": "video/marea-vocal-result.mp4",
+      "baseGain": 0.6,
+      "contributionGain": 0.85,
+      "sourceKind": "video",
+      "processId": "6fae21e0-747e-4b33-acf4-78fbd41dbd4c",
+      "credits": 132,
+      "startSeconds": 0,
+      "endSeconds": 7.8,
+      "contributionKind": "video",
+      "ready": true,
+      "recipe": "Native generated sound preserved with short edge fades; actual sum of the named original and take at the declared gains, peak limited. No soundtrack replacement.",
+      "audition": "Measured and frame-inspected; human listening not performed by the agent."
+    },
+    {
+      "durationSeconds": 10,
+      "key": "afterglow-percussion",
+      "owner": 1,
+      "contributor": 5,
+      "project": 9,
+      "work": 1,
+      "title": "Afterglow \u00b7 rhythm sketch",
+      "resultTitle": "Afterglow \u00b7 In\u00e9s on percussion",
+      "need": "Production",
+      "original": "audio/afterglow-rhythm-original.wav",
+      "native": "video/afterglow-percussion-native.mp4",
+      "contribution": "video/afterglow-percussion-take.mp4",
+      "result": "video/afterglow-percussion-result.mp4",
+      "baseGain": 0.65,
+      "contributionGain": 0.85,
+      "sourceKind": "audio",
+      "sourceExcerpt": {
+        "path": "audio/afterglow.mp3",
+        "startSeconds": 7.88,
+        "reason": "Opening low-frequency attacks aligned with the first three native percussion transients."
+      },
+      "processId": "0924e2db-839c-4bd1-b292-12c8b83cca25",
+      "credits": 53,
+      "startSeconds": 0,
+      "endSeconds": 10,
+      "contributionKind": "video",
+      "ready": true,
+      "recipe": "Native generated sound preserved with short edge fades; actual sum of the named original and take at the declared gains, peak limited. No soundtrack replacement.",
+      "audition": "Measured and frame-inspected; human listening not performed by the agent."
+    }
+  ],
+  "checks": [
+    {
+      "file": "video/marea-live-original.mp4",
+      "duration": 7.833333,
+      "rms": 0.19816963535505236,
+      "peak": 0.7430419921875,
+      "sha256": "ae9b8fd0daa1ab2a8ecf72b11117d37200a6a3b2eca4b08da0ed1f586c2f2900",
+      "streams": [
+        {
+          "codec_type": "video",
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "codec_type": "audio"
+        }
+      ]
+    },
+    {
+      "file": "video/marea-vocal-take.mp4",
+      "duration": 7.833333,
+      "rms": 0.15699031678712055,
+      "peak": 0.7557373046875,
+      "sha256": "ec5536a7f0c881027428f694b1f27164b0cb96896c31654785283e37a1e3ea4e",
+      "streams": [
+        {
+          "codec_type": "video",
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "codec_type": "audio"
+        }
+      ]
+    },
+    {
+      "file": "video/marea-vocal-result.mp4",
+      "duration": 7.833333,
+      "rms": 0.17687912698952038,
+      "peak": 0.869598388671875,
+      "sha256": "a1cf50e30e15d9ec0fbb8e86320f53b36dc4a2a0de993efdf6fde30922282935",
+      "streams": [
+        {
+          "codec_type": "audio"
+        },
+        {
+          "codec_type": "video",
+          "width": 720,
+          "height": 1280
+        }
+      ]
+    },
+    {
+      "file": "audio/afterglow-rhythm-original.wav",
+      "duration": 10.0,
+      "rms": 0.11727368441337677,
+      "peak": 0.775543212890625,
+      "sha256": "e8a8c9cf1b36628b793e3919df91f6917162b9645387e7ec3fb6f8d1582a509a",
+      "streams": [
+        {
+          "codec_type": "audio"
+        }
+      ]
+    },
+    {
+      "file": "video/afterglow-percussion-take.mp4",
+      "duration": 10.0,
+      "rms": 0.045143250956196326,
+      "peak": 0.76507568359375,
+      "sha256": "5e7334f6e48914db7b707a8fc68fdac86fe00abd9b8f4e56e444cc79afa9c462",
+      "streams": [
+        {
+          "codec_type": "video",
+          "width": 720,
+          "height": 1280
+        },
+        {
+          "codec_type": "audio"
+        }
+      ]
+    },
+    {
+      "file": "video/afterglow-percussion-result.mp4",
+      "duration": 10.0,
+      "rms": 0.08470076932357226,
+      "peak": 0.733062744140625,
+      "sha256": "078de791c6e39d940b2ce5c990f39f02ea720dacd97ce4d35cea5efe77f622d9",
+      "streams": [
+        {
+          "codec_type": "audio"
+        },
+        {
+          "codec_type": "video",
+          "width": 720,
+          "height": 1280
+        }
+      ]
+    }
+  ]
+}

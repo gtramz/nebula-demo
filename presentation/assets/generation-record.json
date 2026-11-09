@@ -1,0 +1,180 @@
+{
+  "generatedAt": "2026-11-09",
+  "imageToolMode": "built-in",
+  "portraits": [
+    {
+      "key": "lia",
+      "prompt": "Fictional alternative R&B singer-songwriter. Adult woman, warm brown skin, dark curly hair, black clothing, burgundy studio background. Natural editorial film portrait, no text.",
+      "provider": "built-in image_gen"
+    },
+    {
+      "key": "dante",
+      "prompt": "Use case: photorealistic-natural. Asset type: square artist profile portrait for a fictional music community. Adult Latino man aged 29, short dark cropped hair, light mustache, understated charcoal overshirt, contemplative relaxed gaze, textured concrete wall with slanting late afternoon amber light; independent rapper and songwriter, thoughtful rather than swagger. Realistic analog music-magazine editorial photography, skin texture, subtle film grain, intimate directional light. Chest-up framing with faces centered and generous margin suitable for circular avatar crop. Sophisticated contemporary independent music aesthetic. No text, no logos, no watermark.",
+      "provider": "built-in image_gen"
+    },
+    {
+      "key": "mara",
+      "prompt": "Use case: photorealistic-natural. Asset type: square artist profile portrait for a fictional music community. Adult woman aged 32, fair olive skin, short black asymmetric bob, black crewneck, minimal silver earrings, quietly confident independent electronic producer, cobalt blue shadow and subtle cool studio light, abstract out-of-focus studio background. Realistic analog music-magazine editorial photography, skin texture, subtle film grain, intimate directional light. Chest-up framing with faces centered and generous margin suitable for circular avatar crop. Sophisticated contemporary independent music aesthetic. No text, no logos, no watermark.",
+      "provider": "built-in image_gen"
+    },
+    {
+      "key": "marea",
+      "prompt": "Use case: photorealistic-natural. Asset type: square artist profile portrait for a fictional music community. Two adult independent electronic musicians as a duo: a dark-skinned woman with short natural hair and an olive-skinned man with medium curly hair, both around 30, candid shoulder-to-shoulder portrait, black and off-white clothing, muted teal club rehearsal space, authentic friends not posed fashion models. Keep both faces clearly visible. Realistic analog music-magazine editorial photography, skin texture, subtle film grain, intimate directional light. Chest-up framing with faces centered and generous margin suitable for circular avatar crop. Sophisticated contemporary independent music aesthetic. No text, no logos, no watermark.",
+      "provider": "built-in image_gen"
+    },
+    {
+      "key": "ines",
+      "prompt": "Use case: photorealistic-natural. Asset type: square artist profile portrait for a fictional music community. Adult Latina woman aged 30 with shoulder-length dark brown wavy hair, small round glasses, warm linen shirt, holding a saxophone partly visible at lower edge, relaxed candid expression, acoustic rehearsal studio with warm neutral beige and soft window light. Realistic analog music-magazine editorial photography, skin texture, subtle film grain, intimate directional light. Chest-up framing with faces centered and generous margin suitable for circular avatar crop. Sophisticated contemporary independent music aesthetic. No text, no logos, no watermark.",
+      "provider": "built-in image_gen"
+    },
+    {
+      "key": "gael",
+      "prompt": "Use case: photorealistic-natural. Asset type: square artist profile portrait for a fictional music community. Adult Latino man aged 34 with long dark hair tied back and subtle beard, plain dark olive shirt, warm thoughtful expression, mastering engineer in a dim studio with soft amber lighting and blurred analog equipment, natural human detail. Realistic analog music-magazine editorial photography, skin texture, subtle film grain, intimate directional light. Chest-up framing with faces centered and generous margin suitable for circular avatar crop. Sophisticated contemporary independent music aesthetic. No text, no logos, no watermark.",
+      "provider": "built-in image_gen"
+    }
+  ],
+  "covers": [
+    {
+      "key": "afterglow",
+      "prompt": "Use case: stylized-concept. Asset type: original square music album cover artwork. A blurred late-evening sun refracted through dark amber glass, a rich burgundy field with incandescent peach and red light bleeding through its center. Dreamy tactile 35mm film, intimate alternative R&B record sleeve. Sophisticated contemporary independent record-label art direction. Rich but restrained color, beautiful physical texture, strong memorable composition that reads at thumbnail size. Full bleed, no border. Absolutely no text, lettering, title, logo, watermark, typography, icons or UI.",
+      "provider": "built-in image_gen"
+    },
+    {
+      "key": "concreto",
+      "prompt": "Use case: stylized-concept. Asset type: original square music album cover artwork. Architectural photograph from below of a sculptural concrete staircase at night, dramatic diagonal geometry, one small saturated orange pool of light, deep charcoal shadows and gritty film grain. Contemporary independent hip-hop record sleeve. Sophisticated contemporary independent record-label art direction. Rich but restrained color, beautiful physical texture, strong memorable composition that reads at thumbnail size. Full bleed, no border. Absolutely no text, lettering, title, logo, watermark, typography, icons or UI.",
+      "provider": "built-in image_gen"
+    },
+    {
+      "key": "lowtide",
+      "prompt": "Use case: stylized-concept. Asset type: original square music album cover artwork. Macro photograph of rippling black water meeting pale sand, an unnatural but subtle lavender-blue reflection streaking diagonally across it, tactile silver grain and delicate organic contours. Atmospheric downtempo electronic record sleeve. Sophisticated contemporary independent record-label art direction. Rich but restrained color, beautiful physical texture, strong memorable composition that reads at thumbnail size. Full bleed, no border. Absolutely no text, lettering, title, logo, watermark, typography, icons or UI.",
+      "provider": "built-in image_gen"
+    },
+    {
+      "key": "marea",
+      "prompt": "Use case: stylized-concept. Asset type: original square music album cover artwork. An overhead cinematic photo of deep teal ocean water at night with one dramatically sculptural crest of foamy surf, flash-lit translucent water glowing almost acid green, dark cinematic negative space. Underground house music record sleeve. Sophisticated contemporary independent record-label art direction. Rich but restrained color, beautiful physical texture, strong memorable composition that reads at thumbnail size. Full bleed, no border. Absolutely no text, lettering, title, logo, watermark, typography, icons or UI.",
+      "provider": "built-in image_gen"
+    },
+    {
+      "key": "glasshouse",
+      "prompt": "Use case: stylized-concept. Asset type: original square music album cover artwork. An elegant translucent glass sculpture like a folded petal standing in warm late afternoon light, soft pale jade and muted cream tones, prismatic shadows, analog medium format still life. Jazz-influenced indie record sleeve. Sophisticated contemporary independent record-label art direction. Rich but restrained color, beautiful physical texture, strong memorable composition that reads at thumbnail size. Full bleed, no border. Absolutely no text, lettering, title, logo, watermark, typography, icons or UI.",
+      "provider": "built-in image_gen"
+    },
+    {
+      "key": "meridian",
+      "prompt": "Use case: stylized-concept. Asset type: original square music album cover artwork. An abstract sculptural red-orange ribbon of light crossing a midnight blue field, physical long-exposure light photography with subtle grain, organic flowing curve, deep black and vermilion. Alternative soul / electronic record sleeve. Sophisticated contemporary independent record-label art direction. Rich but restrained color, beautiful physical texture, strong memorable composition that reads at thumbnail size. Full bleed, no border. Absolutely no text, lettering, title, logo, watermark, typography, icons or UI.",
+      "provider": "built-in image_gen"
+    },
+    {
+      "key": "bluehour",
+      "prompt": "Use case: stylized-concept. Asset type: original square music album cover artwork. A solitary illuminated apartment window in an almost-black indigo urban facade at blue hour, intimate cinematic atmosphere, visible analog film grain, off-center architectural composition, a hint of electric blue haze. Alternative R&B record sleeve. Sophisticated contemporary independent record-label art direction. Rich but restrained color, beautiful physical texture, strong memorable composition that reads at thumbnail size. Full bleed, no border. Absolutely no text, lettering, title, logo, watermark, typography, icons or UI.",
+      "provider": "built-in image_gen"
+    },
+    {
+      "key": "nightbloom",
+      "prompt": "Use case: stylized-concept. Asset type: original square music album cover artwork. A striking botanical still life of a white night-blooming flower emerging from black, petals edged by pale chartreuse light and deep violet shadows, sculptural and mysterious, macro film photography. Experimental electronic record sleeve. Sophisticated contemporary independent record-label art direction. Rich but restrained color, beautiful physical texture, strong memorable composition that reads at thumbnail size. Full bleed, no border. Absolutely no text, lettering, title, logo, watermark, typography, icons or UI.",
+      "provider": "built-in image_gen"
+    }
+  ],
+  "audio": [
+    {
+      "key": "afterglow",
+      "processId": "294083cb-03f8-41af-941f-4b85909efb43",
+      "status": "completed",
+      "model": "bytedance/seed-audio-1.0",
+      "creditsUsed": 0,
+      "prompt": "Generate music only, no narration or spoken description. A 45-second polished alternative R&B instrumental at 88 BPM in A minor: warm electric piano seventh chords, round sub bass, crisp laid-back drums, soft atmospheric pads and a memorable soulful lead melody. Intro, groove, small variation and natural ending. Modern independent record production, rich stereo, no sound effects or speech.",
+      "error": null,
+      "assetIds": [
+        "022b28b1-3d28-46d8-b216-4d1b1829f57a"
+      ]
+    },
+    {
+      "key": "concreto",
+      "processId": "b8b172ab-9864-4146-808c-8904507bb6fe",
+      "status": "failed",
+      "model": "bytedance/seed-audio-1.0",
+      "creditsUsed": 0,
+      "prompt": "Generate music only, never narration or spoken description. A 45-second instrumental alternative hip-hop track at 92 BPM in D minor. Tight swung drums, gritty chopped electric piano chords, warm analog bass, muted guitar accents, nocturnal urban mood. Original memorable groove with a four-bar introduction, developed middle and natural ending. Polished independent record mix, no vocals, no ambient sound effects.",
+      "error": {
+        "code": "500",
+        "message": "This content was blocked by the model's content filters."
+      },
+      "assetIds": []
+    },
+    {
+      "key": "lowtide",
+      "processId": "391f0c7a-5d6f-40f8-be94-f6b7d000757e",
+      "status": "failed",
+      "model": "bytedance/seed-audio-1.0",
+      "creditsUsed": 0,
+      "prompt": "Generate music only, never narration or spoken description. A 45-second atmospheric downtempo electronic instrumental at 96 BPM in C minor. Warm sub bass, detailed broken drums, shimmering granular pads and a delicate plucked lead. Melancholic yet hopeful, deep spacious stereo, sophisticated low-end, subtle movement and a composed natural ending. No speech or environmental sound effects.",
+      "error": {
+        "code": "500",
+        "message": "This content was blocked by the model's content filters."
+      },
+      "assetIds": []
+    },
+    {
+      "key": "marea",
+      "processId": "6ef19a19-854e-45f7-8822-e9b5f96df656",
+      "status": "completed",
+      "model": "bytedance/seed-audio-1.0",
+      "creditsUsed": 0,
+      "prompt": "Generate music only, never narration or spoken description. A 45-second deep house instrumental at exactly 120 BPM in A minor. Four-on-the-floor kick, crisp hats, warm offbeat bass and sparse minor-seven chord stabs. Keep the main melody open for a later instrumental contribution. Hypnotic organic coastal energy, high-quality underground club production. Four-bar intro, groove and natural ending. No vocals, speech or sound effects.",
+      "error": null,
+      "assetIds": [
+        "e3f4515e-8614-4c04-aff4-ce6497adcd94"
+      ]
+    },
+    {
+      "key": "glasshouse",
+      "processId": "dc877eab-7953-4b47-a91a-0a8e99ab2a6b",
+      "status": "completed",
+      "model": "bytedance/seed-audio-1.0",
+      "creditsUsed": 0,
+      "prompt": "Generate music only, never narration or spoken description. A 45-second intimate instrumental indie jazz track at 84 BPM in D minor. Expressive saxophone melody, warm upright bass, brushed drums and light acoustic piano with beautiful seventh chords. Human phrasing, tasteful dynamics, room warmth, small ensemble interplay. A complete short musical idea with natural beginning and ending, no speech or environmental sounds.",
+      "error": null,
+      "assetIds": [
+        "c8d1c227-f1f3-4d71-81a3-4be99b8aeed0"
+      ]
+    },
+    {
+      "key": "meridian",
+      "processId": "85da6be5-bb48-46c3-aa83-df0d1ad813f1",
+      "status": "failed",
+      "model": "bytedance/seed-audio-1.0",
+      "creditsUsed": 0,
+      "prompt": "Generate music only, never narration or spoken description. A 45-second polished alternative soul instrumental at 100 BPM in E minor. Tight live drums, syncopated warm bass guitar, clean electric guitar with subtle chorus, soulful electric piano and atmospheric analog synth. Strong memorable hook and interesting middle variation, wide stereo but focused low end. Natural start and ending. No speech or sound effects.",
+      "error": {
+        "code": "500",
+        "message": "This content was blocked by the model's content filters."
+      },
+      "assetIds": []
+    },
+    {
+      "key": "marea-contribution",
+      "processId": "b9bc6d82-48d2-410a-a141-42088a7cf9ea",
+      "status": "failed",
+      "model": "bytedance/seed-audio-1.0",
+      "creditsUsed": 0,
+      "prompt": "Generate only a solo melodic instrument performance, not a description or speech. Exactly 45 seconds of an isolated warm, bell-like analog synth lead in A minor at exactly 120 BPM, beginning on beat one with no silence. A simple memorable eight-bar melody with tasteful repetitions and gentle variations, notes mostly A C E G B, designed to layer over a deep-house groove. Dry clean recording with only a subtle stereo delay. No drums, bass, chords, vocals, environmental sounds or spoken words.",
+      "error": {
+        "code": "500",
+        "message": "This content was blocked by the model's content filters."
+      },
+      "assetIds": []
+    },
+    {
+      "key": "concreto-contribution",
+      "processId": "4d828133-0f8f-4c53-97bc-a0d1a2af40a6",
+      "status": "completed",
+      "model": "bytedance/seed-audio-1.0",
+      "creditsUsed": 0,
+      "prompt": "Generate only a solo instrument performance, no description or speech. Exactly 45 seconds of an isolated mellow saxophone in D minor at exactly 92 BPM, beginning on beat one. Sparse soulful hip-hop melodic phrases using D F A C E notes, four-bar call-and-response motif with expressive human breath and restrained vibrato. Leave deliberate rests between phrases to fit a rap beat. Close-miked dry studio sound, no drums, bass, backing instruments, narration, vocals or environment sounds.",
+      "error": null,
+      "assetIds": [
+        "997f1cac-2fd1-4200-89d1-803714e73a4e"
+      ]
+    }
+  ]
+}

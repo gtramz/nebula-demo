@@ -1,0 +1,89 @@
+{
+  "checks": [
+    {
+      "name": "marea-voice-original-1440",
+      "path": "/discovery?post=post-13",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "marea-voice-result-1440",
+      "path": "/discovery?post=post-14",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "marea-voice-comparison-1440",
+      "path": "/discovery?post=post-14",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "marea-voice-original-390",
+      "path": "/discovery?post=post-13",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "marea-voice-result-390",
+      "path": "/discovery?post=post-14",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "marea-voice-comparison-390",
+      "path": "/discovery?post=post-14",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "afterglow-percussion-original-1440",
+      "path": "/discovery?post=post-15",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "afterglow-percussion-result-1440",
+      "path": "/discovery?post=post-16",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "afterglow-percussion-comparison-1440",
+      "path": "/discovery?post=post-16",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "afterglow-percussion-original-390",
+      "path": "/discovery?post=post-15",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "afterglow-percussion-result-390",
+      "path": "/discovery?post=post-16",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "afterglow-percussion-comparison-390",
+      "path": "/discovery?post=post-16",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    }
+  ],
+  "errors": []
+}

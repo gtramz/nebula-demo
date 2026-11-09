@@ -1,0 +1,313 @@
+{
+  "checks": [
+    {
+      "name": "home-1366",
+      "path": "/explore",
+      "width": 1366,
+      "height": 768,
+      "overflow": false
+    },
+    {
+      "name": "filters-1366",
+      "path": "/explore",
+      "width": 1366,
+      "height": 768,
+      "overflow": false
+    },
+    {
+      "name": "home-1440",
+      "path": "/explore",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "filters-1440",
+      "path": "/explore",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "home-820",
+      "path": "/explore",
+      "width": 820,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "filters-820",
+      "path": "/explore",
+      "width": 820,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "home-390",
+      "path": "/explore",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "filters-390",
+      "path": "/explore",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "audio-1440",
+      "path": "/discovery?post=post-1",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "video-1440",
+      "path": "/discovery?post=post-11",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "profile-1440",
+      "path": "/profile",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "edit-profile-1440",
+      "path": "/profile?edit=1",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "project-1440",
+      "path": "/project/12?song=4",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "proposal-1440",
+      "path": "/messages/offer/1",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "inbox-1440",
+      "path": "/messages",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "saved-1440",
+      "path": "/saved",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "search-1440",
+      "path": "/search",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "notifications-1440",
+      "path": "/notifications",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "audio-390",
+      "path": "/discovery?post=post-1",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "video-390",
+      "path": "/discovery?post=post-11",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "profile-390",
+      "path": "/profile",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "edit-profile-390",
+      "path": "/profile?edit=1",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "project-390",
+      "path": "/project/12?song=4",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "proposal-390",
+      "path": "/messages/offer/1",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "inbox-390",
+      "path": "/messages",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "saved-390",
+      "path": "/saved",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "search-390",
+      "path": "/search",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "notifications-390",
+      "path": "/notifications",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "comments-desktop",
+      "path": "/discovery?post=post-1",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "comments-mobile",
+      "path": "/discovery?post=post-1",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "audio-landscape",
+      "path": "/discovery?post=post-1",
+      "width": 667,
+      "height": 375,
+      "overflow": false
+    },
+    {
+      "name": "video-landscape",
+      "path": "/discovery?post=post-11",
+      "width": 667,
+      "height": 375,
+      "overflow": false
+    },
+    {
+      "name": "marea-voice-original-1440",
+      "path": "/discovery?post=post-13",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "marea-voice-result-1440",
+      "path": "/discovery?post=post-14",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "marea-voice-comparison-1440",
+      "path": "/discovery?post=post-14",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "marea-voice-original-390",
+      "path": "/discovery?post=post-13",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "marea-voice-result-390",
+      "path": "/discovery?post=post-14",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "marea-voice-comparison-390",
+      "path": "/discovery?post=post-14",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "afterglow-percussion-original-1440",
+      "path": "/discovery?post=post-15",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "afterglow-percussion-result-1440",
+      "path": "/discovery?post=post-16",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "afterglow-percussion-comparison-1440",
+      "path": "/discovery?post=post-16",
+      "width": 1440,
+      "height": 900,
+      "overflow": false
+    },
+    {
+      "name": "afterglow-percussion-original-390",
+      "path": "/discovery?post=post-15",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "afterglow-percussion-result-390",
+      "path": "/discovery?post=post-16",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    },
+    {
+      "name": "afterglow-percussion-comparison-390",
+      "path": "/discovery?post=post-16",
+      "width": 390,
+      "height": 844,
+      "overflow": false
+    }
+  ],
+  "errors": []
+}

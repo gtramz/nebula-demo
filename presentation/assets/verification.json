@@ -1,0 +1,107 @@
+{
+  "technicalChecks": [
+    {
+      "path": "audio/afterglow.mp3",
+      "secondsDecoded": 44.935,
+      "containerSeconds": 44.935102,
+      "peak": 0.8005,
+      "rms": 0.1382,
+      "decodePassed": true,
+      "waveformPassed": true
+    },
+    {
+      "path": "audio/concreto.mp3",
+      "secondsDecoded": 45.0,
+      "containerSeconds": 45.0,
+      "peak": 0.8164,
+      "rms": 0.1345,
+      "decodePassed": true,
+      "waveformPassed": true
+    },
+    {
+      "path": "audio/lowtide.mp3",
+      "secondsDecoded": 45.0,
+      "containerSeconds": 45.0,
+      "peak": 0.7267,
+      "rms": 0.1268,
+      "decodePassed": true,
+      "waveformPassed": true
+    },
+    {
+      "path": "audio/marea.mp3",
+      "secondsDecoded": 44.935,
+      "containerSeconds": 44.935102,
+      "peak": 0.5641,
+      "rms": 0.136,
+      "decodePassed": true,
+      "waveformPassed": true
+    },
+    {
+      "path": "audio/glasshouse.mp3",
+      "secondsDecoded": 44.935,
+      "containerSeconds": 44.935102,
+      "peak": 0.4983,
+      "rms": 0.1167,
+      "decodePassed": true,
+      "waveformPassed": true
+    },
+    {
+      "path": "audio/meridian.mp3",
+      "secondsDecoded": 45.0,
+      "containerSeconds": 45.0,
+      "peak": 0.7577,
+      "rms": 0.1367,
+      "decodePassed": true,
+      "waveformPassed": true
+    },
+    {
+      "path": "video/marea-session.mp4",
+      "secondsDecoded": 10.0,
+      "containerSeconds": 10.0,
+      "peak": 0.5641,
+      "rms": 0.1573,
+      "decodePassed": true,
+      "waveformPassed": true
+    },
+    {
+      "path": "audio/marea-remix.mp3",
+      "secondsDecoded": 44.935,
+      "containerSeconds": 44.935102,
+      "peak": 0.5028,
+      "rms": 0.1018,
+      "decodePassed": true,
+      "waveformPassed": true
+    },
+    {
+      "path": "audio/afterglow-remix.mp3",
+      "secondsDecoded": 44.935,
+      "containerSeconds": 44.935102,
+      "peak": 0.623,
+      "rms": 0.1037,
+      "decodePassed": true,
+      "waveformPassed": true
+    },
+    {
+      "path": "audio/marea-contribution.wav",
+      "secondsDecoded": 45.0,
+      "containerSeconds": 45.0,
+      "peak": 0.5251,
+      "rms": 0.0451,
+      "decodePassed": true,
+      "waveformPassed": true
+    },
+    {
+      "path": "audio/afterglow-contribution.wav",
+      "secondsDecoded": 45.0,
+      "containerSeconds": 45.000023,
+      "peak": 0.5352,
+      "rms": 0.0485,
+      "decodePassed": true,
+      "waveformPassed": true
+    }
+  ],
+  "portraits": 6,
+  "covers": 8,
+  "remixSets": 2,
+  "audition": "Pending human listening; no claim of subjective music QA."
+}

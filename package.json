@@ -1,0 +1,41 @@
+{
+  "name": "nebula-demo",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "description": "Independent Antiq Nebula presentation demo with a portable fictional scene",
+  "author": "manuellcossio",
+  "license": "MIT",
+  "packageManager": "pnpm@11.21.0",
+  "engines": {
+    "node": ">=24.17.0"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @nebula/ui dev",
+    "build": "pnpm run typecheck && pnpm --filter @nebula/ui build && pnpm build:server",
+    "build:server": "tsc -p server/tsconfig.json",
+    "start": "node scripts/presentation.mjs start",
+    "test:server": "pnpm build:server && node --test server/*.test.mjs",
+    "test:shared": "node scripts/test-integrated.mjs shared",
+    "preview": "pnpm --filter @nebula/ui serve",
+    "typecheck": "tsc --build && pnpm --filter @nebula/ui typecheck",
+    "test": "vitest run",
+    "test:browser": "playwright test",
+    "test:collaborations": "node scripts/test-integrated.mjs collaborations",
+    "test:remix": "node scripts/test-integrated.mjs remix",
+    "demo": "node scripts/presentation.mjs start",
+    "demo:prepare": "pnpm build && node scripts/presentation.mjs prepare",
+    "demo:reset": "node scripts/presentation.mjs reset",
+    "demo:check": "pnpm build:server && node scripts/check-presentation.mjs",
+    "test:presentation": "playwright test --config playwright.presentation.config.ts",
+    "start:standard": "node dist-server/server/main.js",
+    "demo:seed": "node scripts/presentation.mjs prepare",
+    "test:seed": "node --test scripts/presentation-seed.test.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@types/node": "catalog:",
+    "typescript": "~5.9.3",
+    "vitest": "^4.1.11"
+  }
+}

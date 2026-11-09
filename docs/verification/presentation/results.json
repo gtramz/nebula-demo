@@ -1,0 +1,74 @@
+{
+  "date": "2026-11-09",
+  "url": "http://127.0.0.1:4174",
+  "build": "passed",
+  "unitTests": 71,
+  "serverTests": 82,
+  "sharedBrowserTests": 96,
+  "collaborationBrowserTests": 36,
+  "remixBrowserTests": 30,
+  "offlineBrowserTests": 2,
+  "scenarioAcceptance": {
+    "passed": 14,
+    "checks": [
+      "eight accounts, twelve public posts, video and attributed remixes",
+      "every publication and cover loads locally; every waveform has real audio",
+      "new identity has no fake history; Home ranks compatible needs",
+      "follow, Following, likes, comments and private saves",
+      "global search resolves songs and publications",
+      "prepared take belongs to the new artist and stays private",
+      "private remix proposal, acceptance and conversation in the same thread",
+      "new project, incoming proposal, delivery, revision and completion",
+      "private draft and public publication transitions",
+      "autonomous community reactions persist once; guided mode waits",
+      "rejection closes the request without opening a chat",
+      "Investor contribution is reflected in recipient history",
+      "server restart preserves identity, projects and conversations",
+      "repeated restore returns to the clean opening scene"
+    ]
+  },
+  "mediaTechnicalChecks": 11,
+  "manualReview": [
+    "new Artist registration and onboarding",
+    "personalized Home",
+    "Discovery scrolling and exclusive playback",
+    "prepared contribution, real render, draft and private proposal",
+    "original/result switching at same position, including during playback",
+    "project editor and shortcut on mobile",
+    "global search across songs/publications/artists/projects",
+    "Investor history and receipt",
+    "restore from backstage",
+    "desktop and 390px mobile layout"
+  ],
+  "scenario": {
+    "artists": 6,
+    "investors": 2,
+    "projects": 8,
+    "publications": 12,
+    "stars": 36,
+    "comments": 24,
+    "follows": 12,
+    "generalConversations": 3,
+    "collaborations": {
+      "submitted": 1,
+      "accepted": 1,
+      "delivered": 1,
+      "completed": 2
+    }
+  },
+  "notes": [
+    "The shared suite was run in isolated specifications; copy expectations and the account-recovery disclosure were updated without removing functional assertions.",
+    "All final specifications passed. Earlier logs retain intermediate failures for diagnosis.",
+    "Music was technically verified. Subjective listening remains a presenter review.",
+    "Vite reports a main bundle over 500 kB; the build succeeds and all runtime assets are local."
+  ],
+  "evidence": {
+    "logs": ".data",
+    "screenshots": [
+      "home-desktop.jpg",
+      "home-mobile.jpg"
+    ],
+    "functionalInventory": "../../presentation-inventory.md",
+    "runbook": "../../presentation-runbook.md"
+  }
+}

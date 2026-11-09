@@ -1,0 +1,18 @@
+[
+  {
+    "track": "Marea Alta",
+    "secondsCompared": 44.9,
+    "originalRMS": 0.193374,
+    "contributionDifferenceRMS": 0.027051,
+    "differenceVsOriginalDB": -17.08,
+    "differentAudio": true
+  },
+  {
+    "track": "Afterglow",
+    "secondsCompared": 44.9,
+    "originalRMS": 0.195747,
+    "contributionDifferenceRMS": 0.029122,
+    "differenceVsOriginalDB": -16.55,
+    "differentAudio": true
+  }
+]

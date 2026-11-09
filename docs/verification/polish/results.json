@@ -1,0 +1,47 @@
+{
+  "date": "2026-11-09",
+  "build": "passed",
+  "server": {
+    "passed": 86,
+    "restoration_rerun": 6
+  },
+  "presentation_browser": {
+    "passed": 14,
+    "viewports": [
+      "desktop",
+      "mobile"
+    ],
+    "saved_consistency_rerun": 2
+  },
+  "identity_onboarding_browser": {
+    "passed": 8,
+    "public_profile_rerun": 6
+  },
+  "taxonomy_browser": {
+    "passed": 4
+  },
+  "local_media": {
+    "passed": 11
+  },
+  "main_scenario": {
+    "principal": "Sol Rivera",
+    "principalId": 19,
+    "private_proposal_drafts": 1,
+    "reseeded": false
+  },
+  "video": {
+    "generation_credits": 53,
+    "seconds": 10,
+    "file": "presentation/assets/video/marea-session.mp4"
+  },
+  "visual_review": [
+    "1366x768",
+    "1440x900",
+    "390x844"
+  ],
+  "limitations": [
+    "Physical phone keyboard not exercised",
+    "Existing principal photo and genre selections were empty and preserved",
+    "Technical media checks do not replace subjective musical audition"
+  ]
+}

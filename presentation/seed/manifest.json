@@ -1,0 +1,337 @@
+{
+  "version": 1,
+  "fixture": "Fictional presentation only; no real accounts or active sessions.",
+  "principalId": 19,
+  "defaultPassword": "Nebula2026!",
+  "accounts": [
+    {
+      "id": 1,
+      "name": "Lía Soren",
+      "email": "lia@nebula.local",
+      "role": "artist"
+    },
+    {
+      "id": 2,
+      "name": "Dante Vela",
+      "email": "dante@nebula.local",
+      "role": "artist"
+    },
+    {
+      "id": 3,
+      "name": "Mara Voss",
+      "email": "mara@nebula.local",
+      "role": "artist"
+    },
+    {
+      "id": 4,
+      "name": "Club Marea",
+      "email": "marea@nebula.local",
+      "role": "artist"
+    },
+    {
+      "id": 5,
+      "name": "Inés Prado",
+      "email": "ines@nebula.local",
+      "role": "artist"
+    },
+    {
+      "id": 6,
+      "name": "Gael Ríos",
+      "email": "gael@nebula.local",
+      "role": "artist"
+    },
+    {
+      "id": 7,
+      "name": "Elena Costa",
+      "email": "elena@nebula.local",
+      "role": "investor"
+    },
+    {
+      "id": 8,
+      "name": "Noah Bennett",
+      "email": "noah@nebula.local",
+      "role": "investor"
+    },
+    {
+      "id": 19,
+      "name": "Sol Rivera",
+      "email": "sol.rivera@nebula.local",
+      "role": "artist"
+    }
+  ],
+  "scene": {
+    "path": "presentation/seed/scene.sqlite",
+    "sha256": "5c4e21939bc81c303ad1db2e2e6b2d0ebad795300192a5a5b5743a9b5efd6e8f"
+  },
+  "media": [
+    {
+      "id": "055db3d3-c0de-4545-92db-9722e72b07c0",
+      "path": "presentation/assets/audio/afterglow-remix.mp3",
+      "sha256": "a707b82eba9a3839b7c17e7cda48e4a56667ed2acef4566bfbf923bdb0a88d57"
+    },
+    {
+      "id": "072c8839-e030-4c53-81a2-b0e502aed028",
+      "path": "presentation/assets/audio/marea.mp3",
+      "sha256": "ebe77842dd0c582f1a6eba09cfc5b9c5ecf3ac6faa8de05d76ba835068ce0a6c"
+    },
+    {
+      "id": "0d493bb7-c216-451c-bae9-1237647e480b",
+      "path": "presentation/assets/audio/meridian.mp3",
+      "sha256": "480711bad9a674973d529e636c164b6eda9536c4a668b2d7eb4ed43f1d15f51f"
+    },
+    {
+      "id": "175b39c1-7b37-40df-a5c3-b7bf91a2032a",
+      "path": "presentation/assets/covers/marea.jpg",
+      "sha256": "2aa51369a1351eb5aefda92864b67a57efb84d0f07b390c6b8731dc2df16119a"
+    },
+    {
+      "id": "1b978cb7-9a1c-448b-b437-d7f4247c2ca2",
+      "path": "presentation/assets/video/marea-live-original.mp4",
+      "sha256": "ae9b8fd0daa1ab2a8ecf72b11117d37200a6a3b2eca4b08da0ed1f586c2f2900"
+    },
+    {
+      "id": "1e854da5-e701-4ae3-94dc-03af7451d437",
+      "path": "presentation/assets/covers/concreto.jpg",
+      "sha256": "fff830e4ea11d7fccfecba372b981b4ee193292f36e3313f476a84c6a1933469"
+    },
+    {
+      "id": "236d2a12-cf79-5996-8fd6-b443c050060a",
+      "path": "presentation/assets/video/marea-session.jpg",
+      "sha256": "ed5525cc76fd1c815437c346b1e281df623e9108db6c464ad699d6fa11964e22"
+    },
+    {
+      "id": "24b912bf-156e-4cfa-b67a-2ff96f7f4516",
+      "path": "presentation/assets/video/marea-visualizer.mp4",
+      "sha256": "2a8a941a597fc49acbd12e3b1ae04ed4656838540bc2d701c708182c132471b9"
+    },
+    {
+      "id": "36c00ad6-f5b1-4118-8815-6e9d5f529847",
+      "path": "presentation/assets/audio/lowtide.mp3",
+      "sha256": "29ae1a19bd2c457dbc5d7e88dd3cd3b44970c8156bfc90eb0d10fd0f89303795"
+    },
+    {
+      "id": "4049adbb-b135-5d8b-b119-e526123a76f5",
+      "path": "presentation/assets/video/marea-session.mp4",
+      "sha256": "eba466a2c9a09c8fdb2b0e6c315d32b53fcd24e7668ad65ae67b0e7d6002a160"
+    },
+    {
+      "id": "4d2145b9-8741-4a6f-b8dc-0b120d8546cd",
+      "path": "presentation/assets/video/marea-voice-cover.jpg",
+      "sha256": "f58b5a21634aa4345bce86d2e0f2cab06288cdf65a436777a240e155a7fc9fa3"
+    },
+    {
+      "id": "50e097af-312f-452f-99be-828eb8ffb0b3",
+      "path": "presentation/assets/covers/meridian.jpg",
+      "sha256": "81430ee514790389054ec45154985a55b1690ebd1976a311f071d874696b38c4"
+    },
+    {
+      "id": "53828963-f735-4173-9df8-17ecc31f9138",
+      "path": "presentation/assets/video/afterglow-percussion-cover.jpg",
+      "sha256": "93a042bbb120143ca1e3663f2c85f27d458484abdc66e61cfcbfb5f3df7d4037"
+    },
+    {
+      "id": "563e0def-8235-4d46-a893-9dd18d06a380",
+      "path": "presentation/assets/covers/nightbloom.jpg",
+      "sha256": "84263a1f99224c1f40e2dcf2f2111561758daa37ca51157f2a2d1b3ec9aa5999"
+    },
+    {
+      "id": "56b2854f-57db-4cfe-acf8-6dae808361d4",
+      "path": "presentation/assets/audio/marea-contribution.wav",
+      "sha256": "e486c64d5cbbeb277df3b0c4b422eefc4378039f75a598e39186bb27cb98bca0"
+    },
+    {
+      "id": "5f7d6606-904d-437c-90dd-dd54878ac0bc",
+      "path": "presentation/assets/covers/glasshouse.jpg",
+      "sha256": "5ac8057eec4861baf135f08b10cfedebf398b2916a1bedb3bbb46e075479c83f"
+    },
+    {
+      "id": "5fd09cff-8327-4e12-b8c4-af009d069b1c",
+      "path": "presentation/assets/video/afterglow-percussion-result.mp4",
+      "sha256": "078de791c6e39d940b2ce5c990f39f02ea720dacd97ce4d35cea5efe77f622d9"
+    },
+    {
+      "id": "6c21401b-3af5-4d6e-bb8c-27bea87e23ac",
+      "path": "presentation/assets/audio/afterglow-remix.mp3",
+      "sha256": "a707b82eba9a3839b7c17e7cda48e4a56667ed2acef4566bfbf923bdb0a88d57"
+    },
+    {
+      "id": "6d134a4b-86b2-40d6-aed4-3777f3ae0f8f",
+      "path": "presentation/assets/audio/afterglow-contribution.wav",
+      "sha256": "bdb860cf8422d861f5a5cc8e82bd2b7c9b1578b90c41596ff324b2b8e827d36b"
+    },
+    {
+      "id": "70e537f7-e763-435e-b604-e3879645287b",
+      "path": "presentation/assets/covers/lowtide.jpg",
+      "sha256": "eea8ce58b285ab5ac6d37ca8d55c52e9cf3335015289037f48d8792e62c4ec2b"
+    },
+    {
+      "id": "72f176ef-b80b-4f1f-9dfe-b5581909fe1f",
+      "path": "presentation/assets/audio/afterglow-rhythm-original.wav",
+      "sha256": "e8a8c9cf1b36628b793e3919df91f6917162b9645387e7ec3fb6f8d1582a509a"
+    },
+    {
+      "id": "783b5314-b4d8-4a9a-abce-03f69d27eebb",
+      "path": "presentation/seed/blobs/b912e89a7681ee5c5eea60c5c718cd6eaa47ced73e1632ede2b4ea023dcc07b2",
+      "sha256": "b912e89a7681ee5c5eea60c5c718cd6eaa47ced73e1632ede2b4ea023dcc07b2"
+    },
+    {
+      "id": "7d748508-ce8a-4336-aaf2-bd713fd5bf0d",
+      "path": "presentation/assets/video/marea-vocal-take.mp4",
+      "sha256": "ec5536a7f0c881027428f694b1f27164b0cb96896c31654785283e37a1e3ea4e"
+    },
+    {
+      "id": "80f72639-2f53-412e-8d10-d5a099c27c09",
+      "path": "presentation/assets/audio/marea-contribution.wav",
+      "sha256": "e486c64d5cbbeb277df3b0c4b422eefc4378039f75a598e39186bb27cb98bca0"
+    },
+    {
+      "id": "8611b805-0772-4d02-a90b-2f0ed585f487",
+      "path": "presentation/assets/audio/afterglow.mp3",
+      "sha256": "3824764108568061f7d8c72d9a34758723156054d9161865791432f746b8adb7"
+    },
+    {
+      "id": "9035306e-8bf5-44e5-b5a2-0a63b31a8128",
+      "path": "presentation/assets/audio/glasshouse.mp3",
+      "sha256": "7a797b78b15c33d3f79af82d8811f75a0c5c76ed86acfaddac62cd817b815a96"
+    },
+    {
+      "id": "92bd8a17-e51c-43ca-bcbd-3630e75a71a1",
+      "path": "presentation/assets/covers/marea.jpg",
+      "sha256": "2aa51369a1351eb5aefda92864b67a57efb84d0f07b390c6b8731dc2df16119a"
+    },
+    {
+      "id": "9fddf3eb-73cc-467b-b04a-cb4758850353",
+      "path": "presentation/assets/covers/meridian.jpg",
+      "sha256": "81430ee514790389054ec45154985a55b1690ebd1976a311f071d874696b38c4"
+    },
+    {
+      "id": "a5522aa5-c297-45c7-9f8f-9822e4389815",
+      "path": "presentation/assets/covers/afterglow.jpg",
+      "sha256": "91f2ddba026ec2c6334e422961728e9ef28da1f462e8ce05d2f368e5f299afce"
+    },
+    {
+      "id": "a943051a-1ebb-4f66-a9ab-0ac4d5896466",
+      "path": "presentation/assets/audio/afterglow-contribution.wav",
+      "sha256": "bdb860cf8422d861f5a5cc8e82bd2b7c9b1578b90c41596ff324b2b8e827d36b"
+    },
+    {
+      "id": "ac76f38e-6205-4501-8b5d-b41d09db26fd",
+      "path": "presentation/assets/covers/afterglow.jpg",
+      "sha256": "91f2ddba026ec2c6334e422961728e9ef28da1f462e8ce05d2f368e5f299afce"
+    },
+    {
+      "id": "b85264cb-d194-40e8-a4fd-eebe9a42ce87",
+      "path": "presentation/assets/audio/concreto.mp3",
+      "sha256": "e022a2e1844f9dca7ccfb71a52a8ef2a626223c012e119c1a25e6f5047308283"
+    },
+    {
+      "id": "be4cbd4f-61cf-41d0-abd4-b25c12c52ec1",
+      "path": "presentation/assets/audio/afterglow-rhythm-original.wav",
+      "sha256": "e8a8c9cf1b36628b793e3919df91f6917162b9645387e7ec3fb6f8d1582a509a"
+    },
+    {
+      "id": "c3c36ff2-3a2b-484d-ad00-1fa3c019dd76",
+      "path": "presentation/assets/covers/afterglow.jpg",
+      "sha256": "91f2ddba026ec2c6334e422961728e9ef28da1f462e8ce05d2f368e5f299afce"
+    },
+    {
+      "id": "d5b01b2c-6d79-4a22-b478-6d5de28c125a",
+      "path": "presentation/assets/covers/marea.jpg",
+      "sha256": "2aa51369a1351eb5aefda92864b67a57efb84d0f07b390c6b8731dc2df16119a"
+    },
+    {
+      "id": "d800a591-7e65-4373-9e80-ef08eba50bd8",
+      "path": "presentation/assets/audio/marea-remix.mp3",
+      "sha256": "a41b050e4a5afe12d139feebfda8aa719545238bcbf1a0a2fd99b4628d0746d0"
+    },
+    {
+      "id": "dc249ef3-99fc-44f0-9eb4-223f815e1904",
+      "path": "presentation/assets/video/afterglow-percussion-take.mp4",
+      "sha256": "5e7334f6e48914db7b707a8fc68fdac86fe00abd9b8f4e56e444cc79afa9c462"
+    },
+    {
+      "id": "dda3f7a3-8838-47d6-8811-2f9df44f4612",
+      "path": "presentation/assets/covers/marea.jpg",
+      "sha256": "2aa51369a1351eb5aefda92864b67a57efb84d0f07b390c6b8731dc2df16119a"
+    },
+    {
+      "id": "e5bf00d1-39bc-4aa9-ad67-53351eb3e15a",
+      "path": "presentation/seed/blobs/577bb504695c7b3577951ecf6e6624cb13c85149cef093780fee17aa51437f2e",
+      "sha256": "577bb504695c7b3577951ecf6e6624cb13c85149cef093780fee17aa51437f2e"
+    },
+    {
+      "id": "e8ba4a07-3386-4e43-bb29-746d39472430",
+      "path": "presentation/assets/video/marea-vocal-result.mp4",
+      "sha256": "a1cf50e30e15d9ec0fbb8e86320f53b36dc4a2a0de993efdf6fde30922282935"
+    },
+    {
+      "id": "f37e8611-33ee-449c-9d5d-e63a714bda6a",
+      "path": "presentation/assets/audio/afterglow.mp3",
+      "sha256": "3824764108568061f7d8c72d9a34758723156054d9161865791432f746b8adb7"
+    },
+    {
+      "id": "f4708fcc-5f8e-403b-9b79-89fd007164c1",
+      "path": "presentation/assets/video/afterglow-percussion-result.mp4",
+      "sha256": "078de791c6e39d940b2ce5c990f39f02ea720dacd97ce4d35cea5efe77f622d9"
+    },
+    {
+      "id": "fbe49cc4-9b3d-40a8-bc35-7340070b47f7",
+      "path": "presentation/assets/covers/bluehour.jpg",
+      "sha256": "eb70151d77a731eac35beaf045d674000b829908ee4173fd6d3be1cfdac5db47"
+    }
+  ],
+  "prepared": [
+    {
+      "name": "marea-contribution.wav",
+      "path": "presentation/assets/audio/marea-contribution.wav",
+      "sha256": "e486c64d5cbbeb277df3b0c4b422eefc4378039f75a598e39186bb27cb98bca0"
+    },
+    {
+      "name": "afterglow-contribution.wav",
+      "path": "presentation/assets/audio/afterglow-contribution.wav",
+      "sha256": "bdb860cf8422d861f5a5cc8e82bd2b7c9b1578b90c41596ff324b2b8e827d36b"
+    },
+    {
+      "name": "marea-vocal-take.mp4",
+      "path": "presentation/assets/video/marea-vocal-take.mp4",
+      "sha256": "ec5536a7f0c881027428f694b1f27164b0cb96896c31654785283e37a1e3ea4e"
+    },
+    {
+      "name": "afterglow-percussion-take.mp4",
+      "path": "presentation/assets/video/afterglow-percussion-take.mp4",
+      "sha256": "5e7334f6e48914db7b707a8fc68fdac86fe00abd9b8f4e56e444cc79afa9c462"
+    }
+  ],
+  "counts": {
+    "state": 1,
+    "sessions": 0,
+    "media": 43,
+    "posts": 16,
+    "stars": 36,
+    "saves": 1,
+    "comments": 26,
+    "feed_snapshots": 0,
+    "rate_limits": 0,
+    "works": 10,
+    "project_tracklists": 9,
+    "project_works": 10,
+    "work_operations": 9,
+    "remix_drafts": 0,
+    "remix_private_media": 0,
+    "artist_conversations": 3,
+    "artist_messages": 9,
+    "conversation_activity": 43,
+    "conversation_reads": 0,
+    "message_operations": 43,
+    "artist_notifications": 55,
+    "collaboration_offers": 16,
+    "collaborations": 10,
+    "collaboration_submissions": 15,
+    "collaboration_files": 15,
+    "collaboration_messages": 18,
+    "artist_follows": 12,
+    "presentation_settings": 3,
+    "presentation_events": 0,
+    "proposal_drafts": 1
+  }
+}

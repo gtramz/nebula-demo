@@ -1,0 +1,24 @@
+$ playwright test --config playwright.presentation.config.ts tests-presentation/audiovisual.spec.ts tests-presentation/closing.spec.ts
+[WebServer] (node:99376) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 8 tests using 1 worker
+
+(node:99377) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › tests-presentation/audiovisual.spec.ts:4:1 › video reference and contribution: actual export, invalidation, cancel, private draft and same-thread review (24.9s)
+(node:99438) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [desktop] › tests-presentation/closing.spec.ts:6:28 › complete musical example: marea-voice (16.8s)
+  ✓  3 [desktop] › tests-presentation/closing.spec.ts:6:28 › complete musical example: afterglow-percussion (18.8s)
+  ✓  4 [desktop] › tests-presentation/closing.spec.ts:38:1 › prepared video take in Remix: render, private save, reload and proposal entry (11.4s)
+(node:99575) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  5 [mobile] › tests-presentation/audiovisual.spec.ts:4:1 › video reference and contribution: actual export, invalidation, cancel, private draft and same-thread review (25.0s)
+(node:99658) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  6 [mobile] › tests-presentation/closing.spec.ts:6:28 › complete musical example: marea-voice (16.9s)
+  ✓  7 [mobile] › tests-presentation/closing.spec.ts:6:28 › complete musical example: afterglow-percussion (18.8s)
+  ✓  8 [mobile] › tests-presentation/closing.spec.ts:38:1 › prepared video take in Remix: render, private save, reload and proposal entry (11.2s)
+
+  8 passed (2.4m)

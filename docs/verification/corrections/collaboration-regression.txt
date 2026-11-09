@@ -1,0 +1,115 @@
+$ node scripts/test-integrated.mjs collaborations
+
+Running isolated collaborations: (^|/)follow-notifications\.spec\.ts$
+[WebServer] (node:84018) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 10 tests using 1 worker
+
+(node:84019) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [desktop] › tests-collaborations/follow-notifications.spec.ts:13:1 › two artists receive exclusive follow notices with durable reading, profile navigation and refollow history (11.3s)
+  ✓   2 [desktop] › tests-collaborations/follow-notifications.spec.ts:56:1 › new follow during mark-all stays unread and unavailable profiles retain their history without a link (696ms)
+  ✓   3 [desktop] › tests-collaborations/follow-notifications.spec.ts:77:61 › pending summary response cannot expose the previous account or navigate after logout/login (12.1s)
+  ✓   4 [desktop] › tests-collaborations/follow-notifications.spec.ts:77:61 › pending list response cannot expose the previous account or navigate after logout/login (1.4s)
+  ✓   5 [desktop] › tests-collaborations/follow-notifications.spec.ts:77:61 › pending read response cannot expose the previous account or navigate after logout/login (1.5s)
+(node:84189) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   6 [mobile] › tests-collaborations/follow-notifications.spec.ts:13:1 › two artists receive exclusive follow notices with durable reading, profile navigation and refollow history (11.3s)
+  ✓   7 [mobile] › tests-collaborations/follow-notifications.spec.ts:56:1 › new follow during mark-all stays unread and unavailable profiles retain their history without a link (659ms)
+  ✓   8 [mobile] › tests-collaborations/follow-notifications.spec.ts:77:61 › pending summary response cannot expose the previous account or navigate after logout/login (12.3s)
+  ✓   9 [mobile] › tests-collaborations/follow-notifications.spec.ts:77:61 › pending list response cannot expose the previous account or navigate after logout/login (1.7s)
+  ✓  10 [mobile] › tests-collaborations/follow-notifications.spec.ts:77:61 › pending read response cannot expose the previous account or navigate after logout/login (1.7s)
+
+  10 passed (56.2s)
+
+Running isolated collaborations: (^|/)interface\.spec\.ts$
+[WebServer] (node:84296) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 8 tests using 1 worker
+
+(node:84297) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › tests-collaborations/interface.spec.ts:25:1 › historical workspace: working copies survive parent return, reload, notification overlay and failed refresh (11.7s)
+  ✓  2 [desktop] › tests-collaborations/interface.spec.ts:63:1 › historical workspace: stale terms retain files and text; decline and withdrawal require deliberate confirmation (961ms)
+  ✓  3 [desktop] › tests-collaborations/interface.spec.ts:92:1 › historical workspace: upload guard retains active work and duplicate submissions or messages produce one mutation (643ms)
+  ✓  4 [desktop] › tests-collaborations/interface.spec.ts:118:1 › historical workspace: list return restores scroll and sent view; offer editing resumes without stale saved defaults (1.3s)
+(node:84361) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  5 [mobile] › tests-collaborations/interface.spec.ts:25:1 › historical workspace: working copies survive parent return, reload, notification overlay and failed refresh (12.0s)
+  ✓  6 [mobile] › tests-collaborations/interface.spec.ts:63:1 › historical workspace: stale terms retain files and text; decline and withdrawal require deliberate confirmation (996ms)
+  ✓  7 [mobile] › tests-collaborations/interface.spec.ts:92:1 › historical workspace: upload guard retains active work and duplicate submissions or messages produce one mutation (628ms)
+  ✓  8 [mobile] › tests-collaborations/interface.spec.ts:118:1 › historical workspace: list return restores scroll and sent view; offer editing resumes without stale saved defaults (1.3s)
+
+  8 passed (31.1s)
+
+Running isolated collaborations: (^|/)messages\.spec\.ts$
+[WebServer] (node:84438) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:84439) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › tests-collaborations/messages.spec.ts:9:1 › unified messages: separate artists review proposal, revise, accept, converse and deliver in the same thread (2.2s)
+  ✓  2 [desktop] › tests-collaborations/messages.spec.ts:37:1 › general requests use public profile, preserve rejection and retries, separate accounts and keep mobile access (1.7s)
+  ✓  3 [desktop] › tests-collaborations/messages.spec.ts:61:1 › accepted general chat retries one message and discards delayed responses after logout (1.3s)
+(node:84505) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  4 [mobile] › tests-collaborations/messages.spec.ts:9:1 › unified messages: separate artists review proposal, revise, accept, converse and deliver in the same thread (2.2s)
+  ✓  5 [mobile] › tests-collaborations/messages.spec.ts:37:1 › general requests use public profile, preserve rejection and retries, separate accounts and keep mobile access (1.8s)
+  ✓  6 [mobile] › tests-collaborations/messages.spec.ts:61:1 › accepted general chat retries one message and discards delayed responses after logout (1.2s)
+
+  6 passed (11.7s)
+
+Running isolated collaborations: (^|/)notification-panel\.spec\.ts$
+[WebServer] (node:84581) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 6 tests using 1 worker
+
+(node:84582) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › tests-collaborations/notification-panel.spec.ts:11:1 › panel keeps search, profile and feed position; keyboard, outside click and single polling owner (22.1s)
+  ✓  2 [desktop] › tests-collaborations/notification-panel.spec.ts:65:1 › unsaved remix keeps contribution, fragment, gains, preview and scroll without restarting playback (919ms)
+  ✓  3 [desktop] › tests-collaborations/notification-panel.spec.ts:102:1 › panel recovers list failures and clears private content on session expiry (494ms)
+(node:84627) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  4 [mobile] › tests-collaborations/notification-panel.spec.ts:11:1 › panel keeps search, profile and feed position; keyboard, outside click and single polling owner (22.1s)
+  ✓  5 [mobile] › tests-collaborations/notification-panel.spec.ts:65:1 › unsaved remix keeps contribution, fragment, gains, preview and scroll without restarting playback (899ms)
+  ✓  6 [mobile] › tests-collaborations/notification-panel.spec.ts:102:1 › panel recovers list failures and clears private content on session expiry (480ms)
+
+  6 passed (48.4s)
+
+Running isolated collaborations: (^|/)notifications\.spec\.ts$
+[WebServer] (node:84785) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 2 tests using 1 worker
+
+(node:84786) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › tests-collaborations/notifications.spec.ts:10:1 › historical notifications: artist notifications reach both accounts, open the workspace, persist reads and stay private (22.3s)
+(node:84835) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  2 [mobile] › tests-collaborations/notifications.spec.ts:10:1 › historical notifications: artist notifications reach both accounts, open the workspace, persist reads and stay private (22.4s)
+
+  2 passed (46.3s)
+
+Running isolated collaborations: (^|/)workflow\.spec\.ts$
+[WebServer] (node:84891) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:84892) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › tests-collaborations/workflow.spec.ts:30:1 › historical work: artists create offers in Discovery, discuss, submit, revise, accept, deliver and finish privately (1.1m)
+  ✓  2 [desktop] › tests-collaborations/workflow.spec.ts:92:1 › historical work: both sides can use direct applications, withdrawal, decline and closure without losing their conversation (11.7s)
+(node:85024) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 [mobile] › tests-collaborations/workflow.spec.ts:30:1 › historical work: artists create offers in Discovery, discuss, submit, revise, accept, deliver and finish privately (1.1m)
+  ✓  4 [mobile] › tests-collaborations/workflow.spec.ts:92:1 › historical work: both sides can use direct applications, withdrawal, decline and closure without losing their conversation (11.7s)
+
+  4 passed (2.5m)

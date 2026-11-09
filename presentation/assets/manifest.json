@@ -1,0 +1,424 @@
+{
+  "version": 1,
+  "status": "ready-for-audition",
+  "artists": [
+    {
+      "key": "lia",
+      "name": "Lía Soren",
+      "portrait": "portraits/lia.jpg",
+      "roles": [
+        "vocalist",
+        "songwriter"
+      ],
+      "genres": [
+        "rnb",
+        "soul"
+      ]
+    },
+    {
+      "key": "dante",
+      "name": "Dante Vela",
+      "portrait": "portraits/dante.jpg",
+      "roles": [
+        "rapper",
+        "songwriter"
+      ],
+      "genres": [
+        "hip-hop",
+        "alternative-hip-hop"
+      ]
+    },
+    {
+      "key": "mara",
+      "name": "Mara Voss",
+      "portrait": "portraits/mara.jpg",
+      "roles": [
+        "producer",
+        "mixing-engineer"
+      ],
+      "genres": [
+        "electronic",
+        "downtempo"
+      ]
+    },
+    {
+      "key": "marea",
+      "name": "Club Marea",
+      "portrait": "portraits/marea.jpg",
+      "roles": [
+        "producer",
+        "dj"
+      ],
+      "genres": [
+        "house",
+        "electronic"
+      ]
+    },
+    {
+      "key": "ines",
+      "name": "Inés Prado",
+      "portrait": "portraits/ines.jpg",
+      "roles": [
+        "instrumentalist",
+        "composer"
+      ],
+      "genres": [
+        "indie",
+        "jazz"
+      ]
+    },
+    {
+      "key": "gael",
+      "name": "Gael Ríos",
+      "portrait": "portraits/gael.jpg",
+      "roles": [
+        "mixing-engineer",
+        "producer"
+      ],
+      "genres": [
+        "rnb",
+        "indie"
+      ]
+    }
+  ],
+  "covers": [
+    {
+      "key": "afterglow",
+      "title": "Afterglow",
+      "path": "covers/afterglow.jpg",
+      "artist": "lia"
+    },
+    {
+      "key": "concreto",
+      "title": "Concreto",
+      "path": "covers/concreto.jpg",
+      "artist": "dante"
+    },
+    {
+      "key": "lowtide",
+      "title": "Low Tide",
+      "path": "covers/lowtide.jpg",
+      "artist": "mara"
+    },
+    {
+      "key": "marea",
+      "title": "Marea Alta",
+      "path": "covers/marea.jpg",
+      "artist": "marea"
+    },
+    {
+      "key": "glasshouse",
+      "title": "Glasshouse",
+      "path": "covers/glasshouse.jpg",
+      "artist": "ines"
+    },
+    {
+      "key": "meridian",
+      "title": "Meridian",
+      "path": "covers/meridian.jpg",
+      "artist": "gael"
+    },
+    {
+      "key": "bluehour",
+      "title": "Blue Hour",
+      "path": "covers/bluehour.jpg",
+      "artist": "lia"
+    },
+    {
+      "key": "nightbloom",
+      "title": "Night Bloom",
+      "path": "covers/nightbloom.jpg",
+      "artist": "mara"
+    }
+  ],
+  "music": [
+    {
+      "key": "afterglow",
+      "title": "Afterglow",
+      "artist": "lia",
+      "genre": "R&B",
+      "bpm": null,
+      "targetBpm": 88,
+      "path": "audio/afterglow.mp3",
+      "durationSeconds": 44.935102,
+      "waveform": "audio/afterglow.waveform.json",
+      "source": {
+        "kind": "generated",
+        "provider": "Yapper",
+        "model": "Seed Audio 1.0",
+        "credits": 0
+      },
+      "ready": true
+    },
+    {
+      "key": "concreto",
+      "title": "Concreto",
+      "artist": "dante",
+      "genre": "Hip-hop",
+      "bpm": null,
+      "targetBpm": null,
+      "path": "audio/concreto.mp3",
+      "durationSeconds": 45.0,
+      "waveform": "audio/concreto.waveform.json",
+      "source": {
+        "kind": "CC0 excerpt",
+        "title": "Chill lofi inspired",
+        "author": "omfgdude",
+        "page": "https://opengameart.org/content/chill-lofi-inspired",
+        "download": "https://opengameart.org/sites/default/files/ChillLofiR_0.mp3",
+        "license": "https://creativecommons.org/publicdomain/zero/1.0/"
+      },
+      "ready": true
+    },
+    {
+      "key": "lowtide",
+      "title": "Low Tide",
+      "artist": "mara",
+      "genre": "Electronic",
+      "bpm": null,
+      "targetBpm": null,
+      "path": "audio/lowtide.mp3",
+      "durationSeconds": 45.0,
+      "waveform": "audio/lowtide.waveform.json",
+      "source": {
+        "kind": "CC0 excerpt",
+        "title": "November Snow",
+        "author": "The Cynic Project / cynicmusic.com / pixelsphere.org",
+        "page": "https://opengameart.org/node/79558",
+        "download": "https://opengameart.org/sites/default/files/155%20November_snow-33_tape_leveled.mp3",
+        "license": "https://creativecommons.org/publicdomain/zero/1.0/"
+      },
+      "ready": true
+    },
+    {
+      "key": "marea",
+      "title": "Marea Alta",
+      "artist": "marea",
+      "genre": "House",
+      "bpm": null,
+      "targetBpm": 120,
+      "path": "audio/marea.mp3",
+      "durationSeconds": 44.935102,
+      "waveform": "audio/marea.waveform.json",
+      "source": {
+        "kind": "generated",
+        "provider": "Yapper",
+        "model": "Seed Audio 1.0",
+        "credits": 0
+      },
+      "ready": true
+    },
+    {
+      "key": "glasshouse",
+      "title": "Glasshouse",
+      "artist": "ines",
+      "genre": "Jazz",
+      "bpm": null,
+      "targetBpm": 84,
+      "path": "audio/glasshouse.mp3",
+      "durationSeconds": 44.935102,
+      "waveform": "audio/glasshouse.waveform.json",
+      "source": {
+        "kind": "generated",
+        "provider": "Yapper",
+        "model": "Seed Audio 1.0",
+        "credits": 0
+      },
+      "ready": true
+    },
+    {
+      "key": "meridian",
+      "title": "Meridian",
+      "artist": "gael",
+      "genre": "Electronic",
+      "bpm": null,
+      "targetBpm": null,
+      "path": "audio/meridian.mp3",
+      "durationSeconds": 45.0,
+      "waveform": "audio/meridian.waveform.json",
+      "source": {
+        "kind": "CC0 excerpt",
+        "title": "Music loop, strong, downtempo, seamless",
+        "author": "Nostromo",
+        "page": "https://opengameart.org/content/music-loop-strong-downtempo-seamless",
+        "download": "https://opengameart.org/sites/default/files/space_ranger_seamless_loop_preview_no_watermark_0.mp3",
+        "license": "https://creativecommons.org/publicdomain/zero/1.0/"
+      },
+      "ready": true
+    }
+  ],
+  "remixSets": [
+    {
+      "key": "marea",
+      "title": "Marea Alta — Inés Prado version",
+      "original": "audio/marea.mp3",
+      "contribution": "audio/marea-contribution.wav",
+      "result": "audio/marea-remix.mp3",
+      "sourceArtist": "marea",
+      "contributorArtist": "ines",
+      "bpm": null,
+      "targetBpm": 120,
+      "startSeconds": 0,
+      "endSeconds": 44.935102,
+      "durationSeconds": 44.935102,
+      "contributionOffsetSeconds": 0,
+      "musicalEntranceSeconds": 8,
+      "baseGain": 0.76,
+      "contributionGain": 0.42,
+      "waveform": "audio/marea-remix.waveform.json",
+      "contributionWaveform": "audio/marea-contribution.waveform.json",
+      "recipe": "Actual mix of the linked original and adapted saxophone contribution; no replacement soundtrack. One generated sax performance is adapted separately for each song. Tempo/key targets follow generation briefs and require human audition.",
+      "ready": true
+    },
+    {
+      "key": "afterglow",
+      "title": "Afterglow — Inés Prado version",
+      "original": "audio/afterglow.mp3",
+      "contribution": "audio/afterglow-contribution.wav",
+      "result": "audio/afterglow-remix.mp3",
+      "sourceArtist": "lia",
+      "contributorArtist": "ines",
+      "bpm": null,
+      "targetBpm": 88,
+      "startSeconds": 0,
+      "endSeconds": 44.935102,
+      "durationSeconds": 44.935102,
+      "contributionOffsetSeconds": 0,
+      "musicalEntranceSeconds": 8,
+      "baseGain": 0.76,
+      "contributionGain": 0.42,
+      "waveform": "audio/afterglow-remix.waveform.json",
+      "contributionWaveform": "audio/afterglow-contribution.waveform.json",
+      "recipe": "Actual mix of the linked original and adapted saxophone contribution; no replacement soundtrack. One generated sax performance is adapted separately for each song. Tempo/key targets follow generation briefs and require human audition.",
+      "ready": true
+    }
+  ],
+  "video": [
+    {
+      "key": "marea-session",
+      "title": "Marea Alta — rooftop session",
+      "artist": "marea",
+      "path": "video/marea-session.mp4",
+      "cover": "video/marea-session.jpg",
+      "music": "marea",
+      "durationSeconds": 10.0,
+      "waveform": "video/marea-session.waveform.json",
+      "width": 1088,
+      "height": 1920,
+      "ready": true,
+      "source": {
+        "provider": "Yapper",
+        "model": "MiniMax H3 Singularity",
+        "processId": "87a731b2-c93d-4eba-b7a2-93b15f393e5e",
+        "credits": 53,
+        "soundtrack": "Marea Alta, original recording excerpt 8–18 seconds",
+        "kind": "generated performance footage"
+      }
+    }
+  ],
+  "provenance": {
+    "visuals": "Built-in image generation; fictional artists and original cover art.",
+    "music": "Three generated originals and one generated sax contribution via Yapper Seed Audio 1.0, zero credits. Three CC0 recordings complete the catalogue; full source metadata accompanies each track. Fictional profile assignment is presentation-only and is not a claim of actual authorship."
+  },
+  "generationFailures": [
+    {
+      "key": "concreto",
+      "reason": "Provider content filter rejected a benign generation request. No bypass retry.",
+      "resolvedBy": "CC0 recording"
+    },
+    {
+      "key": "lowtide",
+      "reason": "Provider content filter rejected a benign generation request. No bypass retry.",
+      "resolvedBy": "CC0 recording"
+    },
+    {
+      "key": "meridian",
+      "reason": "Provider content filter rejected a benign generation request. No bypass retry.",
+      "resolvedBy": "CC0 recording"
+    },
+    {
+      "key": "marea-contribution",
+      "reason": "Provider content filter rejected a benign generation request. No bypass retry.",
+      "resolvedBy": "Adapted successful sax contribution"
+    }
+  ],
+  "limitations": [
+    "Technical decoding, durations, measured waveforms and mix provenance are verified. Human musical audition is still required; this agent cannot hear audio input.",
+    "Target BPM/key are generation requests, not claims of verified musical analysis.",
+    "No missing playable catalogue media. Optional replacement of CC0 tracks or generated material remains available."
+  ],
+  "audiovisualSets": [
+    {
+      "durationSeconds": 7.8,
+      "key": "marea-voice",
+      "owner": 4,
+      "contributor": 2,
+      "project": 12,
+      "work": 4,
+      "title": "Marea Alta · studio instrumental",
+      "resultTitle": "Marea Alta · Dante’s verse",
+      "need": "Verse",
+      "original": "video/marea-live-original.mp4",
+      "native": "video/marea-vocal-native.mp4",
+      "contribution": "video/marea-vocal-take.mp4",
+      "result": "video/marea-vocal-result.mp4",
+      "baseGain": 0.6,
+      "contributionGain": 0.85,
+      "sourceKind": "video",
+      "processId": "6fae21e0-747e-4b33-acf4-78fbd41dbd4c",
+      "credits": 132,
+      "startSeconds": 0,
+      "endSeconds": 7.8,
+      "contributionKind": "video",
+      "ready": true,
+      "recipe": "Native generated sound preserved with short edge fades; actual sum of the named original and take at the declared gains, peak limited. No soundtrack replacement.",
+      "audition": "Measured and frame-inspected; human listening not performed by the agent.",
+      "sourceId": 13,
+      "resultId": 14,
+      "offerId": 13,
+      "pastThreadId": 8
+    },
+    {
+      "durationSeconds": 10,
+      "key": "afterglow-percussion",
+      "owner": 1,
+      "contributor": 5,
+      "project": 9,
+      "work": 1,
+      "title": "Afterglow · rhythm sketch",
+      "resultTitle": "Afterglow · Inés on percussion",
+      "need": "Production",
+      "original": "audio/afterglow-rhythm-original.wav",
+      "native": "video/afterglow-percussion-native.mp4",
+      "contribution": "video/afterglow-percussion-take.mp4",
+      "result": "video/afterglow-percussion-result.mp4",
+      "baseGain": 0.65,
+      "contributionGain": 0.85,
+      "sourceKind": "audio",
+      "sourceExcerpt": {
+        "path": "audio/afterglow.mp3",
+        "startSeconds": 7.88,
+        "reason": "Opening low-frequency attacks aligned with the first three native percussion transients."
+      },
+      "processId": "0924e2db-839c-4bd1-b292-12c8b83cca25",
+      "credits": 53,
+      "startSeconds": 0,
+      "endSeconds": 10,
+      "contributionKind": "video",
+      "ready": true,
+      "recipe": "Native generated sound preserved with short edge fades; actual sum of the named original and take at the declared gains, peak limited. No soundtrack replacement.",
+      "audition": "Measured and frame-inspected; human listening not performed by the agent.",
+      "sourceId": 15,
+      "resultId": 16,
+      "offerId": 15,
+      "pastThreadId": 9
+    }
+  ],
+  "audiovisualVerification": {
+    "generatedCredits": 185,
+    "localRuntime": true,
+    "signalAndFramesVerified": true,
+    "humanAudition": "pending",
+    "vocalEdit": "7.8-second clean excerpt; generated ending removed due visual artifact"
+  }
+}

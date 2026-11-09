@@ -1,0 +1,13 @@
+{
+  "origin": "http://127.0.0.1:4174",
+  "principal": "Sol Rivera",
+  "publications": [
+    13,
+    14,
+    15,
+    16
+  ],
+  "pendingIncomingRequest": 10,
+  "externalNetworkBlocked": true,
+  "errors": []
+}

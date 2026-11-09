@@ -1,0 +1,12 @@
+$ node --test scripts/presentation-seed.test.mjs
+Prepared 9 fictional accounts, 16 publications and 43 media files. Open with pnpm start.
+Presentation already prepared. Existing edits are preserved. Use demo:reset explicitly to restore.
+✔ portable fixture excludes credentials and sessions, installs all media and preserves later edits (714.206916ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 755.457042

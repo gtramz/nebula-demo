@@ -1,0 +1,21 @@
+{
+  "scope": "Fictional presentation assets; runtime uses local files only",
+  "existingAssetSources": "presentation/assets/manifest.json",
+  "vocal": {
+    "model": "MiniMax H3 Singularity Economy",
+    "creditsUsed": 132,
+    "generatedDurationSeconds": 10,
+    "editedDurationSeconds": 7.8,
+    "reasonForTrim": "Visual artifact in generated ending",
+    "nativeAudioPreserved": true
+  },
+  "percussion": {
+    "model": "MiniMax H3 Singularity Economy",
+    "creditsUsed": 53,
+    "generatedDurationSeconds": 10,
+    "editedDurationSeconds": 10,
+    "nativeAudioPreserved": true
+  },
+  "newBatchTotalCredits": 185,
+  "humanArtisticAudition": "Not performed by the agent; requires presenter review"
+}
