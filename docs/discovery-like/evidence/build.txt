@@ -1,0 +1,21 @@
+$ pnpm run typecheck && pnpm --filter @nebula/ui build && pnpm build:server
+$ tsc --build && pnpm --filter @nebula/ui typecheck
+$ tsc -p tsconfig.json --noEmit
+$ vite build --config vite.config.ts
+vite v7.3.7 building client environment for production...
+transforming...
+src/components/ui/avatar.tsx (2:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+src/components/ui/dropdown-menu.tsx (2:0): Error when using sourcemap for reporting an error: Can't resolve original location of error.
+✓ 2374 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/public/index.html                     4.36 kB │ gzip:   2.53 kB
+dist/public/assets/index-Dlcdy49d.css    225.47 kB │ gzip:  39.33 kB
+dist/public/assets/index-DUOE3iKt.js   1,091.69 kB │ gzip: 331.56 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 2.07s
+$ tsc -p server/tsconfig.json

@@ -9,7 +9,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { LiveComments, refreshSocial } from '@/features/discovery/social';
 import { Link, useLocation } from 'wouter';
 import * as Dialog from '@radix-ui/react-dialog';
-import { ArrowUpRight, Bookmark, ChevronDown, ChevronUp, Disc3, GitBranch, MessageCircle, Send, Heart, X } from 'lucide-react';
+import { ArrowUpRight, Bookmark, ChevronDown, ChevronUp, Disc3, GitBranch, MessageCircle, Send, X } from 'lucide-react';
+import { DiscoveryLike } from '@/features/discovery/like-action';
 import { useAuth } from '@/context/AuthContext';
 import { DEMO_POSTS, formatDemoUSD, type DemoPost, type DemoProject } from '@/features/discovery/demo-posts';
 import '@/features/discovery/discovery.css';
@@ -206,19 +207,20 @@ export default function Discovery({ posts = DEMO_POSTS, live = false, onLoadMore
   function requireAccount(post: DemoPost, action: () => void) {
     if (!user) showPanel('login', post); else action();
   }
-  function toggle(post: DemoPost, key: 'starred' | 'saved') {
-    requireAccount(post, () => {
-      if (!live) { setActivity(current => ({ ...current, [post.id]: { ...current[post.id], [key]: !current[post.id][key] } })); return; }
-      if (busy.current) return;
-      busy.current = true; setPending(post.id); setInteractionError('');
-      void (async () => {
-        try {
-          await apiRequest(`/api/publications/${post.id.slice(5)}/${key === 'starred' ? 'star' : 'save'}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: !post.social?.[key] }) });
-          await refreshSocial(client); setAnnouncement(key === 'starred' ? 'Like updated.' : 'Saved collection updated.');
-        } catch (error) { setInteractionError((error as Error).message); }
-        finally { busy.current = false; setPending(null); }
-      })();
-    });
+  async function toggle(post: DemoPost, key: 'starred' | 'saved', animation?: { enabled: boolean; begin: () => void; confirm: () => void }): Promise<boolean> {
+    if (!user) { showPanel('login', post); return false; }
+    if (busy.current) return false;
+    animation?.begin();
+    if (!live) { setActivity(current => ({ ...current, [post.id]: { ...current[post.id], [key]: animation?.enabled ?? !current[post.id][key] } })); animation?.confirm(); return true; }
+    busy.current = true; setPending(post.id); setInteractionError('');
+    try {
+      await apiRequest(`/api/publications/${post.id.slice(5)}/${key === 'starred' ? 'star' : 'save'}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: animation?.enabled ?? !post.social?.[key] }) });
+      animation?.confirm();
+      await refreshSocial(client);
+      if (mounted.current) setAnnouncement(key === 'starred' ? 'Like updated.' : 'Saved collection updated.');
+      return true;
+    } catch (error) { if (mounted.current) setInteractionError((error as Error).message); return false; }
+    finally { busy.current = false; if (mounted.current) setPending(null); }
   }
   function moveTo(index: number) {
     scroll.moveTo(index);
@@ -260,7 +262,7 @@ export default function Discovery({ posts = DEMO_POSTS, live = false, onLoadMore
             } />
               <DiscoveryActionRail title={post.title} artwork={mobileSplit ? <OriginalSoundArtwork post={post} nearby={Math.abs(index - activeIndex) <= 1} onOpen={() => showPanel('original', post)} /> : live && post.media.kind === 'video' && <DiscoveryProjectArtwork post={post} onNavigate={() => feed.current?.querySelectorAll<HTMLMediaElement>('video,audio').forEach(media => media.pause())} />}>
                 <DiscoveryArtistPreview key={`${viewerIdentity}:${post.id}`} post={post} live={live} active={index === activeIndex} />
-                <Action label="Like" disabled={pending === post.id} pressed={current.starred} icon={<Heart size={21} fill={current.starred ? 'currentColor' : 'none'} />} detail={live ? post.stars : post.stars + Number(current.starred)} onClick={() => toggle(post, 'starred')} />
+                <DiscoveryLike active={index === activeIndex} disabled={pending === post.id} pressed={current.starred} detail={live ? post.stars : post.stars + Number(current.starred)} onToggle={(enabled, begin, confirm) => toggle(post, 'starred', { enabled, begin, confirm })} />
                 <Action label="Comments" icon={<MessageCircle size={21} />} detail={live ? post.social?.comments ?? 0 : post.comments.length + (activity[post.id]?.comments.length ?? 0)} onClick={() => showPanel('comments', post)} />
                 <Action label="Save" disabled={pending === post.id} pressed={current.saved} icon={<Bookmark size={21} fill={current.saved ? 'currentColor' : 'none'} />} detail={current.saved ? 'saved' : 'save'} onClick={() => toggle(post, 'saved')} />
                 <Action label="Share" icon={<Send size={21} />} detail="share" onClick={() => showPanel('send', post)} />

@@ -1,0 +1,3 @@
+.discovery-like svg { flex-shrink:0; pointer-events:none; }
+/* Pending likes remain legible while the request guard prevents repeated writes. */
+.discovery-action.discovery-like[aria-busy=true]:disabled { opacity:1; cursor:progress; }

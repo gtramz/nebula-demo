@@ -1,0 +1,40 @@
+[WebServer] (node:22148) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 24 tests using 1 worker
+
+(node:22152) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/24] [desktop] › tests-presentation/discovery-like.spec.ts:25:27 › like morph on publication 3 confirms once and preserves playback and layout
+[2/24] [desktop] › tests-presentation/discovery-like.spec.ts:25:27 › like morph on publication 11 confirms once and preserves playback and layout
+[3/24] [desktop] › tests-presentation/discovery-like.spec.ts:51:1 › slow response holds a static clef, blocks duplicate likes and cancels animation on scroll
+[4/24] [desktop] › tests-presentation/discovery-like.spec.ts:81:1 › failed like returns to its previous state and a retry succeeds without pausing or changing comments
+[5/24] [desktop] › tests-presentation/discovery-like.spec.ts:105:1 › reduced motion keeps both shapes fixed and uses opacity only
+[6/24] [desktop] › tests-presentation/discovery-like.spec.ts:120:1 › guest like opens the existing login flow without a morph or write
+[7/24] [desktop] › tests-presentation/discovery-scroll-regression.spec.ts:16:1 › fractional viewport heights keep every successive piece aligned without returning to an older index
+[8/24] [desktop] › tests-presentation/discovery-scroll-regression.spec.ts:32:1 › a delayed decaying trackpad tail cannot skip a piece or bounce backwards
+[9/24] [desktop] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 3 preserves comments and manual pause
+[10/24] [desktop] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 11 preserves comments and manual pause
+[11/24] [desktop] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 14 preserves comments and manual pause
+[12/24] [desktop] › tests-presentation/discovery-tap.spec.ts:69:1 › swiping the playback surface advances the feed without pausing the next post
+(node:22562) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[13/24] [mobile] › tests-presentation/discovery-like.spec.ts:25:27 › like morph on publication 3 confirms once and preserves playback and layout
+[14/24] [mobile] › tests-presentation/discovery-like.spec.ts:25:27 › like morph on publication 11 confirms once and preserves playback and layout
+[15/24] [mobile] › tests-presentation/discovery-like.spec.ts:51:1 › slow response holds a static clef, blocks duplicate likes and cancels animation on scroll
+[16/24] [mobile] › tests-presentation/discovery-like.spec.ts:81:1 › failed like returns to its previous state and a retry succeeds without pausing or changing comments
+[17/24] [mobile] › tests-presentation/discovery-like.spec.ts:105:1 › reduced motion keeps both shapes fixed and uses opacity only
+[18/24] [mobile] › tests-presentation/discovery-like.spec.ts:120:1 › guest like opens the existing login flow without a morph or write
+[19/24] [mobile] › tests-presentation/discovery-scroll-regression.spec.ts:16:1 › fractional viewport heights keep every successive piece aligned without returning to an older index
+[20/24] [mobile] › tests-presentation/discovery-scroll-regression.spec.ts:32:1 › a delayed decaying trackpad tail cannot skip a piece or bounce backwards
+[21/24] [mobile] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 3 preserves comments and manual pause
+[22/24] [mobile] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 11 preserves comments and manual pause
+[23/24] [mobile] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 14 preserves comments and manual pause
+[24/24] [mobile] › tests-presentation/discovery-tap.spec.ts:69:1 › swiping the playback surface advances the feed without pausing the next post
+  2 skipped
+  22 passed (4.0m)
