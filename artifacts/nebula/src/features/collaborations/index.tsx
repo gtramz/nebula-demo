@@ -1,3 +1,6 @@
+import { PeerAvatar } from '@/features/messages/shared';
+import { MorphAdvanceButton, type MorphAdvanceHandle } from '@/components/blob-face';
+import { AntiqAudioPlayer } from '@/components/antiq-audio-player';
 import { SectionSkeleton } from '@/components/loading-states';
 import { usePresentation } from '@/features/presentation';
 import { offerProductDeliverable } from '@/features/presentation/product-copy';
@@ -148,7 +151,7 @@ function Workspace() {
   const staleProposal = item.requestPolicy === 1 && item.terms.revision !== item.currentOffer.revision;
   const messages = [...new Map([...older, ...item.messages].map(m => [m.id, m])).values()].sort((a,b) => a.id-b.id);
   return <section className="w-full max-w-6xl mx-auto px-4 py-6 sm:p-8 space-y-6">
-    <header className="space-y-3"><div className="flex flex-wrap items-center gap-3"><StateBadge>{statusText(item.status)}</StateBadge><p className="voice text-xs text-muted">{owner ? 'Project owner' : 'Collaborating artist'}</p></div><h1 className="text-2xl sm:text-3xl font-semibold break-words">{item.projectTitle}{item.terms.workId ? ` → ${item.terms.workTitle ?? "Song"}` : ""} · {item.terms.need}</h1><p>with <Link className="underline" href={`/artist/${owner ? item.applicantId : item.ownerId}`}>{owner ? item.applicantName : item.ownerName}</Link></p></header>
+    <header className="space-y-3"><div className="flex flex-wrap items-center gap-3"><StateBadge>{statusText(item.status)}</StateBadge><p className="voice text-xs text-muted">{owner ? 'Project owner' : 'Collaborating artist'}</p></div><h1 className="text-2xl sm:text-3xl font-semibold break-words">{item.projectTitle}{item.terms.workId ? ` → ${item.terms.workTitle ?? "Song"}` : ""} · {item.terms.need}</h1><p className="flex items-center gap-3"><PeerAvatar artistId={owner?item.applicantId:item.ownerId} name={owner?item.applicantName:item.ownerName}/>with <Link className="underline" href={`/artist/${owner ? item.applicantId : item.ownerId}`}>{owner ? item.applicantName : item.ownerName}</Link></p></header>
     <Panel aria-label="Next step"><h2 className="text-sm font-semibold">Next step</h2><p className="text-sm text-muted">{nextStep(item, owner)}</p><Link className={button} href={songProjectHref(item.currentOffer.projectId,item.terms.workId)}>View project</Link></Panel>
     <ErrorMessage error={error} />
     {query.error && <Panel><ErrorMessage error={query.error} /><p className="text-sm text-muted">Showing the last loaded conversation. Your unfinished work is kept.</p><button className={button} onClick={() => void query.refetch()}>Retry collaboration</button></Panel>}
@@ -181,14 +184,14 @@ function SubmissionForm({ item, onDone, compose = false, savedDraft }: { item: S
   const { user } = useAuth();
   const [,navigate]=useLocation();
   const projectContext=useGetProject(item.currentOffer.projectId,{query:{enabled:compose}});
-  const [journey,setJourney]=useJourney(`collaboration:${user?.artistId}:${item.id}`,{step:0,method:'musical'});
+  const delivery = item.status === 'accepted';
+  const [journey,setJourney]=useJourney(`collaboration:${user?.artistId}:${item.id}${compose?'':delivery?':delivery':':revision'}`,{step:0,method:compose?'musical':'file'});
   const search = useSearch();
   const selectedId = Number(new URLSearchParams(search).get('publication')??savedDraft?.publicationId);
   const savedRemix = usePublication(Number.isSafeInteger(selectedId) && selectedId > 0 ? selectedId : undefined);
   const privateRemix = useRemixDraft(new URLSearchParams(search).get('draft')??savedDraft?.remixDraftId??null);
   const privateValue = privateRemix.data && privateRemix.data.ownerId === user?.artistId && privateRemix.data.attribution.projectId === item.currentOffer.projectId && privateRemix.data.render ? { id: privateRemix.data.id, title: privateRemix.data.title, remix: {...privateRemix.data.attribution, composition:privateRemix.data.settings.composition}, media: privateRemix.data.render } : null;
   const usableRemix = privateValue ?? (savedRemix.data?.artistId === user?.artistId && savedRemix.data?.remix?.projectId === item.currentOffer.projectId ? savedRemix.data : null);
-  const delivery = item.status === 'accepted';
   const draftKey = `${compose ? 'offer' : 'thread'}-${item.id}-${delivery ? 'delivery' : 'proposal'}`;
   const [publicationId, setPublicationId] = useWorkspaceDraft<number | null>(`${draftKey}-publication`, savedDraft?.publicationId??null), [remixDraftId, setRemixDraftId] = useWorkspaceDraft<string | null>(`${draftKey}-remix`, savedDraft?.remixDraftId??null);
   const [files, setFiles] = useWorkspaceDraft<UploadedMedia[]>(`${draftKey}-files`, savedDraft?.files??[]), [description, setDescription] = useWorkspaceDraft(`${draftKey}-text`, savedDraft?.description??''), [ack, setAck] = useState(false);
@@ -196,6 +199,8 @@ function SubmissionForm({ item, onDone, compose = false, savedDraft }: { item: S
   const [preparation,setPreparation]=useState<Preparation>(savedDraft?.preparation??{contribution:null,baseGain:.76,voiceGain:.42,referenceId:item.currentOffer.referenceMediaId});
   const [preparing,setPreparing]=useState(false),[saveNotice,setSaveNotice]=useState('');
   const preparedResultId=useRef<string|null>(savedDraft?.preparation?.contribution?(savedDraft.preparation.resultId===undefined?savedDraft.files[0]?.id??null:savedDraft.preparation.resultId):null);
+  const advance = useRef<MorphAdvanceHandle>(null), resultToSend = useRef<Collaboration | null>(null);
+  const [advancing, setAdvancing] = useState(false);
   const submitting = useRef(false), sent = useRef(false), mounted = useRef(true);
   const [error, setError] = useState(''), [pending, setPending] = useState(false), [uploading, setUploading] = useState(false), [progress, setProgress] = useState(0), [ready, setReady] = useState<Record<string, boolean>>({});
   const fingerprint=JSON.stringify({introduction,description,files,preparation});
@@ -204,7 +209,7 @@ function SubmissionForm({ item, onDone, compose = false, savedDraft }: { item: S
   useEffect(() => {mounted.current=true;return()=>{mounted.current=false;controller.current?.abort();};}, []);
   const allowRedirect = useLeaveGuard(sent.current ? null : uploading || pending || preparing ? 'Work is still being sent. Stay to finish, or leave and check its status before trying again. Completed uploads and your text are kept in this tab.' : compose && fingerprint!==savedFingerprint.current ? 'Save your private draft before leaving, or discard these unsaved changes?' : null);
   useEffect(() => { setAck(false); }, [item.currentOffer.revision]);
-  const locked=pending||uploading||preparing;
+  const locked=pending||uploading||preparing||advancing;
   const hasInput=!!preparation.contribution||files.length>0||!!usableRemix;
   const needsRender=journey.method!=='file'&&!!preparation.contribution&&!!item.currentOffer.reference&&!['Mix','Master'].includes(item.currentOffer.need);
   const reviewReady=files.length>0&&(!needsRender||files.some(file=>file.id===preparedResultId.current&&['audio','video'].includes(file.kind)))&&files.every(file=>!['audio','video'].includes(file.kind)||ready[file.id]);
@@ -216,24 +221,35 @@ function SubmissionForm({ item, onDone, compose = false, savedDraft }: { item: S
     try{await write(`/api/offers/${item.id}/conversations`,'PATCH',{introduction,description,files,publicationId,remixDraftId,preparation:usableRemix?null:{...preparation,resultId:preparedResultId.current}});if(!mounted.current)return;savedFingerprint.current=fingerprint;setSaveNotice('Private draft saved. No request has been sent.');if(exit){allowRedirect();navigate('/messages');}}
     catch(e){if(mounted.current)setError((e as Error).message);}finally{submitting.current=false;if(mounted.current)setPending(false);}
   }
-  const submitButton=<button type="submit" className={primary} disabled={locked || !files.length || files.some(file => ['audio','video'].includes(file.kind) && !ready[file.id]) || !description.trim() || (compose && !introduction.trim()) || (!delivery && (!ack || !item.currentOffer.available))}>{pending ? 'Submitting…' : delivery ? 'Send delivery' : compose ? 'Send request' : 'Send proposal'}</button>;
-  const footer=<>{step>0&&<JourneyBack disabled={locked} onClick={()=>go(step-1)}/>}<button type="button" className={button} disabled={locked} onClick={()=>void persistDraft(true)}>Save &amp; exit</button>{step<3?<JourneyNext disabled={locked||step===1&&!hasInput||step===2&&!reviewReady} onClick={()=>go(step+1)}/>:submitButton}</>;
-  const Wrapper=compose?Journey:PlainSubmission;
-  return <form aria-label={delivery ? 'Delivery form' : 'Proposal form'} className={compose?"min-w-0":"min-w-0 rounded-surface border border-border bg-surface p-5 sm:p-6 space-y-4"} onSubmit={async e => { e.preventDefault(); if ((compose&&step!==3)||!files.length || submitting.current || uploading || preparing) return; submitting.current = true; setPending(true); setError(''); try { const result = await operation<Collaboration>(compose ? `/api/offers/${item.id}/conversations` : `/api/collaborations/${item.id}`, compose ? 'POST' : 'PATCH', { ...(compose ? {introduction} : {}), action: delivery ? 'deliver' : 'submit', revision: item.revision, offerRevision: item.currentOffer.revision, acceptTerms: ack, text: description, mediaId: files[0].id, mediaIds: files.map(file => file.id), publicationId, remixDraftId, ...(compose&&!usableRemix&&preparation.contribution?{preparation}: {}) }); sent.current=true; setFiles([]); setDescription(''); setPublicationId(null); setRemixDraftId(null); setInterrupted(false); setIntroduction(''); setPending(false); allowRedirect(); await onDone(result); } catch (error) { setError((error as Error).message); if ((error as { status?: number }).status === 409) { setAck(false); await onDone(); } } finally { submitting.current = false; setPending(false); } }}>
+  async function submitWork() {
+    if (step!==3 || !files.length || submitting.current || uploading || preparing) return false;
+    submitting.current=true; setPending(true); setError('');
+    try { const result = await operation<Collaboration>(compose ? `/api/offers/${item.id}/conversations` : `/api/collaborations/${item.id}`, compose ? 'POST' : 'PATCH', { ...(compose ? {introduction} : {}), action: delivery ? 'deliver' : 'submit', revision: item.revision, offerRevision: item.currentOffer.revision, acceptTerms: ack, text: description, mediaId: files[0].id, mediaIds: files.map(file => file.id), publicationId, remixDraftId, ...(compose&&!usableRemix&&preparation.contribution?{preparation}: {}) }); if (!mounted.current) return false; resultToSend.current=result; return true; }
+    catch (cause) { setError((cause as Error).message); if ((cause as {status?:number}).status===409) {setAck(false);await onDone();} return false; }
+    finally { submitting.current=false; if (mounted.current) setPending(false); }
+  }
+  async function completeWork() {
+    const result=resultToSend.current; if (!result || !mounted.current) return;
+    sent.current=true; setFiles([]); setDescription(''); setPublicationId(null); setRemixDraftId(null); setInterrupted(false); setIntroduction(''); allowRedirect(); await onDone(result);
+  }
+  const submitButton=<MorphAdvanceButton ref={advance} buttonType="submit" onPendingChange={setAdvancing} onAttempt={submitWork} onAdvance={()=>void completeWork()} buttonClassName={primary} faceSize={72} disabled={pending || uploading || preparing || !files.length || files.some(file => ['audio','video'].includes(file.kind) && !ready[file.id]) || !description.trim() || (compose && !introduction.trim()) || (!delivery && (!ack || !item.currentOffer.available))}>{delivery ? 'Send delivery' : compose ? 'Send request' : 'Send proposal'}</MorphAdvanceButton>;
+  const footer=<>{step>0&&<JourneyBack disabled={locked} onClick={()=>go(step-1)}/>} {compose && <button type="button" className={button} disabled={locked} onClick={()=>void persistDraft(true)}>Save &amp; exit</button>}{step<3?<JourneyNext actionRef={advance} disabled={locked||step===1&&!hasInput||step===2&&!reviewReady} onClick={()=>go(step+1)}/>:submitButton}</>;
+  const Wrapper=Journey;
+  return <form noValidate aria-label={delivery ? 'Delivery form' : 'Proposal form'} className="min-w-0" onSubmit={event=>{event.preventDefault();if(!locked)advance.current?.run();}}>
     <Wrapper label="Collaboration" steps={[
       {title:'The opportunity',description:''},
       {title:'Your contribution',description:''},
       {title:'Preview your work',description:''},
       {title:'Review & send',description:''},
     ]} step={step} maxStep={maxStep} locked={locked} onStep={go} context={<JourneyContext cover={projectContext.data?.project.coverUrl} title={item.currentOffer.workTitle??item.currentOffer.projectTitle} artist={item.currentOffer.ownerName??'Project artist'}><p>{item.currentOffer.need} · <CompensationText value={item.currentOffer.compensation}/></p><Link href={songProjectHref(item.currentOffer.projectId,item.currentOffer.workId)}>View project</Link></JourneyContext>} footer={footer}>
-    <h2 hidden={compose} className="text-xl font-semibold">{delivery ? 'Deliver your work' : 'Submit your proposal'}</h2><p hidden={compose} className="text-xs text-muted">Save a private draft to continue later. Only sending shares your work with the artist.</p>{interrupted && !uploading && <p role="status" className="text-sm text-muted">The last upload did not finish. Completed files are kept below; select any missing files again.</p>}
-    {!delivery && <div hidden={compose&&step!==0&&step!==3}>{compose&&step===3?<details className="rounded-xl border border-border p-4"><summary className="min-h-11 cursor-pointer flex items-center gap-3 text-sm">Review terms · <CompensationText value={item.currentOffer.compensation}/></summary><Terms offer={item.currentOffer}/></details>:<Terms offer={item.currentOffer} />}{!item.currentOffer.available && <p role="status">This offer is no longer accepting proposals.</p>}</div>}
+    <h2 hidden className="text-xl font-semibold">{delivery ? 'Deliver your work' : 'Submit your proposal'}</h2><p hidden className="text-xs text-muted">Save a private draft to continue later. Only sending shares your work with the artist.</p>{interrupted && !uploading && <p role="status" className="text-sm text-muted">The last upload did not finish. Completed files are kept below; select any missing files again.</p>}
+    {!delivery && <div hidden={step!==0&&step!==3}>{compose&&step===3?<details className="rounded-xl border border-border p-4"><summary className="min-h-11 cursor-pointer flex items-center gap-3 text-sm">Review terms · <CompensationText value={item.currentOffer.compensation}/></summary><Terms offer={item.currentOffer}/></details>:<Terms offer={item.currentOffer} />}{!item.currentOffer.available && <p role="status">This offer is no longer accepting proposals.</p>}</div>}
     {compose && !usableRemix && <ProposalPreparation stage={step} method={journey.method==='file'?'file':'musical'} onMethod={method=>{pauseJourneyMedia();setJourney({method});}} offer={item.currentOffer} value={preparation} onChange={value=>{setPreparation(value);setSaveNotice('');}} result={files.find(file=>file.id===preparedResultId.current)} onBusy={setPreparing} onResult={file=>{const previous=preparedResultId.current;preparedResultId.current=file?.id??null;setFiles(current=>{const kept=current.filter(item=>item.id!==previous&&item.id!==file?.id);return file?[file,...kept]:kept;});setSaveNotice('');setAck(false);}}/>}
-    <div hidden={compose&&step!==3} className="guided-stage">
+    <div hidden={step!==3} className="guided-stage">
     {compose && <label className="block space-y-2">Introduction<textarea aria-label="Introduction" className={field} required maxLength={4000} rows={3} value={introduction} disabled={pending} onChange={e=>setIntroduction(e.target.value)}/></label>}
     <label className="block space-y-2">{delivery ? 'Delivery notes' : 'Your proposal'}<textarea aria-label={delivery ? 'Delivery notes' : 'Your proposal'} disabled={pending} className={field} rows={4} required maxLength={4000} value={description} onChange={e => setDescription(e.target.value)} /></label>
     </div>
-    <div hidden={compose&&!(step===1&&(journey.method==='file'||!!usableRemix)||step===3)} className="guided-stage">
+    <div hidden={!(step===1&&(journey.method==='file'||!!usableRemix)||step===3)} className="guided-stage">
     {usableRemix && <div className="min-w-0 rounded-surface border border-border bg-surface p-4 space-y-3"><p>Saved remix: {usableRemix.title}</p><p className="text-sm text-muted">Remix of {usableRemix.remix!.title} · {usableRemix.remix!.artistName}</p><button type="button" className={button} disabled={pending || uploading || (publicationId ?? remixDraftId) === usableRemix.id} onClick={() => { const attached = [usableRemix.media, ...files.filter(file => file.id !== usableRemix.media.id)]; if (attached.length > 10 || attached.reduce((sum, file) => sum + file.size, 0) > 250 * 1024 * 1024) { setError('Remove a file before adding the remix: up to 10 files / 250 MB.'); return; } setFiles(attached); setPublicationId(typeof usableRemix.id === 'number' ? usableRemix.id : null); setRemixDraftId(typeof usableRemix.id === 'string' ? usableRemix.id : null); setError(''); }}>Use saved remix</button>{(publicationId || remixDraftId) && <p className="text-sm text-accent">Remix selected. Review the terms and send your proposal.</p>}</div>}
     {(savedRemix.error || privateRemix.error) && <ErrorMessage error={savedRemix.error || privateRemix.error} />}
     <label className="block space-y-2">Work files (audio, video, PDF or ZIP)<input className={`${field} min-w-0`} type="file" multiple accept="audio/*,video/*,.pdf,.zip" disabled={pending || uploading || preparing} onChange={async e => {
@@ -255,27 +271,24 @@ function SubmissionForm({ item, onDone, compose = false, savedDraft }: { item: S
     <p className="text-xs text-muted">Up to 10 files / 250 MB per submission. Audio, video and ZIP: 100 MB each. PDF: 20 MB. ZIP archives are downloaded without extraction.</p>
     {uploading && <div><p role="status">Uploading {progress}%</p><button type="button" className={button} onClick={() => controller.current?.abort()}>Cancel upload</button></div>}
     </div>
-    <div hidden={compose&&step<2} className="guided-stage">
-    {files.map((file, index) => <div key={file.id} className="border border-border p-3 space-y-2"><details open={!compose||step===2} className="min-w-0"><summary hidden={!compose||step===2} className="min-h-11 flex items-center cursor-pointer text-sm break-words">Review attachment · {file.name??file.kind}</summary><WorkFile file={file} composition={file.id === usableRemix?.media.id ? usableRemix.remix?.composition : file.id === preparedResultId.current ? preparation.composition : undefined} onReady={value => setReady(current => current[file.id] === value ? current : { ...current, [file.id]: value })} /></details><button type="button" className="inline-flex min-h-11 items-center text-sm underline" disabled={pending || uploading || preparing} aria-label={`Remove ${file.name ?? file.kind}`} onClick={() => { setFiles(current => current.filter(item => item.id !== file.id)); if(preparedResultId.current===file.id)preparedResultId.current=null; if (index === 0) { setPublicationId(null); setRemixDraftId(null); } }}>Remove file</button></div>)}
+    <div hidden={step<2} className="guided-stage">
+    {files.map((file, index) => <div key={file.id} className="border border-border p-3 space-y-2"><details open={step===2} className="min-w-0"><summary hidden={step===2} className="min-h-11 flex items-center cursor-pointer text-sm break-words">Review attachment · {file.name??file.kind}</summary><WorkFile file={file} composition={file.id === usableRemix?.media.id ? usableRemix.remix?.composition : file.id === preparedResultId.current ? preparation.composition : undefined} onReady={value => setReady(current => current[file.id] === value ? current : { ...current, [file.id]: value })} /></details><button type="button" className="inline-flex min-h-11 items-center text-sm underline" disabled={pending || uploading || preparing} aria-label={`Remove ${file.name ?? file.kind}`} onClick={() => { setFiles(current => current.filter(item => item.id !== file.id)); if(preparedResultId.current===file.id)preparedResultId.current=null; if (index === 0) { setPublicationId(null); setRemixDraftId(null); } }}>Remove file</button></div>)}
     </div>
-    <div hidden={compose&&step!==3} className="guided-stage">
+    <div hidden={step!==3} className="guided-stage">
     {!delivery && <label className="flex min-h-11 gap-3 items-start py-2 text-sm"><input className="mt-1 h-5 w-5 shrink-0 accent-accent" disabled={pending || uploading || preparing} type="checkbox" checked={ack} onChange={e => setAck(e.target.checked)} />I reviewed the current deliverable, compensation and terms.</label>}
     <p className="text-xs text-muted">Only submitted work is shared with the artist.</p>
     </div>
     <ErrorMessage error={error}/>
     {compose&&<><p role="status" className="text-sm text-accent">{saveNotice}</p>{step===3&&<button type="button" className={button} disabled={locked} onClick={()=>void persistDraft()}>Save private draft</button>}</>}
-    {!compose&&submitButton}
     </Wrapper>
   </form>;
 }
-
-function PlainSubmission({children}:{children:ReactNode;[key:string]:unknown}) {return <>{children}</>;}
 
 function WorkFile({ file, onReady, composition }: { file: UploadedMedia; composition?:VideoComposition; onReady?: (ready: boolean) => void }) {
   const [failed, setFailed] = useState(false);
   const events = { onLoadedData: () => { setFailed(false); onReady?.(true); }, onError: () => { setFailed(true); onReady?.(false); } };
   return <div className="space-y-2 min-w-0"><p className="text-sm break-words">{file.name ?? `${file.kind} file`} · {(file.size / 1024 / 1024).toFixed(2)} MB</p>
-    {file.kind === 'video' ? <AdaptiveVideo composition={composition} aria-label={file.name ?? "Submitted video"} src={file.url} controls playsInline preload={onReady ? 'auto' : 'metadata'} className="max-h-80 w-full" {...events} /> : file.kind === 'audio' ? <audio src={file.url} controls preload={onReady ? 'auto' : 'metadata'} className="w-full" {...events} /> : null}
+    {file.kind === 'video' ? <AdaptiveVideo composition={composition} aria-label={file.name ?? "Submitted video"} src={file.url} controls playsInline preload={onReady ? 'auto' : 'metadata'} className="max-h-80 w-full" {...events} /> : file.kind === 'audio' ? <AntiqAudioPlayer key={file.id} src={file.url} label={file.name ?? "Work preview"} onPlayable={value=>{setFailed(false);onReady?.(value);}} onMediaError={()=>{setFailed(true);onReady?.(false);}}/> : null}
     {failed && <p role="alert" className="text-danger text-sm">This file cannot be played. Use MP3/WAV or MP4/WebM, or attach unsupported stems in a ZIP.</p>}
     <a className="inline-flex min-h-11 items-center underline text-sm break-words" href={`${file.url}?download=1`} download={file.name}>Download {file.name ?? 'file'}</a>
   </div>;

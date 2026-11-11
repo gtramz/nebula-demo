@@ -17,10 +17,10 @@ export function usePublication(id?: number, watch = false, refreshOnFocus = true
   const { user } = useAuth();
   return useQuery({ queryKey: ['publication', id, user ? `${user.role}:${user.artistId ?? user.investorId}` : null], queryFn: () => apiRequest<Publication>(`/api/publications/${id}`), enabled: isServerMode() && !!id, refetchOnWindowFocus: refreshOnFocus, refetchInterval: watch ? 15_000 : false });
 }
-export async function savePublication(data: PublicationInput, existing?: Publication) {
+export async function savePublication(data: PublicationInput, existing?: Publication, operationId?: string) {
   return apiRequest<Publication>(`/api/publications${existing ? `/${existing.id}` : ''}`, {
     method: existing ? 'PATCH' : 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...data, ...(existing ? { revision: existing.revision } : {}) }),
+    body: JSON.stringify({ ...data, ...(operationId ? { operationId } : {}), ...(existing ? { revision: existing.revision } : {}) }),
   });
 }
 export function uploadMedia(file: File, kind: UploadedMedia['kind'], progress: (value: number) => void, signal: AbortSignal, remixDraftId?: string): Promise<UploadedMedia> {

@@ -674,26 +674,32 @@ export async function createNebulaServer(options: { dataDir: string; publicDir: 
       }
       if ((url.pathname === '/api/publications' && req.method === 'POST') || (postMatch && req.method === 'PATCH')) {
         const owner = current(req, true).artistId!, input = await body(req);
-        const now = new Date().toISOString();
-        let postId: number;
-        if (postMatch) {
-          postId = Number(postMatch[1]);
-          const row = db.prepare('SELECT * FROM posts WHERE id=?').get(postId) as PostRow | undefined;
-          ensure(row && row.owner === owner, 'Publication not found.', 404);
-          ensure(input.revision === row.revision, 'This publication changed in another tab. Reload before saving.', 409);
-          const previous = JSON.parse(row.data);
-          const data: StoredPublication = publicationInput({...input,workId:Object.hasOwn(input,'workId')?input.workId:previous.workId}, owner) as StoredPublication;
-          ensure(!previous.remix || data.status !== 'published' || previous.status === 'published', 'Public release of remixes is deferred. Keep this remix private.', 409);
-          data.remix = remixStore.validate(input.remix, data, previous);
-          db.prepare('UPDATE posts SET data=?,revision=revision+1,updated=? WHERE id=?').run(JSON.stringify(data), now, postId);
-        } else {
-          rateLimit(req, 'publish', 100, 3600, String(owner));
-          const data: StoredPublication = publicationInput(input, owner) as StoredPublication;
-          ensure(input.remix == null, 'Create a private remix draft in Remix studio.', 409);
-          data.remix = null;
-          postId = Number(db.prepare('INSERT INTO posts(owner,data,created,updated) VALUES(?,?,?,?)').run(owner, JSON.stringify(data), now, now).lastInsertRowid);
-        }
-        json(res, postDto(db.prepare('SELECT * FROM posts WHERE id=?').get(postId) as PostRow, owner), postMatch ? 200 : 201); return;
+        const write = () => {
+          const now = new Date().toISOString();
+          let postId: number;
+          if (postMatch) {
+            postId = Number(postMatch[1]);
+            const row = db.prepare('SELECT * FROM posts WHERE id=?').get(postId) as PostRow | undefined;
+            ensure(row && row.owner === owner, 'Publication not found.', 404);
+            ensure(input.revision === row.revision, 'This publication changed in another tab. Reload before saving.', 409);
+            const previous = JSON.parse(row.data);
+            const data: StoredPublication = publicationInput({...input,workId:Object.hasOwn(input,'workId')?input.workId:previous.workId}, owner) as StoredPublication;
+            ensure(!previous.remix || data.status !== 'published' || previous.status === 'published', 'Public release of remixes is deferred. Keep this remix private.', 409);
+            data.remix = remixStore.validate(input.remix, data, previous);
+            db.prepare('UPDATE posts SET data=?,revision=revision+1,updated=? WHERE id=?').run(JSON.stringify(data), now, postId);
+          } else {
+            rateLimit(req, 'publish', 100, 3600, String(owner));
+            const data: StoredPublication = publicationInput(input, owner) as StoredPublication;
+            ensure(input.remix == null, 'Create a private remix draft in Remix studio.', 409);
+            data.remix = null;
+            postId = Number(db.prepare('INSERT INTO posts(owner,data,created,updated) VALUES(?,?,?,?)').run(owner, JSON.stringify(data), now, now).lastInsertRowid);
+          }
+          return postId;
+        };
+        const postId = input.operationId === undefined ? transaction(db, write) : transaction(db, () => songStore.operation(owner, input.operationId, `publication:${url.pathname}`, input, write));
+        const saved = db.prepare('SELECT * FROM posts WHERE id=? AND owner=?').get(postId, owner) as PostRow | undefined;
+        ensure(saved, 'Publication not found.', 404);
+        json(res, postDto(saved, owner), postMatch ? 200 : 201); return;
       }
       if (url.pathname.startsWith('/api/') || url.pathname.startsWith('/media/')) throw new HttpError(404, 'Not found.');
       ensure(['GET', 'HEAD'].includes(req.method ?? ''), 'Method not allowed.', 405);

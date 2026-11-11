@@ -1,8 +1,10 @@
+import { MorphAdvanceButton, type MorphAdvanceHandle } from '@/components/blob-face';
+import { useLeaveGuard } from '@/components/shell/navigation-guard';
 import { ReturnButton } from '@/components/antiq/workspace';
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useRegisterAccount } from "@nebula/local";
-import { Check, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Check, Eye, EyeOff } from "lucide-react";
 import { AntiqLogo } from "@/components/antiq-logo";
 
 type RegistrationStep = 1 | 2 | 3;
@@ -20,6 +22,10 @@ export default function Register() {
   const [attemptedNext, setAttemptedNext] = useState(false);
 
   const registerAccount = useRegisterAccount();
+  const advance = useRef<MorphAdvanceHandle>(null);
+  const [advancing,setAdvancing] = useState(false);
+  const busy = registerAccount.isPending || advancing;
+  const allowDeparture = useLeaveGuard(busy || name || email || password || confirmPassword ? 'Leave without finishing your account?' : null);
 
   const passwordChecks = useMemo(() => [
     { label: "8 or more characters", valid: password.length >= 8 },
@@ -31,31 +37,9 @@ export default function Register() {
   const isPasswordValid = password.length >= 8 && password.length <= 128;
   const isConfirmationValid = password === confirmPassword && confirmPassword.length > 0;
 
-  const handleRegister = (e: FormEvent) => {
-    e.preventDefault();
-    if (!isPasswordValid || !isConfirmationValid) {
-      setAttemptedNext(true);
-      return;
-    }
-    if (role === "none") return;
-    registerAccount.mutate({ data: { name, email, password, role } }, {
-      onSuccess: () => {
-        setLocation(role === "artist" ? "/onboarding" : "/explore");
-      }
-    });
-  };
-
-  const handleNext = (e: FormEvent) => {
-    e.preventDefault();
-    const valid = validateCurrentStep();
-    if (valid) {
-      advanceCurrentStep();
-    }
-  };
-
   const validateCurrentStep = () => {
     setAttemptedNext(true);
-    return step === 1 ? isNameValid : isEmailValid;
+    return step === 1 ? isNameValid : step === 2 ? isEmailValid : isNameValid && isEmailValid && isPasswordValid && isConfirmationValid;
   };
 
   const advanceCurrentStep = () => {
@@ -64,11 +48,11 @@ export default function Register() {
   };
 
   const handleBack = () => {
-    if (step === 1 && !registerAccount.isPending) {
+    if (step === 1 && !busy) {
       setRole("none");
       return;
     }
-    if (registerAccount.isPending) return;
+    if (busy) return;
     setAttemptedNext(false);
     setStep((current) => (current - 1) as RegistrationStep);
   };
@@ -115,7 +99,7 @@ export default function Register() {
 
   return (
     <div className="flex flex-1 flex-col items-center justify-center p-6 relative">
-      <ReturnButton className="absolute left-6 top-6 z-50" disabled={registerAccount.isPending} onClick={handleBack}>{step === 1 ? 'Choose account type' : 'Previous step'}</ReturnButton><Link href="/" aria-label="Nebula home" className="absolute right-6 top-6 z-50 flex min-h-11 min-w-11 items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"><AntiqLogo className="h-9 w-6" imageScaleClass="h-[272%] w-auto" /></Link>
+      <ReturnButton className="absolute left-6 top-6 z-50" disabled={busy} onClick={handleBack}>{step === 1 ? 'Choose account type' : 'Previous step'}</ReturnButton><Link href="/" aria-label="Nebula home" className="absolute right-6 top-6 z-50 flex min-h-11 min-w-11 items-center justify-center focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"><AntiqLogo className="h-9 w-6" imageScaleClass="h-[272%] w-auto" /></Link>
 
       <div className="flex w-full max-w-md flex-col gap-8">
         <div className="space-y-5">
@@ -135,10 +119,10 @@ export default function Register() {
         </div>
 
         <form
-          onSubmit={step === 3 ? handleRegister : handleNext}
+          noValidate onSubmit={event => { event.preventDefault(); if (!busy) advance.current?.run(); }}
           className="flex flex-col gap-8"
         >
-          <div key={step} className="animate-[expand-in_220ms_ease-out]">
+          <fieldset key={step} disabled={busy} className="animate-[expand-in_220ms_ease-out] min-w-0">
             {step === 1 && (
               <div className="space-y-7">
                 <div className="space-y-2">
@@ -154,6 +138,7 @@ export default function Register() {
                     autoFocus
                     type="text"
                     maxLength={120}
+                    aria-label="full name"
                     placeholder="your name"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -184,6 +169,7 @@ export default function Register() {
                   <input
                     autoFocus
                     type="text"
+                    aria-label="email address"
                     inputMode="email"
                     autoComplete="email"
                     maxLength={254}
@@ -282,39 +268,26 @@ export default function Register() {
                 </div>
               </div>
             )}
-          </div>
+          </fieldset>
 
           <div className="flex items-center gap-3">
             {step > 1 && (
               <button
                 type="button"
                 onClick={handleBack}
-                disabled={registerAccount.isPending}
+                disabled={busy}
                 className="border border-white/15 px-5 py-4 text-xs text-muted transition-colors hover:border-white/40 hover:text-ink"
               >
                 back
               </button>
             )}
-            {step < 3 ? (
-              <button type="submit" className="flex flex-1 items-center justify-center gap-2 bg-cream px-5 py-4 text-xs font-bold text-bg transition-colors hover:bg-white">
-                continue
-              </button>
-            ) : (
-              <button
-                type="submit"
-                disabled={registerAccount.isPending}
-                className="flex flex-1 items-center justify-center gap-2 bg-cream px-5 py-4 text-xs font-bold text-bg transition-colors hover:bg-white disabled:cursor-wait disabled:opacity-50"
-              >
-                {registerAccount.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-                {registerAccount.isPending ? "creating account" : "create account"}
-              </button>
-            )}
+            <MorphAdvanceButton ref={advance} buttonType="submit" disabled={registerAccount.isPending} onPendingChange={setAdvancing} onBeforeAdvance={validateCurrentStep} onAttempt={async () => { if (step === 3) await registerAccount.mutateAsync({data:{name,email,password,role}}); }} onAdvance={() => { if (step < 3) advanceCurrentStep(); else { allowDeparture(); setLocation(role === 'artist' ? '/onboarding' : '/explore'); } }} className="flex-1" buttonClassName="w-full bg-accent px-5 py-4 text-sm font-semibold text-bg rounded-full" faceSize={72}>{step < 3 ? 'continue' : 'create account'}</MorphAdvanceButton>
           </div>
 
 
 
           {registerAccount.isError && (
-            <p className="text-center text-sm font-medium text-danger">
+            <p role="alert" className="text-center text-sm font-medium text-danger">
               {registerAccount.error?.message ?? "This profile could not be created."}
             </p>
           )}

@@ -1,3 +1,4 @@
+import { AntiqAudioPlayer } from '@/components/antiq-audio-player';
 import { Journey, JourneyContext, JourneyBack, JourneyNext, useJourney, pauseJourneyMedia } from '@/components/guided/journey';
 import { ContributionRecorder } from '@/features/collaborations/contribution-recorder';
 import { AdaptiveVideo } from './adaptive-video';
@@ -101,29 +102,30 @@ export function Studio({ original, draft, onDrafts }: { original: Publication; d
     finally { if (alive.current && controller.current === abort) { setBusy(false); setProgress(''); } }
   }
   async function save(exit=false) {
-    if (!valid || !title.trim() || busy || recording || saving.current) return; saving.current=true; setBusy(true); setError(''); player.current?.pause(); base.current?.pause(); const abort = new AbortController(); controller.current = abort;
+    if (!valid || !title.trim() || busy || recording || saving.current) return false; saving.current=true; setBusy(true); setError(''); player.current?.pause(); base.current?.pause(); const abort = new AbortController(); controller.current = abort;
     try {
       if (own && !contributionUpload.current) {
         if (!own.blob) throw new Error('Reopen the saved draft to restore your contribution.');
         const contribution = await uploadMedia(new File([own.blob], own.kind === 'audio' ? `${own.name.replace(/\.[^.]+$/, '')}.wav` : own.name, { type: own.blob.type }), own.kind, value => { if (alive.current && controller.current === abort) setProgress(`Saving contribution… ${value}%`); }, abort.signal, draft.id);
-        if (!alive.current || abort.signal.aborted || controller.current !== abort) return;
+        if (!alive.current || abort.signal.aborted || controller.current !== abort) return false;
         contributionUpload.current = contribution;
       }
       if (mix && playable && !uploaded.current) {
         const rendered = await uploadMedia(new File([mix], outputKind === 'audio' ? 'remix.wav' : mix.type.includes('mp4') ? 'remix.mp4' : 'remix.webm', { type: mix.type }), outputKind, value => { if (alive.current && controller.current === abort) setProgress(`Saving preview… ${value}%`); }, abort.signal, draft.id);
-        if (!alive.current || abort.signal.aborted || controller.current !== abort) return;
+        if (!alive.current || abort.signal.aborted || controller.current !== abort) return false;
         uploaded.current = rendered;
       }
-      if (!alive.current || abort.signal.aborted || controller.current !== abort) return;
+      if (!alive.current || abort.signal.aborted || controller.current !== abort) return false;
       const result = await saveDraft(draft.id, { revision: savedDraft.current.revision, title, description, settings,
         contributionId: contributionUpload.current?.id ?? null, contributionDuration: own?.duration ?? null,
         renderId: uploaded.current?.id ?? null }, abort.signal);
-      if (!alive.current || abort.signal.aborted || controller.current !== abort) return;
+      if (!alive.current || abort.signal.aborted || controller.current !== abort) return false;
       savedDraft.current = result; setSaved(true); setDirty(false); client.setQueryData(['remix-draft', draft.ownerId, draft.id], result);
       await client.invalidateQueries({ queryKey: ['remix-drafts'] });
       if(exit&&alive.current){allowDeparture();onDrafts();}
+      return true;
       // The workspace owns its edit state. Do not refetch/remount it while editing.
-    } catch (cause) { if (alive.current && controller.current === abort) setError((cause as Error).message); }
+    } catch (cause) { if (alive.current && controller.current === abort) setError((cause as Error).message); return false; }
     finally { saving.current=false; if (alive.current && controller.current === abort) { setBusy(false); setProgress(''); } }
   }
   const baseProps = { onLoadedMetadata: () => { if (base.current) base.current.currentTime = settings.startSeconds; }, controls: false, preload: 'metadata', className: 'w-full max-h-72 object-contain bg-black rounded-xl', src: original.media.url, onPlay: () => { player.current?.pause(); if (base.current && (base.current.currentTime < settings.startSeconds || base.current.currentTime >= settings.endSeconds)) base.current.currentTime = settings.startSeconds; }, onTimeUpdate: () => { if (base.current && base.current.currentTime >= settings.endSeconds) base.current.pause(); } };
@@ -139,7 +141,7 @@ export function Studio({ original, draft, onDrafts }: { original: Publication; d
   ];
   return <section className="mx-auto w-full max-w-6xl p-4 sm:p-8 pb-24 space-y-6">
     <header><h1 className="text-3xl font-bold">Remix studio</h1></header>
-    <Journey label="Remix" showStepLabel={false} steps={steps} step={step} maxStep={maxStep} locked={locked} onStep={go} context={<JourneyContext cover={original.coverUrl} title={original.title} artist={original.artistName}><p>Original stays credited</p><p>{duration.toFixed(1)}s fragment</p><Link className="inline-flex min-h-11 items-center text-sm text-muted underline-offset-4 hover:text-ink hover:underline" href={`/discovery?post=post-${original.id}`}>Open original</Link></JourneyContext>} footer={<>{step>0&&<JourneyBack disabled={locked} onClick={()=>go(step-1)}/>}<button type="button" className={button} disabled={locked||!valid||!title.trim()||(!!mix&&!playable)} onClick={()=>void save(true)}>Save &amp; exit</button>{step<3?<JourneyNext disabled={locked||!valid||step===1&&!own||step===2&&(!preview||!playable)} onClick={()=>go(step+1)}>Continue</JourneyNext>:<button type="button" className="guided-next" disabled={locked||!valid||!title.trim()||!preview||!playable} onClick={()=>void save()}>Save remix draft</button>}</>}>
+    <Journey label="Remix" showStepLabel={false} steps={steps} step={step} maxStep={maxStep} locked={locked} onStep={go} context={<JourneyContext cover={original.coverUrl} title={original.title} artist={original.artistName}><p>Original stays credited</p><p>{duration.toFixed(1)}s fragment</p><Link className="inline-flex min-h-11 items-center text-sm text-muted underline-offset-4 hover:text-ink hover:underline" href={`/discovery?post=post-${original.id}`}>Open original</Link></JourneyContext>} footer={<>{step>0&&<JourneyBack disabled={locked} onClick={()=>go(step-1)}/>}<button type="button" className={button} disabled={locked||!valid||!title.trim()||(!!mix&&!playable)} onClick={()=>void save(true)}>Save &amp; exit</button>{step<3?<JourneyNext disabled={locked||!valid||step===1&&!own||step===2&&(!preview||!playable)} onClick={()=>go(step+1)}>Continue</JourneyNext>:<JourneyNext disabled={locked||!valid||!title.trim()||!preview||!playable} onAttempt={()=>save()} onClick={()=>{}}>Save remix draft</JourneyNext>}</>}>
     <fieldset disabled={busy} className="space-y-6 disabled:opacity-60">
       <section hidden={step!==0} className="space-y-4">
         <h3 className="font-semibold">Choose the base fragment</h3>
@@ -168,7 +170,7 @@ export function Studio({ original, draft, onDrafts }: { original: Publication; d
       {own?.kind === 'video' && <VideoFraming source={original.media.url} sourceKind={sourceKind} contribution={own.url} startSeconds={settings.startSeconds} value={settings.composition} disabled={busy || !!recording} onChange={composition => { invalidate(); setSettings(current => ({ ...current, composition })); }} />}
       </section>
       <section hidden={step<2} aria-label="Remix preview" className="space-y-4"><h3 className="font-semibold">Preview your mix</h3>{own?.kind === 'video' && <p className="text-sm text-muted">Keep this tab visible while rendering.</p>}<button hidden={step!==2} type="button" className={button} disabled={locked || !valid || !own} onClick={() => void build()}>Build preview</button>
-        {preview && (outputKind === 'video' ? <AdaptiveVideo composition={settings.composition} aria-label="Remix preview" ref={element => { player.current = element; }} src={preview} controls playsInline preload="auto" className="mx-auto w-full max-h-[70dvh] object-contain bg-black rounded-xl" onPlay={() => base.current?.pause()} onLoadedData={() => setPlayable(true)} onError={() => { setPlayable(false); setError('Preview could not be played. Rebuild your mix.'); }} /> : <audio ref={element => { player.current = element; }} src={preview} controls preload="auto" className="w-full" onPlay={() => base.current?.pause()} onLoadedData={() => setPlayable(true)} onError={() => { setPlayable(false); setError('Preview could not be played. Rebuild your mix.'); }} />)}
+        {preview && (outputKind === 'video' ? <AdaptiveVideo composition={settings.composition} aria-label="Remix preview" ref={element => { player.current = element; }} src={preview} controls playsInline preload="auto" className="mx-auto w-full max-h-[70dvh] object-contain bg-black rounded-xl" onPlay={() => base.current?.pause()} onLoadedData={() => setPlayable(true)} onError={() => { setPlayable(false); setError('Preview could not be played. Rebuild your mix.'); }} /> : <AntiqAudioPlayer key={preview} ref={element => { player.current = element; }} src={preview} label="Remix preview" disabled={locked || step < 2} onPlayable={setPlayable} onMediaError={() => { setPlayable(false); setError('Preview could not be played. Rebuild your mix.'); }}/>)}
       </section>
       <div hidden={step!==3} className="guided-stage">
       {preview && own && <AudioComparison key={preview} duration={settings.endSeconds-settings.startSeconds} tracks={[{label:"Original",url:original.media.url,kind:sourceKind,offset:settings.startSeconds},...(settings.voiceOffset===0?[{label:"Contribution",url:own.url,kind:own.kind}]:[]),{label:"Your version",url:preview,kind:own.kind,composition:settings.composition}]} />}

@@ -1,3 +1,5 @@
+import { MorphAdvanceButton, type MorphAdvanceHandle } from '@/components/blob-face';
+import { AntiqAudioPlayer } from '@/components/antiq-audio-player';
 import { CreationFrame, useCreationSteps } from '@/components/guided/creation';
 import { JourneyBack, JourneyNext, JourneyContext, pauseJourneyMedia } from '@/components/guided/journey';
 import { SongSelector } from '@/features/songs';
@@ -66,7 +68,7 @@ export function PublicationEditor() {
   const { id } = useParams<{ id?: string }>();
   const query = usePublication(id ? Number(id) : undefined);
   const { user } = useAuth();
-  return <ArtistGate>{id && query.isLoading ? <PageSkeleton variant="form" label="Loading publication" rows={6}/> : query.error ? <ContentWidth className="py-10"><p role="alert">{query.error.message}</p></ContentWidth> : id && query.data?.artistId !== user?.artistId ? <ContentWidth className="py-10">Publication not found.</ContentWidth> : <PublicationForm key={`${user?.artistId}:${id ?? 'new'}`} existing={query.data} />}</ArtistGate>;
+  return <ArtistGate>{id && query.isLoading ? <PageSkeleton variant="form" label="Loading publication" rows={6}/> : query.error && !query.data ? <ContentWidth className="py-10"><p role="alert">{query.error.message}</p><button onClick={() => void query.refetch()}>Retry publication</button></ContentWidth> : id && query.data?.artistId !== user?.artistId ? <ContentWidth className="py-10">Publication not found.</ContentWidth> : <PublicationForm key={`${user?.artistId}:${id ?? 'new'}`} existing={query.data} />}</ArtistGate>;
 }
 
 function PublicationForm({ existing }: { existing?: Publication }) {
@@ -86,6 +88,9 @@ function PublicationForm({ existing }: { existing?: Publication }) {
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState('');
   const [playable, setPlayable] = useState(false);
+  const [advancing, setAdvancing] = useState(false);
+  const advance = useRef<MorphAdvanceHandle>(null), writing = useRef(false);
+  const operations = useRef(new Map<string, string>());
   const abort = useRef<AbortController | null>(null);
   const alive = useRef(true);
   const [dirty, setDirty] = useState(false);
@@ -93,10 +98,14 @@ function PublicationForm({ existing }: { existing?: Publication }) {
   const save = useMutation({ mutationFn: (status: PublicationInput['status']) => {
     if (!media) throw new Error('Upload audio or video first.');
     if (!title.trim()) throw new Error('Add a title.');
-    return savePublication({ title, description, mediaId: media.id, coverId: cover?.id ?? null, allowRemix, projectId: projectId ? Number(projectId) : null, workId, status }, existing);
+    const input = { title, description, mediaId: media.id, coverId: cover?.id ?? null, allowRemix, projectId: projectId ? Number(projectId) : null, workId, status };
+    const signature = JSON.stringify([existing?.id, existing?.revision, input]);
+    const operationId = operations.current.get(signature) ?? crypto.randomUUID();
+    operations.current.set(signature, operationId);
+    return savePublication(input, existing, operationId);
   }, onSuccess: async () => {
     setDirty(false);
-    await client.invalidateQueries({ queryKey: ['publications'] }); await client.invalidateQueries({ queryKey: ['publication'] }); await client.invalidateQueries({ queryKey: ['unused-uploads', user?.artistId] }); allowDeparture(); navigate('/studio');
+    await client.invalidateQueries({ queryKey: ['publications'] }); await client.invalidateQueries({ queryKey: ['publication'] }); await client.invalidateQueries({ queryKey: ['unused-uploads', user?.artistId] });
   } });
   async function selectFile(file: File | undefined, isCover: boolean) {
     if (!file) return;
@@ -113,30 +122,34 @@ function PublicationForm({ existing }: { existing?: Publication }) {
     } catch (cause) { if (alive.current) setError(cause instanceof Error ? cause.message : 'Upload failed.'); }
     finally { if (alive.current) setProgress(null); abort.current = null; }
   }
-  const busy = progress !== null || save.isPending;
+  const busy = progress !== null || save.isPending || advancing;
   const allowDeparture = useLeaveGuard(dirty || busy ? 'Leave without saving these changes? Completed uploads remain in your unused uploads; unfinished uploads will be cancelled.' : null);
-  function saveVersion(status: PublicationInput['status']) {
-    if (busy || !flow.validate()) return;
-    if (status === 'published' && (!playable || (!!existing?.remix && existing.status !== 'published'))) return;
-    save.mutate(status);
+  async function saveVersion(status: PublicationInput['status']) {
+    if (writing.current || progress !== null || save.isPending || !flow.validate()) return false;
+    if (status === 'published' && (!playable || (!!existing?.remix && existing.status !== 'published'))) return false;
+    writing.current = true;
+    try { await save.mutateAsync(status); return alive.current; }
+    finally { writing.current = false; }
   }
+  function complete() { if (alive.current) { allowDeparture(); navigate('/studio'); } }
+  function validateStep() { return flow.step === 0 ? !!media && playable : flow.validate(flow.step); }
   const selectedProject = projects.data?.find(project => String(project.id) === projectId);
   return <ContentWidth className="py-4 md:py-8 max-w-6xl space-y-4 md:space-y-6">
     <header><h1 className="text-2xl md:text-3xl font-bold">{existing ? 'Edit publication' : 'Share your sound'}</h1></header>
-    <form ref={flow.form} noValidate onSubmit={event => { event.preventDefault(); if (busy) return; if (flow.step < 3) { if (flow.step !== 0 || (media && playable)) flow.go(flow.step + 1); } else saveVersion('published'); }} onChange={() => setDirty(true)}>
+    <form ref={flow.form} noValidate onSubmit={event => { event.preventDefault(); if (!busy) advance.current?.run(); }} onChange={() => setDirty(true)}>
       <CreationFrame label="Publication" steps={['Media', 'Details', 'Project', 'Review']} flow={flow} locked={busy}
         context={<JourneyContext cover={cover?.url} title={title || 'New publication'} artist={media?.kind === 'video' ? 'Video' : media?.kind === 'audio' ? 'Audio' : 'Audio / Video'} />}
         footer={<>
           {flow.step > 0 ? <JourneyBack disabled={busy} onClick={() => flow.go(flow.step - 1)} /> : <button type="button" className="guided-back" disabled={save.isPending} onClick={() => { if (!dirty || window.confirm('Leave without saving these changes?')) { allowDeparture(); abort.current?.abort(); navigate('/studio'); } }}>Cancel</button>}
-          <button type="button" className="creation-save" disabled={busy || !media || !title.trim()} onClick={() => saveVersion(existing?.status === 'published' ? 'published' : 'draft')}>{save.isPending ? 'Saving…' : 'Save & exit'}</button>
-          {flow.step < 3 ? <JourneyNext disabled={busy || (flow.step === 0 && (!media || !playable))} onClick={() => flow.go(flow.step + 1)} /> : <button type="submit" className="guided-next" disabled={busy || !media || !playable || !title.trim() || (!!existing?.remix && existing.status !== 'published')}>{save.isPending ? 'Saving…' : existing?.status === 'published' ? 'Save changes' : 'Publish'}</button>}
+          <button type="button" className="creation-save" disabled={busy || !media || !title.trim()} onClick={() => { void saveVersion(existing?.status === 'published' ? 'published' : 'draft').then(saved => { if (saved) complete(); }).catch(() => {}); }}>{save.isPending ? 'Saving…' : 'Save & exit'}</button>
+          <MorphAdvanceButton ref={advance} buttonType="submit" onBeforeAdvance={validateStep} onPendingChange={setAdvancing} disabled={progress !== null || save.isPending || (flow.step === 0 && (!media || !playable)) || (flow.step === 3 && (!media || !playable || !title.trim() || (!!existing?.remix && existing.status !== 'published')))} onAttempt={() => flow.step === 3 ? saveVersion('published') : undefined} onError={cause => setError((cause as Error).message)} onAdvance={() => flow.step === 3 ? complete() : flow.go(flow.step + 1)} buttonClassName="guided-next" faceSize={72}>{flow.step < 3 ? 'Continue' : existing?.status === 'published' ? 'Save changes' : 'Publish'}</MorphAdvanceButton>
         </>}>
       <fieldset disabled={busy} className="space-y-6 disabled:opacity-60">
       <section data-creation-step="0" hidden={flow.step !== 0} className="space-y-6">
         {existing?.remix ? <p className="text-sm text-accent">Remix of {existing.remix.title} · {existing.remix.artistName}. The mix and its credit are fixed; start a new remix to change its media.</p> : <label className="block space-y-2"><span>Audio or video</span><input aria-label="Audio or video" type="file" accept="video/mp4,video/webm,audio/mpeg,audio/wav,audio/x-wav,audio/ogg" className={field} onChange={event => { void selectFile(event.target.files?.[0], false); event.target.value = ''; }} /><span className="block text-xs text-muted">MP4, WebM, MP3, WAV or OGG · up to 100 MB</span></label>}
       </section>
       <div hidden={flow.step !== 0 && flow.step !== 3}>
-        {media && <div className="creation-preview">{media.kind === 'video' ? <video key={media.id} src={media.url} controls playsInline preload="metadata" className="max-h-80 w-full" onLoadedData={() => setPlayable(true)} onError={() => { setPlayable(false); setError('This video cannot be played. Export it as MP4 with H.264/AAC or WebM and try again.'); }} /> : <audio key={media.id} src={media.url} controls preload="auto" className="w-full" onLoadedData={() => setPlayable(true)} onError={() => { setPlayable(false); setError('This audio cannot be played. Try another MP3, WAV or OGG file.'); }} />}</div>}
+        {media && <div className="creation-preview">{media.kind === 'video' ? <video key={media.id} src={media.url} controls playsInline preload="metadata" className="max-h-80 w-full" onLoadedData={() => setPlayable(true)} onError={() => { setPlayable(false); setError('This video cannot be played. Export it as MP4 with H.264/AAC or WebM and try again.'); }} /> : <AntiqAudioPlayer key={media.id} src={media.url} label="Publication preview" disabled={busy || (flow.step !== 0 && flow.step !== 3)} onPlayable={setPlayable} onMediaError={() => setError('This audio cannot be played. Try another MP3, WAV or OGG file.')} />}</div>}
       </div>
       <section data-creation-step="1" hidden={flow.step !== 1} className="space-y-6">
         <label className="block space-y-2"><span>Title</span><input className={field} value={title} onChange={event => setTitle(event.target.value)} maxLength={160} required /></label>

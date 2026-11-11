@@ -1,3 +1,6 @@
+import { MorphAdvanceButton, type MorphAdvanceHandle } from '@/components/blob-face';
+import { CreationFrame, useCreationSteps } from '@/components/guided/creation';
+import { JourneyBack } from '@/components/guided/journey';
 import { SectionSkeleton } from '@/components/loading-states';
 import { useEffect, useRef, useState } from 'react';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -35,21 +38,28 @@ export function SongFields({value,onChange,disabled=false,references={}}:{value:
 export function SongManager({projectId,status,onStateChange}:{projectId:number;status:string;onStateChange?:(state:{dirty:boolean;busy:boolean})=>void}) {
   const query=useSongs(projectId),client=useQueryClient();
   const [draft,setDraft]=useState<{revision:number;songs:SongEntry[]}|null>(null),[error,setError]=useState(''),[pending,setPending]=useState(false);
-  const operation=useRef({key:'',id:''});
+  const operation=useRef({key:'',id:''}), advance=useRef<MorphAdvanceHandle>(null);
+  const flow=useCreationSteps(), [advancing,setAdvancing]=useState(false);
   useLeaveGuard(draft?'Leave without saving your song list?':null);
-  useEffect(()=>{onStateChange?.({dirty:!!draft,busy:pending});},[draft,pending,onStateChange]);
+  useEffect(()=>{onStateChange?.({dirty:!!draft,busy:pending||advancing});},[draft,pending,advancing,onStateChange]);
   if(query.isPending)return <SectionSkeleton variant="form" label="Loading song list editor" rows={3}/>;
-  if(query.error)return <p role="alert">{query.error.message} <button type="button" onClick={()=>void query.refetch()}>Retry songs</button></p>;
+  if(query.error&&!query.data)return <p role="alert">{query.error.message} <button type="button" onClick={()=>void query.refetch()}>Retry songs</button></p>;
   const current=query.data!,rows=draft?.songs??current.songs.map(s=>({workId:s.id,revision:s.revision,title:s.title,description:s.description}));
-  return <form className="space-y-4 border-t border-border pt-6" aria-label="Song list editor" onSubmit={async e=>{
-    e.preventDefault();if(!draft||pending)return;setPending(true);setError('');
+  async function persist() {
+    if(!draft||pending)return false;setPending(true);setError('');
     const key=JSON.stringify(draft);if(operation.current.key!==key)operation.current={key,id:crypto.randomUUID()};
-    try {await apiRequest(`/api/projects/${projectId}/songs`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({...draft,operationId:operation.current.id})});setDraft(null);await Promise.all(['project-songs','my-songs','offers','publication','publications','discovery-feed','opportunity-projects'].map(key=>client.invalidateQueries({queryKey:[key]})));}catch(e){setError((e as Error).message);}finally{setPending(false);}
-  }}>
-    <p className="text-sm text-muted">{status==='draft'?'These songs are private while the project is a draft.':'Song titles and descriptions saved here are visible with this public project.'} Song-list changes save separately from project details.</p>
-    <SongFields value={rows} disabled={pending} references={Object.fromEntries(current.songs.map(s=>[s.id,s.references]))} onChange={songs=>setDraft({revision:draft?.revision??current.revision,songs})}/>
-    {error&&<p role="alert">{error}</p>}
-    <div className="flex flex-wrap gap-2"><button type="submit" className={primary} disabled={pending||!draft}>{pending?'Saving songs…':'Save songs'}</button><button type="button" className={button} disabled={pending} onClick={()=>{if(!draft||confirm('Discard your song-list draft and reload current songs?')){setDraft(null);setError('');void query.refetch();}}}>Reload songs</button></div>
+    try {await apiRequest(`/api/projects/${projectId}/songs`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({...draft,operationId:operation.current.id})});await Promise.all(['project-songs','my-songs','offers','publication','publications','discovery-feed','opportunity-projects'].map(key=>client.invalidateQueries({queryKey:[key]})));return true;}catch(e){setError((e as Error).message);return false;}finally{setPending(false);}
+  }
+  return <form ref={flow.form} noValidate className="song-list-editor space-y-4 border-t border-border pt-6" aria-label="Song list editor" onSubmit={event=>{event.preventDefault();if(!pending&&!advancing)advance.current?.run();}}>
+    <CreationFrame label="Song list" steps={['Songs','Review']} flow={flow} locked={pending||advancing} context={<p className="text-sm text-muted">{status==='draft'?'These songs are private while the project is a draft.':'Saved titles and descriptions are public.'} Song-list changes save separately from project details.</p>} footer={<>
+      {flow.step>0&&<JourneyBack disabled={pending||advancing} onClick={()=>flow.go(0)}/>}
+      <button type="button" className={button} disabled={pending||advancing} onClick={()=>{if(!draft||confirm('Discard your song-list draft and reload current songs?')){setDraft(null);setError('');flow.reveal(0);void query.refetch();}}}>Reload songs</button>
+      <MorphAdvanceButton ref={advance} buttonType="submit" disabled={pending||!draft} onPendingChange={setAdvancing} onBeforeAdvance={()=>flow.validate()} onAttempt={()=>flow.step===1?persist():undefined} onAdvance={()=>{if(flow.step===0)flow.go(1);else{setDraft(null);flow.reveal(0);}}} buttonClassName="guided-next" faceSize={72}>{flow.step===0?'Review songs':'Save songs'}</MorphAdvanceButton>
+    </>}>
+      <section data-creation-step="0" hidden={flow.step!==0}><SongFields value={rows} disabled={pending||advancing} references={Object.fromEntries(current.songs.map(s=>[s.id,s.references]))} onChange={songs=>setDraft({revision:draft?.revision??current.revision,songs})}/></section>
+      <section hidden={flow.step!==1} className="creation-summary"><h3>{rows.length} songs</h3><ol>{rows.map((song,index)=><li key={song.workId??index}><strong>{index+1}. {song.title}</strong><p className="text-sm text-muted">{song.description}</p></li>)}</ol></section>
+      {error&&<p role="alert">{error}</p>}
+    </CreationFrame>
   </form>;
 }
 export function ProjectSongs({projectId,category,status,renderOffers,renderRecording}:{projectId:number;category:string;status:string;renderRecording?:(song:Song)=>React.ReactNode;renderOffers:(id:number)=>React.ReactNode}) {

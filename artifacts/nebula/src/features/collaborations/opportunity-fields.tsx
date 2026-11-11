@@ -1,3 +1,4 @@
+import { AntiqAudioPlayer } from '@/components/antiq-audio-player';
 import { useEffect, useState } from 'react';
 import type { OfferInput } from '@nebula/local';
 import { controlStyles } from '@/components/antiq/workspace';
@@ -29,7 +30,7 @@ export function OpportunityFields({value,onChange,projectId,onBusy,section}:{val
    {posts.hasNextPage&&<button type="button" className="underline min-h-11" onClick={()=>void posts.fetchNextPage()}>Load more recordings</button>}
    <label className="block space-y-2">Upload reference audio or video<input type="file" accept="audio/*,video/*" className={field} onChange={async e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;setBusy(true);onBusy?.(true);setError('');try{const media=await uploadMedia(file,file.type.startsWith('video/')?'video':'audio',()=>{},new AbortController().signal);setUploadedKind(media.kind as 'audio'|'video');setValue({...value,referenceMediaId:media.id});}catch(failure){setError((failure as Error).message);}finally{setBusy(false);onBusy?.(false);}}}/></label>
    {busy&&<p role="status">Uploading reference…</p>}{error&&<p role="alert">{error}</p>}
-   {value.referenceMediaId&&((choices.find(p=>p.media.id===value.referenceMediaId)?.media.kind??uploadedKind)==='video'?<video controls playsInline src={`/media/${value.referenceMediaId}`} aria-label="Opportunity reference" className="w-full max-h-64 object-contain"/>:<audio controls preload="metadata" src={`/media/${value.referenceMediaId}`} aria-label="Opportunity reference" className="w-full"/>)}
+   {value.referenceMediaId&&((choices.find(p=>p.media.id===value.referenceMediaId)?.media.kind??uploadedKind)==='video'?<video controls playsInline src={`/media/${value.referenceMediaId}`} aria-label="Opportunity reference" className="w-full max-h-64 object-contain"/>:<AntiqAudioPlayer key={value.referenceMediaId} src={`/media/${value.referenceMediaId}`} label="Opportunity reference"/>)}
    <p className="text-xs text-muted">Choose the exact recording for this opportunity. The reference becomes accessible with the published project; drafts stay private.</p>
   </>}
  </fieldset>;

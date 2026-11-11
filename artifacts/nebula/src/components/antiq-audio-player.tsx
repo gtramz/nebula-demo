@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import './antiq-audio-player.css';
 
 const clock = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
-type Props = { src: string; label: string; downloadName?: string; disabled?: boolean; errorMessage?: string };
+type Props = { src: string; label: string; onPlayable?: (ready: boolean) => void; onMediaError?: () => void; downloadName?: string; disabled?: boolean; errorMessage?: string };
 
 function PlayerVolume({ label, volume, muted, disabled, onMute, onVolume }: { label: string; volume: number; muted: boolean; disabled: boolean; onMute: () => void; onVolume: (value: number) => void }) {
   const group = useRef<HTMLDivElement>(null), id = useId();
@@ -38,7 +38,8 @@ function PlayerVolume({ label, volume, muted, disabled, onMute, onVolume }: { la
 }
 
 /** One real audio element; the transport and canonical face follow its playback events. */
-export const AntiqAudioPlayer = forwardRef<HTMLAudioElement, Props>(function AntiqAudioPlayer({ src, label, downloadName, disabled = false, errorMessage = 'This audio could not load. Try again.' }, forwardedRef) {
+export const AntiqAudioPlayer = forwardRef<HTMLAudioElement, Props>(function AntiqAudioPlayer({ src, label, downloadName, onPlayable, onMediaError, disabled = false, errorMessage = 'This audio could not load. Try again.' }, forwardedRef) {
+  const callbacks = useRef({ onPlayable, onMediaError }); callbacks.current = { onPlayable, onMediaError };
   const media = useRef<HTMLAudioElement | null>(null), playButton = useRef<HTMLButtonElement>(null), mounted = useRef(true), attempt = useRef(0), wanted = useRef(false);
   const notificationsOpen = useNotificationsOpen(), reduced = useReducedMotion(), blocked = disabled || notificationsOpen;
   const blockedRef = useRef(blocked); blockedRef.current = blocked;
@@ -62,7 +63,7 @@ export const AntiqAudioPlayer = forwardRef<HTMLAudioElement, Props>(function Ant
     return () => { mounted.current = false; ++attempt.current; wanted.current = false; element?.pause(); document.removeEventListener('visibilitychange', hide); };
   }, []);
   useEffect(() => {
-    pause(); setPosition(0); setDuration(Number.isFinite(media.current?.duration) ? media.current!.duration : 0); setError(''); setFailed(false); setOptionsOpen(false);
+    pause(); callbacks.current.onPlayable?.(false); setLoading(true); setPosition(0); setDuration(Number.isFinite(media.current?.duration) ? media.current!.duration : 0); setError(''); setFailed(false); setOptionsOpen(false);
   }, [src]);
   useEffect(() => { if (blocked) { pause(); setOptionsOpen(false); } }, [blocked]);
   useEffect(() => {
@@ -122,12 +123,12 @@ export const AntiqAudioPlayer = forwardRef<HTMLAudioElement, Props>(function Ant
     </div>
     <div className="antiq-audio-status" data-visible={!!error}>{error ? <div role="alert"><span>{error}</span><button type="button" disabled={blocked} onClick={retry} aria-label={`Retry ${label}`}>Try again</button></div> : <span role="status" className="sr-only">{status || (sounding ? `Playing ${label}` : '')}</span>}</div>
     <audio ref={assign} className="antiq-audio-source" src={src} preload="auto" aria-label={label} data-playback-allowed={!blocked}
-      onLoadStart={() => { setLoading(true); setDuration(0); setPosition(0); }} onLoadedMetadata={() => { readDuration(); setLoading(false); }} onDurationChange={readDuration}
+      onLoadStart={() => { callbacks.current.onPlayable?.(false); setLoading(true); setDuration(0); setPosition(0); }} onLoadedMetadata={readDuration} onDurationChange={readDuration}
       onPlay={event => { const element = event.currentTarget; if (blockedRef.current || document.hidden || element.paused) { element.pause(); return; } document.querySelectorAll<HTMLMediaElement>('audio,video').forEach(other => { if (other !== element && !other.paused) other.pause(); }); setPlaying(true); }}
       onPlaying={event => { if (blockedRef.current || document.hidden || event.currentTarget.paused) { event.currentTarget.pause(); return; } setPlaying(true); setPending(false); setBuffering(false); setLoading(false); }}
       onPause={event => { if (mounted.current && event.currentTarget.paused) { ++attempt.current; wanted.current = false; setPlaying(false); setPending(false); setBuffering(false); } }} onEnded={event => { if (event.currentTarget.ended) pause(); }}
-      onWaiting={event => { if (!event.currentTarget.paused) setBuffering(true); }} onCanPlay={() => { setLoading(false); setBuffering(false); }}
+      onWaiting={event => { if (!event.currentTarget.paused) setBuffering(true); }} onCanPlay={event => { if (event.currentTarget !== media.current || event.currentTarget.readyState < 3) return; callbacks.current.onPlayable?.(true); setLoading(false); setBuffering(false); }}
       onTimeUpdate={event => setPosition(event.currentTarget.currentTime)} onVolumeChange={event => { setVolume(event.currentTarget.volume); setMuted(event.currentTarget.muted); }} onRateChange={event => setRate(event.currentTarget.playbackRate)}
-      onError={() => { if (mounted.current) { ++attempt.current; wanted.current = false; setPlaying(false); setPending(false); setLoading(false); setBuffering(false); setFailed(true); setError(errorMessage); } }} />
+      onError={() => { if (mounted.current) { callbacks.current.onPlayable?.(false); callbacks.current.onMediaError?.(); ++attempt.current; wanted.current = false; setPlaying(false); setPending(false); setLoading(false); setBuffering(false); setFailed(true); setError(errorMessage); } }} />
   </section>;
 });
