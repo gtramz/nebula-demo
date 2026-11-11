@@ -15,6 +15,7 @@ import { useAuth } from '@/context/AuthContext';
 import { DEMO_POSTS, formatDemoUSD, type DemoPost, type DemoProject } from '@/features/discovery/demo-posts';
 import '@/features/discovery/discovery.css';
 import '@/features/discovery/desktop.css';
+import '@/features/discovery/audio-card.css';
 import { useNotificationsOpen } from '@/features/notifications';
 import { useCoproducerOpen } from '@/features/coproducer';
 import { useNextMediaPreparation, type FeedPlaybackState } from '@/features/discovery/feed-preparation';
@@ -40,8 +41,8 @@ function Action({ label, icon, onClick, pressed, detail, disabled }: {
   </button>;
 }
 
-function DiscoveryPostInfo({ children }: { children: ReactNode }) {
-  return <div className="discovery-post-info">{children}</div>;
+function DiscoveryPostInfo({ children, audio = false }: { children: ReactNode; audio?: boolean }) {
+  return <div className={`discovery-post-info${audio ? ' discovery-audio-copy' : ''}`}>{children}</div>;
 }
 function DiscoveryActionRail({ title, children, artwork }: { title: string; children: ReactNode; artwork?: ReactNode }) {
   return <div className="discovery-action-rail"><div className="discovery-actions" aria-label={`Actions for ${title}`}>{children}</div>{artwork}</div>;
@@ -248,16 +249,20 @@ export default function Discovery({ posts = DEMO_POSTS, live = false, onLoadMore
           const remixDisabled = !!remixReason;
           const mobileSplit = isMobile && live && post.media.kind === 'video' && isSplitVideo(post.composition) && !!post.original;
           const completed = presentation.data?.pairs.find(p=>`post-${p.sourceId}`===post.id && p.resultId);
+          const audioPost = post.media.kind === 'audio';
+          const projectInfo = post.project && (audioPost ? <button className="discovery-audio-project" onClick={() => showPanel('project', post)} aria-label={`${post.project.title} · view project`}>
+            <span>{post.project.offers.length > 0 ? <small>Seeking collaborators</small> : null}<strong>{post.project.title}</strong></span><span>View project <ArrowUpRight size={17}/></span>
+          </button> : <button className="discovery-project-link" onClick={() => showPanel('project', post)}><span>{post.project.offers.length > 0 && <small>seeking collaborators</small>}<strong>{post.project.title}</strong></span><span>view project</span></button>);
           return <article ref={element => { cards.current[index] = element; }} key={post.id} data-index={index} data-active={index === activeIndex} aria-label={`${post.title} by ${post.author}`} className={`discovery-post discovery-tone-${post.tone}`} inert={index !== activeIndex}>
 
-            <DiscoveryMedia desktopControls={!isMobile} key={post.media.src} post={post} active={index === activeIndex} nearby={index === activeIndex || index === activeIndex + 1} blocked={introPending || workspaceOverlayOpen || blocksPreparation || refreshing} prepare={index === activeIndex || (prepareNext && index === activeIndex + 1)} playbackState={playbackState} onReady={() => { if (index === activeIndexRef.current) { setReadyMedia(mediaKey); onInitialReady?.(); } }} waveformAccess={live} info={
-              <DiscoveryPostInfo>
+            <DiscoveryMedia desktopControls={!isMobile} key={post.media.src} post={post} active={index === activeIndex} nearby={index === activeIndex || index === activeIndex + 1} blocked={introPending || workspaceOverlayOpen || blocksPreparation || refreshing} prepare={index === activeIndex || (prepareNext && index === activeIndex + 1)} playbackState={playbackState} onReady={() => { if (index === activeIndexRef.current) { setReadyMedia(mediaKey); onInitialReady?.(); } }} waveformAccess={live} projectInfo={audioPost ? projectInfo : undefined} info={
+              <DiscoveryPostInfo audio={audioPost}>
                 <h2 title={post.title}>{post.title}</h2>
-                <button className="discovery-caption" onClick={() => showPanel('description', post)} aria-label={`Read description of ${post.title}`}>{post.description}</button>
+                {audioPost ? <div className="discovery-audio-byline">{post.artistId ? <Link href={`/artist/${post.artistId}`} title={post.author}>{post.author}</Link> : <span>{post.author}</span>}<button onClick={() => showPanel('description', post)} aria-label={`Read description of ${post.title}`}>Detalles</button></div> : <button className="discovery-caption" onClick={() => showPanel('description', post)} aria-label={`Read description of ${post.title}`}>{post.description}</button>}
                 {!mobileSplit && post.original && (live ? post.original.available ? <Link className="discovery-attribution" href={`/discovery?post=${post.original.postId}`}><GitBranch size={13} />Remix of {post.original.title} · {post.original.author}<ArrowUpRight size={13} /></Link> : <p className="discovery-attribution">Remix of {post.original.title} · {post.original.author} · original unavailable</p> : <button className="discovery-attribution" onClick={() => { moveTo(posts.findIndex(item => item.id === post.original?.postId)); feed.current?.focus({ preventScroll: true }); }}><GitBranch size={13} />Remix of {post.original.title} · {post.original.author}<ArrowUpRight size={13} /></button>)}
                 {completed && <Link className="discovery-attribution min-h-11" href={`/discovery?post=post-${completed.resultId}`}>Hear the collaboration <ArrowUpRight size={13}/></Link>}
                 {!mobileSplit && live && post.original?.available && <button className="discovery-attribution min-h-11" onClick={() => showPanel('compare', post)}>Compare versions <ArrowUpRight size={13}/></button>}
-                {post.project && <button className="discovery-project-link" onClick={() => showPanel('project', post)}><span>{post.project.offers.length > 0 && <small>seeking collaborators</small>}<strong>{post.project.title}</strong></span><span>view project</span></button>}
+                {!audioPost && projectInfo}
               </DiscoveryPostInfo>
             } />
               <DiscoveryActionRail title={post.title} artwork={mobileSplit ? <OriginalSoundArtwork post={post} nearby={Math.abs(index - activeIndex) <= 1} onOpen={() => showPanel('original', post)} /> : live && post.media.kind === 'video' && <DiscoveryProjectArtwork post={post} onNavigate={() => feed.current?.querySelectorAll<HTMLMediaElement>('video,audio').forEach(media => media.pause())} />}>
@@ -293,7 +298,7 @@ export default function Discovery({ posts = DEMO_POSTS, live = false, onLoadMore
           <Dialog.Close disabled={sharePending} className="discovery-panel-close" aria-label="Close panel"><X size={20} /></Dialog.Close>
           {panelPost && panel?.kind === 'original' && <OriginalSoundPanel key={panelPost.id} post={panelPost} />}
           {panelPost && panel?.kind === 'compare' && <PublicationComparison id={Number(panelPost.id.slice(5))}/>}
-          {panelPost && panel?.kind === 'description' && <p className="whitespace-pre-wrap break-words">{panelPost.description}</p>}
+          {panelPost && panel?.kind === 'description' && <><p className="whitespace-pre-wrap break-words">{panelPost.description}</p>{panelPost.media.kind === 'audio' && panelPost.original && <p className="mt-4">Remix of {panelPost.original.title} · {panelPost.original.author}{live && panelPost.original.available && <> · <Link href={`/discovery?post=${panelPost.original.postId}`}>Listen to the original</Link></>}</p>}</>}
           {panelPost && panel?.kind === 'project' && panelPost.project && <ProjectPanel project={panelPost.project} live={live} projectId={panelPost.projectId} workId={panelPost.workId} ownerId={panelPost.artistId} />}
           {panelPost && panel?.kind === 'comments' && live && <LiveComments key={panelPost.id} postId={Number(panelPost.id.slice(5))} />}
           {panelPost && panel?.kind === 'comments' && !live && <>

@@ -1,0 +1,198 @@
+[WebServer] (node:27188) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 44 tests using 1 worker
+
+(node:27189) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/44] [desktop] › tests-presentation/discovery-audio-record.spec.ts:42:1 › audio covers, backgrounds and controls fit Low Tide, Luna and CHILZ Remix at all target widths
+[2/44] [desktop] › tests-presentation/discovery-audio-record.spec.ts:72:1 › record follows actual play, pause, seek, waiting, visibility and feed navigation without resetting its angle
+[3/44] [desktop] › tests-presentation/discovery-audio-record.spec.ts:105:1 › new independent audio handles long titles, missing cover and unavailable waveform with functional seek and Details
+[4/44] [desktop] › tests-presentation/discovery-audio-record.spec.ts:118:1 › failed artwork and media are recoverable and never spin an unavailable recording
+[5/44] [desktop] › tests-presentation/discovery-audio-record.spec.ts:132:1 › reduced motion leaves the record still while audio and waveform progress
+[6/44] [desktop] › tests-presentation/discovery-audio-record.spec.ts:140:1 › landscape keeps audio controls reachable without adding an inner scroller
+[7/44] [desktop] › tests-presentation/discovery-desktop.spec.ts:48:28 › desktop volume 3: hover tray, drag and mute preserve the media
+  1) [desktop] › tests-presentation/discovery-desktop.spec.ts:48:28 › desktop volume 3: hover tray, drag and mute preserve the media 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      71 |   await expect(media(page)).toHaveJSProperty('muted',false);
+      72 |   await page.mouse.up();await page.mouse.move(0,0);await expect(slider).toBeHidden();
+    > 73 |   expect(await source!.evaluate((m:HTMLMediaElement)=>m.isConnected&&m.paused&&m.currentTime===2)).toBe(true);
+         |                                                                                                    ^
+      74 |   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+      75 |  }
+      76 | });
+        at <repo>/tests-presentation/discovery-desktop.spec.ts:73:100
+
+    Error Context: test-results-presentation/discovery-desktop-desktop--52384-and-mute-preserve-the-media-desktop/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results-presentation/discovery-desktop-desktop--52384-and-mute-preserve-the-media-desktop/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results-presentation/discovery-desktop-desktop--52384-and-mute-preserve-the-media-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:27464) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[8/44] [desktop] › tests-presentation/discovery-desktop.spec.ts:48:28 › desktop volume 11: hover tray, drag and mute preserve the media
+  2) [desktop] › tests-presentation/discovery-desktop.spec.ts:48:28 › desktop volume 11: hover tray, drag and mute preserve the media 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      71 |   await expect(media(page)).toHaveJSProperty('muted',false);
+      72 |   await page.mouse.up();await page.mouse.move(0,0);await expect(slider).toBeHidden();
+    > 73 |   expect(await source!.evaluate((m:HTMLMediaElement)=>m.isConnected&&m.paused&&m.currentTime===2)).toBe(true);
+         |                                                                                                    ^
+      74 |   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+      75 |  }
+      76 | });
+        at <repo>/tests-presentation/discovery-desktop.spec.ts:73:100
+
+    Error Context: test-results-presentation/discovery-desktop-desktop--15096-and-mute-preserve-the-media-desktop/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results-presentation/discovery-desktop-desktop--15096-and-mute-preserve-the-media-desktop/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results-presentation/discovery-desktop-desktop--15096-and-mute-preserve-the-media-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:27509) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[9/44] [desktop] › tests-presentation/discovery-desktop.spec.ts:48:28 › desktop volume 14: hover tray, drag and mute preserve the media
+  3) [desktop] › tests-presentation/discovery-desktop.spec.ts:48:28 › desktop volume 14: hover tray, drag and mute preserve the media 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: false
+
+      71 |   await expect(media(page)).toHaveJSProperty('muted',false);
+      72 |   await page.mouse.up();await page.mouse.move(0,0);await expect(slider).toBeHidden();
+    > 73 |   expect(await source!.evaluate((m:HTMLMediaElement)=>m.isConnected&&m.paused&&m.currentTime===2)).toBe(true);
+         |                                                                                                    ^
+      74 |   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+      75 |  }
+      76 | });
+        at <repo>/tests-presentation/discovery-desktop.spec.ts:73:100
+
+    Error Context: test-results-presentation/discovery-desktop-desktop--0be06-and-mute-preserve-the-media-desktop/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results-presentation/discovery-desktop-desktop--0be06-and-mute-preserve-the-media-desktop/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results-presentation/discovery-desktop-desktop--0be06-and-mute-preserve-the-media-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:27549) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[10/44] [desktop] › tests-presentation/discovery-desktop.spec.ts:93:1 › desktop touch volume opens on tap and dismisses outside the controls
+  4) [desktop] › tests-presentation/discovery-desktop.spec.ts:93:1 › desktop touch volume opens on tap and dismisses outside the controls 
+
+    Error: expect(locator).toHaveJSProperty(expected) failed
+
+    Locator:  locator('article[data-active=true]').locator('audio,video')
+    Expected: true
+    Received: false
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveJSProperty" locator('article[data-active=true]').locator('audio,video') with timeout 5000ms
+      - waiting for locator('article[data-active=true]').locator('audio,video')
+        14 × locator resolved to <video loop="" preload="auto" playsinline="" class="discovery-video" data-playback-allowed="true" aria-label="Marea Alta — rooftop session video" src="/media/4049adbb-b135-5d8b-b119-e526123a76f5" poster="/media/236d2a12-cf79-5996-8fd6-b443c050060a"></video>
+           - unexpected value "false"
+
+
+       97 |   const group=active(page).locator('.discovery-desktop-volume'),slider=group.locator('input'),tray=group.locator('.discovery-desktop-volume-slider');
+       98 |   await expect(slider).toBeHidden();await group.getByRole('button').tap();await expect(slider).toBeVisible();await expect(tray).toHaveCSS('opacity','1');await expect(media(page)).toHaveJSProperty('muted',true);
+    >  99 |   await slider.tap();await expect(media(page)).toHaveJSProperty('muted',false);await expect(slider).toBeVisible();await expect(media(page)).toHaveJSProperty('paused',true);
+          |                                                                                                                                             ^
+      100 |   await active(page).locator('h2').tap();await expect(slider).toBeHidden();
+      101 |  }finally{await context.close();}
+      102 | });
+        at <repo>/tests-presentation/discovery-desktop.spec.ts:99:141
+
+    Error Context: test-results-presentation/discovery-desktop-desktop--08a18-misses-outside-the-controls-desktop/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results-presentation/discovery-desktop-desktop--08a18-misses-outside-the-controls-desktop/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results-presentation/discovery-desktop-desktop--08a18-misses-outside-the-controls-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:27612) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[11/44] [desktop] › tests-presentation/discovery-like.spec.ts:25:27 › like morph on publication 3 confirms once and preserves playback and layout
+[12/44] [desktop] › tests-presentation/discovery-like.spec.ts:25:27 › like morph on publication 11 confirms once and preserves playback and layout
+[13/44] [desktop] › tests-presentation/discovery-like.spec.ts:51:1 › slow response holds a static clef, blocks duplicate likes and cancels animation on scroll
+[14/44] [desktop] › tests-presentation/discovery-like.spec.ts:84:1 › failed like returns to its previous state and a retry succeeds without pausing or changing comments
+[15/44] [desktop] › tests-presentation/discovery-like.spec.ts:108:1 › reduced motion keeps both shapes fixed and uses opacity only
+[16/44] [desktop] › tests-presentation/discovery-like.spec.ts:124:1 › guest like opens the existing login flow without a morph or write
+[17/44] [desktop] › tests-presentation/discovery-scroll-regression.spec.ts:16:1 › fractional viewport heights keep every successive piece aligned without returning to an older index
+[18/44] [desktop] › tests-presentation/discovery-scroll-regression.spec.ts:32:1 › a delayed decaying trackpad tail cannot skip a piece or bounce backwards
+[19/44] [desktop] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 3 preserves comments and manual pause
+[20/44] [desktop] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 11 preserves comments and manual pause
+[21/44] [desktop] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 14 preserves comments and manual pause
+[22/44] [desktop] › tests-presentation/discovery-tap.spec.ts:69:1 › swiping the playback surface advances the feed without pausing the next post
+(node:28020) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[23/44] [mobile] › tests-presentation/discovery-audio-record.spec.ts:42:1 › audio covers, backgrounds and controls fit Low Tide, Luna and CHILZ Remix at all target widths
+[24/44] [mobile] › tests-presentation/discovery-audio-record.spec.ts:72:1 › record follows actual play, pause, seek, waiting, visibility and feed navigation without resetting its angle
+[25/44] [mobile] › tests-presentation/discovery-audio-record.spec.ts:105:1 › new independent audio handles long titles, missing cover and unavailable waveform with functional seek and Details
+[26/44] [mobile] › tests-presentation/discovery-audio-record.spec.ts:118:1 › failed artwork and media are recoverable and never spin an unavailable recording
+[27/44] [mobile] › tests-presentation/discovery-audio-record.spec.ts:132:1 › reduced motion leaves the record still while audio and waveform progress
+[28/44] [mobile] › tests-presentation/discovery-audio-record.spec.ts:140:1 › landscape keeps audio controls reachable without adding an inner scroller
+[29/44] [mobile] › tests-presentation/discovery-desktop.spec.ts:48:28 › desktop volume 3: hover tray, drag and mute preserve the media
+[30/44] [mobile] › tests-presentation/discovery-desktop.spec.ts:48:28 › desktop volume 11: hover tray, drag and mute preserve the media
+[31/44] [mobile] › tests-presentation/discovery-desktop.spec.ts:48:28 › desktop volume 14: hover tray, drag and mute preserve the media
+[32/44] [mobile] › tests-presentation/discovery-desktop.spec.ts:93:1 › desktop touch volume opens on tap and dismisses outside the controls
+[33/44] [mobile] › tests-presentation/discovery-like.spec.ts:25:27 › like morph on publication 3 confirms once and preserves playback and layout
+[34/44] [mobile] › tests-presentation/discovery-like.spec.ts:25:27 › like morph on publication 11 confirms once and preserves playback and layout
+[35/44] [mobile] › tests-presentation/discovery-like.spec.ts:51:1 › slow response holds a static clef, blocks duplicate likes and cancels animation on scroll
+[36/44] [mobile] › tests-presentation/discovery-like.spec.ts:84:1 › failed like returns to its previous state and a retry succeeds without pausing or changing comments
+[37/44] [mobile] › tests-presentation/discovery-like.spec.ts:108:1 › reduced motion keeps both shapes fixed and uses opacity only
+[38/44] [mobile] › tests-presentation/discovery-like.spec.ts:124:1 › guest like opens the existing login flow without a morph or write
+[39/44] [mobile] › tests-presentation/discovery-scroll-regression.spec.ts:16:1 › fractional viewport heights keep every successive piece aligned without returning to an older index
+[40/44] [mobile] › tests-presentation/discovery-scroll-regression.spec.ts:32:1 › a delayed decaying trackpad tail cannot skip a piece or bounce backwards
+[41/44] [mobile] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 3 preserves comments and manual pause
+[42/44] [mobile] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 11 preserves comments and manual pause
+[43/44] [mobile] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 14 preserves comments and manual pause
+[44/44] [mobile] › tests-presentation/discovery-tap.spec.ts:69:1 › swiping the playback surface advances the feed without pausing the next post
+  4 failed
+    [desktop] › tests-presentation/discovery-desktop.spec.ts:48:28 › desktop volume 3: hover tray, drag and mute preserve the media 
+    [desktop] › tests-presentation/discovery-desktop.spec.ts:48:28 › desktop volume 11: hover tray, drag and mute preserve the media 
+    [desktop] › tests-presentation/discovery-desktop.spec.ts:48:28 › desktop volume 14: hover tray, drag and mute preserve the media 
+    [desktop] › tests-presentation/discovery-desktop.spec.ts:93:1 › desktop touch volume opens on tap and dismisses outside the controls 
+  6 skipped
+  34 passed (6.3m)

@@ -1,20 +1,23 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'wouter';
 import { Disc3 } from 'lucide-react';
 import type { DemoPost } from './demo-posts';
 
 /** Artwork is presentation-only: it never manufactures a project destination. */
-export function DiscoveryArtwork({ post, compact = false, useProjectCover = true, eager = false, retryable = false }: {
+export function DiscoveryArtwork({ post, compact = false, useProjectCover = true, eager = false, retryable = false, onSourceChange }: {
   post: DemoPost;
   compact?: boolean;
   useProjectCover?: boolean;
   eager?: boolean;
   retryable?: boolean;
+  onSourceChange?: (src: string | null | undefined) => void;
 }) {
   const [failed, setFailed] = useState<Set<string>>(() => new Set());
   const [loaded, setLoaded] = useState<Set<string>>(() => new Set());
   const src = [post.coverUrl, useProjectCover ? post.projectCoverUrl : undefined]
     .find((url): url is string => !!url && !failed.has(url));
+  // Wait for the displayed image before sampling it; loading is distinct from failure.
+  useEffect(() => { onSourceChange?.(src ? loaded.has(src) ? src : undefined : null); }, [src, loaded, onSourceChange]);
 
   return src
     ? <span className="discovery-artwork" data-loading={!loaded.has(src)} aria-busy={!loaded.has(src)}>

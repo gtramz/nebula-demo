@@ -1,0 +1,107 @@
+[WebServer] (node:28720) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 10 tests using 1 worker
+
+(node:28724) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/10] [desktop] › tests-presentation/discovery-audio-record.spec.ts:140:1 › landscape keeps audio controls reachable without adding an inner scroller
+[2/10] [desktop] › tests-presentation/discovery-desktop.spec.ts:55:28 › desktop volume 3: hover tray, drag and mute preserve the media
+[3/10] [desktop] › tests-presentation/discovery-desktop.spec.ts:55:28 › desktop volume 11: hover tray, drag and mute preserve the media
+  1) [desktop] › tests-presentation/discovery-desktop.spec.ts:55:28 › desktop volume 11: hover tray, drag and mute preserve the media 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "height": 44,
+        "width": 44,
+    -   "x": 339.34375,
+    +   "x": 324.34375,
+        "y": 866,
+      }
+
+      67 |   const before=await button.boundingBox();
+      68 |   await button.hover();await expect(slider).toBeVisible();await expect(tray).toHaveCSS('opacity','1');
+    > 69 |   expect(await button.boundingBox()).toEqual(before);
+         |                                      ^
+      70 |   const bounds=await tray.boundingBox(),card=await active(page).locator('.discovery-media').boundingBox();
+      71 |   expect(bounds!.x).toBeGreaterThanOrEqual(card!.x);expect(bounds!.y).toBeGreaterThanOrEqual(card!.y);
+      72 |   expect(bounds!.x+bounds!.width).toBeLessThanOrEqual(card!.x+card!.width);expect(bounds!.y+bounds!.height).toBeLessThanOrEqual(card!.y+card!.height);
+        at <repo>/tests-presentation/discovery-desktop.spec.ts:69:38
+
+    Error Context: test-results-audio-volume/discovery-desktop-desktop--15096-and-mute-preserve-the-media-desktop/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results-audio-volume/discovery-desktop-desktop--15096-and-mute-preserve-the-media-desktop/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results-audio-volume/discovery-desktop-desktop--15096-and-mute-preserve-the-media-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:28833) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[4/10] [desktop] › tests-presentation/discovery-desktop.spec.ts:55:28 › desktop volume 14: hover tray, drag and mute preserve the media
+  2) [desktop] › tests-presentation/discovery-desktop.spec.ts:55:28 › desktop volume 14: hover tray, drag and mute preserve the media 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+        "height": 44,
+        "width": 44,
+    -   "x": 339.34375,
+    +   "x": 324.34375,
+        "y": 866,
+      }
+
+      67 |   const before=await button.boundingBox();
+      68 |   await button.hover();await expect(slider).toBeVisible();await expect(tray).toHaveCSS('opacity','1');
+    > 69 |   expect(await button.boundingBox()).toEqual(before);
+         |                                      ^
+      70 |   const bounds=await tray.boundingBox(),card=await active(page).locator('.discovery-media').boundingBox();
+      71 |   expect(bounds!.x).toBeGreaterThanOrEqual(card!.x);expect(bounds!.y).toBeGreaterThanOrEqual(card!.y);
+      72 |   expect(bounds!.x+bounds!.width).toBeLessThanOrEqual(card!.x+card!.width);expect(bounds!.y+bounds!.height).toBeLessThanOrEqual(card!.y+card!.height);
+        at <repo>/tests-presentation/discovery-desktop.spec.ts:69:38
+
+    Error Context: test-results-audio-volume/discovery-desktop-desktop--0be06-and-mute-preserve-the-media-desktop/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results-audio-volume/discovery-desktop-desktop--0be06-and-mute-preserve-the-media-desktop/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results-audio-volume/discovery-desktop-desktop--0be06-and-mute-preserve-the-media-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:28873) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[5/10] [desktop] › tests-presentation/discovery-desktop.spec.ts:101:1 › desktop touch volume opens on tap and dismisses outside the controls
+(node:28915) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[6/10] [mobile] › tests-presentation/discovery-audio-record.spec.ts:140:1 › landscape keeps audio controls reachable without adding an inner scroller
+[7/10] [mobile] › tests-presentation/discovery-desktop.spec.ts:55:28 › desktop volume 3: hover tray, drag and mute preserve the media
+[8/10] [mobile] › tests-presentation/discovery-desktop.spec.ts:55:28 › desktop volume 11: hover tray, drag and mute preserve the media
+[9/10] [mobile] › tests-presentation/discovery-desktop.spec.ts:55:28 › desktop volume 14: hover tray, drag and mute preserve the media
+[10/10] [mobile] › tests-presentation/discovery-desktop.spec.ts:101:1 › desktop touch volume opens on tap and dismisses outside the controls
+  2 failed
+    [desktop] › tests-presentation/discovery-desktop.spec.ts:55:28 › desktop volume 11: hover tray, drag and mute preserve the media 
+    [desktop] › tests-presentation/discovery-desktop.spec.ts:55:28 › desktop volume 14: hover tray, drag and mute preserve the media 
+  4 skipped
+  4 passed (48.9s)

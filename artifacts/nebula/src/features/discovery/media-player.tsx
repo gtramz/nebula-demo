@@ -2,7 +2,8 @@ import { AdaptiveVideo, isSplitVideo } from '@/features/remix/adaptive-video';
 import { memo, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest, type Waveform } from '@nebula/local';
-import { Disc3, Maximize, Play, Volume2, VolumeX } from 'lucide-react';
+import { AudioLines, Disc3, Maximize, Play, Volume2, VolumeX } from 'lucide-react';
+import { AntiqLogo } from '@/components/antiq-logo';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotificationsOpen } from '@/features/notifications';
 import { AmbientArtwork } from './ambient-artwork';
@@ -15,21 +16,32 @@ const time = (seconds: number) => `${Math.floor(seconds / 60)}:${Math.floor(seco
 export function VideoDiscoveryPlayer({ children }: { children: ReactNode }) {
   return <div className="discovery-video-stage">{children}</div>;
 }
-export function AudioDiscoveryCard({ post, info, controls, playback, playbackToggle, eager }: { post: DemoPost; eager?: boolean; info: ReactNode; controls: ReactNode; playback: ReactNode; playbackToggle?: ReactNode }) {
+export function AudioDiscoveryCard({ post, info, projectInfo, controls, playback, playbackToggle, eager, turning }: { post: DemoPost; eager?: boolean; turning: boolean; info: ReactNode; projectInfo?: ReactNode; controls: ReactNode; playback: ReactNode; playbackToggle?: ReactNode }) {
+  const [source, setSource] = useState<string | null>();
+  const [artworkAttempt, setArtworkAttempt] = useState(0);
   return <>
+    <AmbientArtwork post={post} enabled={eager} variant="audio" source={source ?? null}/>
+    <div className="discovery-audio-kicker" aria-hidden="true"><span className="discovery-audio-desktop-label"><AudioLines size={21}/> AUDIO</span><span className="discovery-audio-mobile-label"><AntiqLogo className="w-5 h-7" imageScaleClass="w-[86px]"/>Discovery</span></div>
     <div className="discovery-audio-stage">
-      <AmbientArtwork post={post} enabled={eager}/><div className="discovery-cover"><DiscoveryArtwork post={post} eager={eager} retryable />{playback}{playbackToggle}</div>
+      <div className="discovery-record-art" data-turning={turning}>
+        <div className="discovery-record-disc" aria-hidden="true"><div className="discovery-vinyl"/></div>
+        <div className="discovery-cover discovery-record-sleeve"><DiscoveryArtwork key={artworkAttempt} post={post} eager={eager} onSourceChange={setSource}/></div>
+        {playbackToggle}
+        {source === null && (post.coverUrl || post.projectCoverUrl) && <button className="discovery-record-retry" onClick={() => setArtworkAttempt(n => n + 1)}>Retry artwork</button>}
+        {playback}
+      </div>
     </div>
     {info}
     {controls}
+    {projectInfo}
   </>;
 }
 
-export function WaveformProgress({ data, progress }: { data: Waveform; progress: number }) {
+export function WaveformProgress({ data, progress, columns = 400, record = false }: { data: Waveform; progress: number; columns?: number; record?: boolean }) {
   const id = useId().replaceAll(':', '');
   // Reduce only for drawing; every visible column uses the peak in its source interval.
   const path = useMemo(() => {
-    const count = Math.min(400, data.peaks.length);
+    const count = Math.min(columns, data.peaks.length);
     // Normalize the display to this track’s loudest peak; silence stays a flat line.
     const ceiling = data.peaks.reduce((max, peak) => Math.max(max, peak), 0) || 1;
     return Array.from({ length: count }, (_, i) => {
@@ -38,11 +50,11 @@ export function WaveformProgress({ data, progress }: { data: Waveform; progress:
       const amplitude = Math.min(1, peak / ceiling) * 27, x = (i + .5) / count * 1000;
       return `M${x},${30 - amplitude}V${30 + amplitude}`;
     }).join(' ');
-  }, [data]);
+  }, [data, columns]);
   return <svg className="discovery-waveform" viewBox="0 0 1000 60" preserveAspectRatio="none" aria-hidden="true">
     <defs><clipPath id={id}><rect width={progress * 1000} height="60" /></clipPath></defs>
-    <g stroke="#555" strokeWidth="2"><path d="M0 30H1000" /><path d={path} /></g>
-    <g stroke="currentColor" strokeWidth="2" clipPath={`url(#${id})`}><path d="M0 30H1000" /><path d={path} /></g>
+    <g stroke={record ? '#888393' : '#555'} strokeWidth={record ? 5 : 2} strokeLinecap={record ? 'round' : undefined}><path d="M0 30H1000" /><path d={path} /></g>
+    <g stroke="currentColor" strokeWidth={record ? 5 : 2} strokeLinecap={record ? 'round' : undefined} clipPath={`url(#${id})`}><path d="M0 30H1000" /><path d={path} /></g>
   </svg>;
 }
 
@@ -80,7 +92,7 @@ function DesktopVolumeControl({ title, muted, volume, disabled, onToggleMute, on
   </div>;
 }
 
-export const DiscoveryMedia = memo(function DiscoveryMedia({ post, active, nearby, blocked, desktopControls = false, prepare = false, playbackState, onReady, waveformAccess, info }: { post: DemoPost; desktopControls?: boolean; prepare?: boolean; playbackState?: FeedPlaybackState; onReady?: () => void; active: boolean; nearby: boolean; blocked: boolean; waveformAccess: boolean; info: ReactNode }) {
+export const DiscoveryMedia = memo(function DiscoveryMedia({ post, active, nearby, blocked, desktopControls = false, prepare = false, playbackState, onReady, waveformAccess, info, projectInfo }: { post: DemoPost; desktopControls?: boolean; prepare?: boolean; playbackState?: FeedPlaybackState; onReady?: () => void; active: boolean; nearby: boolean; blocked: boolean; waveformAccess: boolean; info: ReactNode; projectInfo?: ReactNode }) {
   const notificationsOpen = useNotificationsOpen(), isMobile = useIsMobile();
   blocked = blocked || notificationsOpen;
   const media = useRef<HTMLMediaElement | null>(null), mounted = useRef(true), wasActive = useRef(false), manuallyPaused = useRef(false);
@@ -171,12 +183,14 @@ export const DiscoveryMedia = memo(function DiscoveryMedia({ post, active, nearb
   const controls =
     <div className="discovery-media-controls">
       <div className={`discovery-seek ${wave ? 'has-waveform' : ''}`} style={{ '--played': `${played * 100}%` } as CSSProperties}>
-        {wave && <WaveformProgress data={wave} progress={played} />}
+        {wave && <WaveformProgress data={wave} progress={played} record={audio} columns={audio ? isMobile ? 84 : 160 : 400} />}
+        {wave && audio && <span className="discovery-audio-playhead" style={{ left: `${played * 100}%` }} aria-hidden="true"/>}
         <input type="range" min={0} max={duration || 1} step={.1} value={Math.min(progress, duration || 1)} aria-label={`Seek ${post.title}`} aria-valuetext={`${time(progress)} of ${time(duration)}`} disabled={!duration || failed || !active || blocked} onChange={event => seek(Number(event.target.value))} />
       </div>
 
+      {audio && <div className="discovery-audio-timing"><time>{time(progress)}</time><time>{time(duration)}</time></div>}
       {desktopControls && <div className="discovery-desktop-transport">
-        <span>{time(progress)} / {time(duration)}</span>
+        {!audio && <span>{time(progress)} / {time(duration)}</span>}
         <DesktopVolumeControl title={post.title} muted={muted} volume={volume} disabled={!active || blocked || failed}
           onToggleMute={() => { if (media.current) { media.current.muted = !muted; if (muted && media.current.volume === 0) media.current.volume = 1; if (media.current.paused && !manuallyPaused.current) void startPlayback(); } }}
           onVolumeChange={value => { if (media.current) { media.current.volume = value; media.current.muted = false; if (media.current.paused && !manuallyPaused.current) void startPlayback(); } }} />
@@ -195,7 +209,7 @@ export const DiscoveryMedia = memo(function DiscoveryMedia({ post, active, nearb
   return <div ref={surface} className={`discovery-media ${audio ? 'is-audio' : 'is-video'} ${!audio && isSplitVideo(post.composition) ? 'is-split-video' : ''}`} role="group" aria-label={`${post.title} player`} aria-describedby={keyboardHint} tabIndex={active && !blocked ? 0 : -1} data-playing={playing} aria-busy={loading}
     onKeyDown={event => { if (event.target !== event.currentTarget || event.altKey || event.ctrlKey || event.metaKey || event.repeat || ![' ', 'k', 'K'].includes(event.key)) return; event.preventDefault(); event.stopPropagation(); if (!failed) toggle(); }}>
     <span id={keyboardHint} className="sr-only">{playing ? 'Playing.' : 'Paused.'} Tap the video or cover, or focus the player and press Space or K to pause or resume. Use the volume control to enable sound.</span>
-    {audio ? <><AudioDiscoveryCard post={post} eager={nearby && !blocked} info={info} controls={controls} playback={playback} playbackToggle={playbackToggle} />{nearby && <audio {...mediaProps} ref={element => { media.current = element; }} aria-label={`${post.title} audio`} />}</>
+    {audio ? <><AudioDiscoveryCard post={post} eager={nearby && !blocked} turning={active && playing && !blocked && !buffering && !failed} info={info} projectInfo={projectInfo} controls={controls} playback={playback} playbackToggle={playbackToggle} />{nearby && <audio {...mediaProps} ref={element => { media.current = element; }} aria-label={`${post.title} audio`} />}</>
       : <><VideoDiscoveryPlayer><AmbientArtwork post={post} enabled={nearby}/>{nearby ? <AdaptiveVideo composition={post.composition} {...mediaProps} ref={element => { media.current = element; }} poster={post.coverUrl ?? undefined} playsInline className="discovery-video" aria-label={`${post.title} video`} /> : post.coverUrl ? <img src={post.coverUrl} alt="" loading="lazy" className="discovery-video" /> : <Disc3 aria-hidden="true" size={48} />}{playback}{playbackToggle}<button type="button" className="discovery-video-sound" disabled={!active || blocked || failed} aria-label={`${muted ? 'Unmute' : 'Mute'} ${post.title}`} aria-pressed={muted} onClick={() => { if(media.current) { media.current.volume=1; media.current.muted=!muted; } if (playbackState) playbackState.muted = !muted; setMuted(value=>!value); }}>{muted?<VolumeX size={17}/>:<Volume2 size={17}/>}</button></VideoDiscoveryPlayer>{controls}{info}</>}
   </div>;
 });

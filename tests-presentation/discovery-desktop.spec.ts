@@ -11,6 +11,13 @@ async function open(page:Page,id:number){
  await expect.poll(()=>media(page).evaluate((m:HTMLMediaElement)=>m.readyState),{timeout:15000}).toBeGreaterThanOrEqual(2);
  await expect.poll(()=>media(page).evaluate((m:HTMLMediaElement)=>m.currentTime),{timeout:10000}).toBeGreaterThan(0);
 }
+async function pauseThroughControl(page:Page){
+ // A DOM pause is not a user's pause: enabling sound may legitimately resume autoplay.
+ if(await media(page).evaluate((m:HTMLMediaElement)=>m.paused))await active(page).locator('.discovery-video-tap').click();
+ await expect(media(page)).toHaveJSProperty('paused',false);
+ await active(page).locator('.discovery-video-tap').click();
+ await expect(media(page)).toHaveJSProperty('paused',true);
+}
 test.beforeEach(async({},info)=>test.skip(info.project.name!=='desktop','Desktop-specific presentation; mobile covered by playback/layout suites'));
 for(const id of [3,11,14]) test(`desktop media ${id}: layout, comments, drafts and single-source playback`,async({page},info)=>{
  await open(page,id);const originalName=await active(page).getAttribute('aria-label');
@@ -53,7 +60,8 @@ for(const id of [3,11,14]) test(`desktop volume ${id}: hover tray, drag and mute
  for(const width of [1440,768]){
   await page.setViewportSize({width,height:930});
   if(width===768)await active(page).getByRole('button',{name:'Comments',exact:true}).click();
-  await media(page).evaluate((m:HTMLMediaElement)=>{m.pause();m.currentTime=2;m.volume=.6;m.muted=false;});
+  await pauseThroughControl(page);
+  await media(page).evaluate((m:HTMLMediaElement)=>{m.currentTime=2;m.volume=.6;m.muted=false;});
   await page.mouse.move(0,0);await expect(slider).toBeHidden();await expect(tray).toHaveCSS('pointer-events','none');
   await active(page).locator('h2').hover();await expect(slider).toBeHidden();
   const before=await button.boundingBox();
@@ -93,7 +101,7 @@ test('desktop volume supports keyboard focus and reduced motion',async({page})=>
 test('desktop touch volume opens on tap and dismisses outside the controls',async({browser})=>{
  const context=await browser.newContext({viewport:{width:932,height:930},hasTouch:true}),page=await context.newPage();
  try{
-  await open(page,11);await media(page).evaluate((m:HTMLMediaElement)=>{m.pause();m.volume=.6;m.muted=false;});
+  await open(page,11);await pauseThroughControl(page);await media(page).evaluate((m:HTMLMediaElement)=>{m.volume=.6;m.muted=false;});
   const group=active(page).locator('.discovery-desktop-volume'),slider=group.locator('input'),tray=group.locator('.discovery-desktop-volume-slider');
   await expect(slider).toBeHidden();await group.getByRole('button').tap();await expect(slider).toBeVisible();await expect(tray).toHaveCSS('opacity','1');await expect(media(page)).toHaveJSProperty('muted',true);
   await slider.tap();await expect(media(page)).toHaveJSProperty('muted',false);await expect(slider).toBeVisible();await expect(media(page)).toHaveJSProperty('paused',true);
