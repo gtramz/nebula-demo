@@ -1,0 +1,40 @@
+[WebServer] (node:30001) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 24 tests using 1 worker
+
+(node:30006) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/24] [desktop] › tests-presentation/discovery-project-preview.spec.ts:33:1 › public audio, video and remix show the project overview at target widths and retain the song destination
+[2/24] [desktop] › tests-presentation/discovery-project-preview.spec.ts:59:1 › Escape and overlay close restore focus, manual pause, feed position and the same player
+[3/24] [desktop] › tests-presentation/discovery-project-preview.spec.ts:74:1 › long public summaries, more than three opportunities and missing or failed project covers keep the footer reachable
+[4/24] [desktop] › tests-presentation/discovery-project-preview.spec.ts:92:1 › a publication without a public project exposes no project preview
+[5/24] [desktop] › tests-presentation/discovery-scroll-regression.spec.ts:16:1 › fractional viewport heights keep every successive piece aligned without returning to an older index
+[6/24] [desktop] › tests-presentation/discovery-scroll-regression.spec.ts:32:1 › a delayed decaying trackpad tail cannot skip a piece or bounce backwards
+[7/24] [desktop] › tests-presentation/discovery-share.spec.ts:5:1 › share delivers real requests and chats; partial retry does not duplicate completed sends
+[8/24] [desktop] › tests-presentation/discovery-share.spec.ts:28:1 › share layout, real avatars, search, clipboard fallback, links, focus and identity isolation
+[9/24] [desktop] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 3 preserves comments and manual pause
+[10/24] [desktop] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 11 preserves comments and manual pause
+[11/24] [desktop] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 14 preserves comments and manual pause
+[12/24] [desktop] › tests-presentation/discovery-tap.spec.ts:69:1 › swiping the playback surface advances the feed without pausing the next post
+(node:30512) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[13/24] [mobile] › tests-presentation/discovery-project-preview.spec.ts:33:1 › public audio, video and remix show the project overview at target widths and retain the song destination
+[14/24] [mobile] › tests-presentation/discovery-project-preview.spec.ts:59:1 › Escape and overlay close restore focus, manual pause, feed position and the same player
+[15/24] [mobile] › tests-presentation/discovery-project-preview.spec.ts:74:1 › long public summaries, more than three opportunities and missing or failed project covers keep the footer reachable
+[16/24] [mobile] › tests-presentation/discovery-project-preview.spec.ts:92:1 › a publication without a public project exposes no project preview
+[17/24] [mobile] › tests-presentation/discovery-scroll-regression.spec.ts:16:1 › fractional viewport heights keep every successive piece aligned without returning to an older index
+[18/24] [mobile] › tests-presentation/discovery-scroll-regression.spec.ts:32:1 › a delayed decaying trackpad tail cannot skip a piece or bounce backwards
+[19/24] [mobile] › tests-presentation/discovery-share.spec.ts:5:1 › share delivers real requests and chats; partial retry does not duplicate completed sends
+[20/24] [mobile] › tests-presentation/discovery-share.spec.ts:28:1 › share layout, real avatars, search, clipboard fallback, links, focus and identity isolation
+[21/24] [mobile] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 3 preserves comments and manual pause
+[22/24] [mobile] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 11 preserves comments and manual pause
+[23/24] [mobile] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 14 preserves comments and manual pause
+[24/24] [mobile] › tests-presentation/discovery-tap.spec.ts:69:1 › swiping the playback surface advances the feed without pausing the next post
+  2 skipped
+  22 passed (4.7m)

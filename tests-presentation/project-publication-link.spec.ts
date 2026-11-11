@@ -82,7 +82,7 @@ for(const category of ['Album','EP','Single','Video','Tour'])test(`${category}: 
   const active=page.locator('article[data-active=true]');await expect(active).toContainText(title);
   const media=active.locator(kind);await media.evaluate(async(m:HTMLMediaElement)=>{await m.play();});await expect.poll(()=>media.evaluate((m:HTMLMediaElement)=>m.currentTime)).toBeGreaterThan(0);
   await active.getByRole('button',{name:new RegExp(`${project.title}.*view project`)}).click();
-  await page.getByRole('link',{name:'Open full project',exact:true}).click();
+  await page.getByRole('link',{name:'View full project',exact:true}).click();
   await expect(page).toHaveURL(new RegExp(`/project/${project.id}${project.songs.length?`\\?song=${(project.songs[1]??project.songs[0]).id}`:''}$`));
   await expect(page.getByRole('heading',{name:project.title,exact:true})).toBeVisible();
   if(project.songs.length){const discoveryLink=page.locator(`a[href="/discovery?post=post-${post.id}"]`).first(),expand=page.getByRole('article',{name:title,exact:true}).getByRole('button').first();await expect.poll(async()=>await discoveryLink.isVisible()||await expand.isVisible()).toBe(true);if(!await discoveryLink.isVisible())await expand.click();await expect(discoveryLink).toBeVisible();if(kind==='video'){const version=page.getByRole('article',{name:title,exact:true});if(await version.isVisible()){if(await version.getByRole('button').first().getAttribute('aria-expanded')==='false')await version.getByRole('button').first().click();await expect(version.locator('video')).toBeVisible();}}}

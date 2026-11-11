@@ -3,7 +3,6 @@ import { PublicationShare } from '@/features/discovery/share-panel';
 import { useFollowSync } from '@/features/following';
 import { DiscoveryArtistPreview } from '@/features/discovery/artist-preview';
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { ProjectOffers } from '@/features/collaborations';
 import { apiRequest } from '@nebula/local';
 import { useQueryClient } from '@tanstack/react-query';
 import { LiveComments, refreshSocial } from '@/features/discovery/social';
@@ -12,7 +11,7 @@ import * as Dialog from '@radix-ui/react-dialog';
 import { ArrowUpRight, Bookmark, ChevronDown, ChevronUp, Disc3, GitBranch, MessageCircle, Send, X } from 'lucide-react';
 import { DiscoveryLike } from '@/features/discovery/like-action';
 import { useAuth } from '@/context/AuthContext';
-import { DEMO_POSTS, formatDemoUSD, type DemoPost, type DemoProject } from '@/features/discovery/demo-posts';
+import { DEMO_POSTS, type DemoPost, type DemoProject } from '@/features/discovery/demo-posts';
 import '@/features/discovery/discovery.css';
 import '@/features/discovery/desktop.css';
 import '@/features/discovery/audio-card.css';
@@ -48,30 +47,27 @@ function DiscoveryActionRail({ title, children, artwork }: { title: string; chil
   return <div className="discovery-action-rail"><div className="discovery-actions" aria-label={`Actions for ${title}`}>{children}</div>{artwork}</div>;
 }
 
-function ProjectPanel({ project, live = false, projectId, ownerId, workId }: { workId?: number; project: DemoProject; live?: boolean; projectId?: number; ownerId?: number }) {
+function ProjectPanel({ project, coverUrl, live = false, projectId, ownerId, workId }: { workId?: number; project: DemoProject; coverUrl?: string | null; live?: boolean; projectId?: number; ownerId?: number }) {
   const copy = useProjectProductCopy(projectId && ownerId ? { id: projectId, artistId: ownerId, story: project.description } : undefined);
-  return <div className="discovery-project-info">
-    <div><p className="discovery-eyebrow">{project.stage}</p><h3>{project.title}</h3><p className="discovery-byline">by {project.artist}</p></div>
-    <p>{copy.story ?? project.description}</p>
-    <section aria-label="Project funding" className="discovery-funding">
-      <div><strong>{formatDemoUSD(project.raised)}</strong><span>of {formatDemoUSD(project.goal)}</span></div>
-      <progress value={project.raised} max={project.goal} aria-label="Funding progress" />
-      <p className="discovery-eyebrow">use of funds</p>
-      {project.useOfFunds.map(item => <div key={item.label}><span>{item.label}</span><span>{item.percent}%</span></div>)}
-    </section>
-    {live && projectId && <Link className="discovery-primary" href={`/project/${projectId}${workId ? `?song=${workId}` : ''}`}>Open full project</Link>}
-    {live && projectId && <ProjectOffers projectId={projectId} ownerId={ownerId} compact />}
-    {!live && <section aria-label="Collaboration offers">
-      <p className="discovery-eyebrow">open calls · {project.offers.length}</p><h3>Make it together.</h3>
-      {project.offers.map(offer => <article key={offer.id} className="discovery-offer">
-        <h4>{offer.need}</h4>
-        <p className="discovery-compensation">{offer.compensation.kind === 'split' ? `${offer.compensation.percent}% royalty split offered` : `${formatDemoUSD(offer.compensation.amount)} fixed fee`}</p>
-        <p>{offer.deliverable}</p>
-        <div className="discovery-offer-actions"><button disabled>Contact artist</button><button disabled>Submit work</button></div>
-      </article>)}
-      <p className="discovery-note">Remix permission does not include collaboration approval or royalties.</p>
-    </section>}
-  </div>;
+  const [failedCover, setFailedCover] = useState<string>();
+  const story = copy.story ?? project.description;
+  return <>
+    <div className="discovery-project-summary">
+      <div className="discovery-project-identity">
+        <div className="discovery-project-cover">
+          {coverUrl && failedCover !== coverUrl ? <img src={coverUrl} alt={`${project.title} project artwork`} onError={() => setFailedCover(coverUrl)} /> : <span role="img" aria-label="No project artwork"><Disc3 aria-hidden="true" size={32}/></span>}
+        </div>
+        <div><p className="discovery-project-stage">{project.stage}</p><h3>{project.title}</h3><p className="discovery-project-artist">{project.artist}</p></div>
+      </div>
+      {story && <p className="discovery-project-description">{story}</p>}
+      {project.offers.length > 0 && <section className="discovery-project-opportunities" aria-label="Available opportunities">
+        <p><span aria-hidden="true"/>Seeking collaborators <strong>{project.offers.length}</strong></p>
+        <ul>{project.offers.slice(0, 3).map(offer => <li key={offer.id}>{offer.need}</li>)}</ul>
+        {project.offers.length > 3 && <p className="discovery-project-more">+{project.offers.length - 3} more opportunities</p>}
+      </section>}
+    </div>
+    {live && projectId && <div className="discovery-project-footer"><Link href={`/project/${projectId}${workId ? `?song=${workId}` : ''}`}>View full project <ArrowUpRight size={18} aria-hidden="true"/></Link></div>}
+  </>;
 }
 
 export default function Discovery({ posts = DEMO_POSTS, live = false, onLoadMore, loadingMore = false, fetching = false, loadError, onRetry, onRefresh, introPending = false, onInitialReady }: { introPending?: boolean; onInitialReady?:()=>void; posts?: DemoPost[]; live?: boolean; onLoadMore?: () => void; loadingMore?: boolean; fetching?: boolean; loadError?: string; onRetry?: () => void; onRefresh?: () => Promise<string | undefined> }) {
@@ -293,13 +289,13 @@ export default function Discovery({ posts = DEMO_POSTS, live = false, onLoadMore
     <Dialog.Root open={!!panel && !(live && panel.kind === 'comments')} onOpenChange={open => { if (!open && !sharePending) setPanel(null); }}>
       <Dialog.Portal>
         <Dialog.Overlay className="discovery-panel-overlay" />
-        <Dialog.Content className={`discovery-panel${panel?.kind === 'send' ? ' discovery-share-modal' : ''}`} onEscapeKeyDown={e=>{if(sharePending)e.preventDefault();}} onPointerDownOutside={e=>{if(sharePending)e.preventDefault();}} onCloseAutoFocus={event => { event.preventDefault(); if (opener.current?.isConnected) opener.current.focus({ preventScroll: true }); else feed.current?.focus({ preventScroll: true }); }}>
+        <Dialog.Content className={`discovery-panel${panel?.kind === 'send' ? ' discovery-share-modal' : panel?.kind === 'project' ? ' discovery-project-modal' : ''}`} onEscapeKeyDown={e=>{if(sharePending)e.preventDefault();}} onPointerDownOutside={e=>{if(sharePending)e.preventDefault();}} onCloseAutoFocus={event => { event.preventDefault(); if (opener.current?.isConnected) opener.current.focus({ preventScroll: true }); else feed.current?.focus({ preventScroll: true }); }}>
           <div className="discovery-panel-heading"><p className="discovery-eyebrow">discovery</p><Dialog.Title>{panelTitle}</Dialog.Title><Dialog.Description>{panelPost?.title} · {panelPost?.author}</Dialog.Description></div>
           <Dialog.Close disabled={sharePending} className="discovery-panel-close" aria-label="Close panel"><X size={20} /></Dialog.Close>
           {panelPost && panel?.kind === 'original' && <OriginalSoundPanel key={panelPost.id} post={panelPost} />}
           {panelPost && panel?.kind === 'compare' && <PublicationComparison id={Number(panelPost.id.slice(5))}/>}
           {panelPost && panel?.kind === 'description' && <><p className="whitespace-pre-wrap break-words">{panelPost.description}</p>{panelPost.media.kind === 'audio' && panelPost.original && <p className="mt-4">Remix of {panelPost.original.title} · {panelPost.original.author}{live && panelPost.original.available && <> · <Link href={`/discovery?post=${panelPost.original.postId}`}>Listen to the original</Link></>}</p>}</>}
-          {panelPost && panel?.kind === 'project' && panelPost.project && <ProjectPanel project={panelPost.project} live={live} projectId={panelPost.projectId} workId={panelPost.workId} ownerId={panelPost.artistId} />}
+          {panelPost && panel?.kind === 'project' && panelPost.project && <ProjectPanel key={panelPost.id} project={panelPost.project} coverUrl={panelPost.projectCoverUrl} live={live} projectId={panelPost.projectId} workId={panelPost.workId} ownerId={panelPost.artistId} />}
           {panelPost && panel?.kind === 'comments' && live && <LiveComments key={panelPost.id} postId={Number(panelPost.id.slice(5))} />}
           {panelPost && panel?.kind === 'comments' && !live && <>
             <div className="discovery-comments" aria-label="Comments">

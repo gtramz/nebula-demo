@@ -1,0 +1,19 @@
+[WebServer] (node:30999) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 4 tests using 1 worker
+
+(node:31003) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/4] [desktop] › tests-presentation/discovery-project-preview.spec.ts:33:1 › public audio, video and remix show the project overview at target widths and retain the song destination
+[2/4] [desktop] › tests-presentation/discovery-project-preview.spec.ts:74:1 › long public summaries, more than three opportunities and missing or failed project covers keep the footer reachable
+(node:31161) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[3/4] [mobile] › tests-presentation/discovery-project-preview.spec.ts:33:1 › public audio, video and remix show the project overview at target widths and retain the song destination
+[4/4] [mobile] › tests-presentation/discovery-project-preview.spec.ts:74:1 › long public summaries, more than three opportunities and missing or failed project covers keep the footer reachable
+  4 passed (1.2m)

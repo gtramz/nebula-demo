@@ -46,7 +46,7 @@ test('evicted cards release media and retain playback position and social state'
  await player(page).evaluate((m:HTMLMediaElement)=>m.pause());
  const time=await player(page).evaluate((m:HTMLMediaElement)=>m.currentTime);expect(time).toBeGreaterThanOrEqual(7);expect(time).toBeLessThan(9);
  await expect(active(page).getByRole('button',{name:'Like',exact:true})).toHaveAttribute('aria-pressed','true');await expect(active(page).getByRole('button',{name:'Save',exact:true})).toHaveAttribute('aria-pressed','true');
- await active(page).getByRole('button',{name:/view project/i}).click();await page.getByRole('dialog').getByRole('link',{name:'Open full project',exact:true}).click();await page.goBack();
+ await active(page).getByRole('button',{name:/view project/i}).click();await page.getByRole('dialog').getByRole('link',{name:'View full project',exact:true}).click();await page.goBack();
  await expect(active(page).getByRole('heading',{name:'Low Tide',exact:true})).toBeVisible();await bounded(page);
 });
 

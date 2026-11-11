@@ -1,0 +1,12 @@
+{
+  "presentation/assets/covers/luna-original.png": "1bb5836b0e348d936a3532c48dc300f602104fe01414488305f9517719c34c8c",
+  "presentation/assets/covers/luna-chilz-remix.png": "a22fd31bb33bd30a56e2d873cf98ab3d4ef3f0eb84e0cae3e0cd5043378949c3",
+  "presentation/seed/manifest.json": "e6c3ba991fb43170d0fa5583fe695f232eec48ad49bc4bd383b79e7b0f5f097b",
+  "artifacts/nebula/src/features/discovery/feed-scroll.ts": "35dca688b1757fb61268cadcaa016b0fad207dac345e3478a698a1c7db074ac9",
+  "artifacts/nebula/src/features/discovery/like-action.tsx": "2f3f2e64d6792862880e3b2759f65b62f47b5eebc70dee93a2238657afa14e26",
+  "artifacts/nebula/src/features/discovery/like-action.css": "4e4b9c67a73f26c349eb2e5c80779469d8c128b8e58ce195ee89cffb4c3a13ab",
+  "artifacts/nebula/src/features/discovery/desktop-comments.tsx": "5533b9db903a95dbe158574cdbafeba0436d58a37fff935128e63f283ed0ed6f",
+  "artifacts/nebula/src/features/discovery/media-player.tsx": "9d09304355c84f632bb8a650bb25035d7649375324faeb59ba3e77d462449191",
+  "artifacts/nebula/src/features/discovery/audio-card.css": "acf101ade1120e4db1a95d884afd861a487fcf7f528fdedccc5800e3ca806249",
+  "artifacts/nebula/src/features/discovery/share-panel.tsx": "77b6cd1f7f2fd5f6d5c3bb109139beb2c2bc0b065d4e8eca7e7c6f52291474d3"
+}
