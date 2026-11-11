@@ -14,7 +14,7 @@ import { AppShell } from '@/components/shell/app-shell';
 
 import { SavedPublications } from '@/features/discovery/social';
 import { CollaborationRequestPage, CollaborationPage } from '@/features/collaborations';
-import { MessagesPage, MessageComposePage, GeneralMessagePage } from '@/features/messages';
+import { MessagesLayout, MessagesPage, MessageComposePage, GeneralMessagePage } from '@/features/messages';
 import { NotificationsPage, NotificationsProvider } from '@/features/notifications';
 import { RemixPage, LegacyRemixPage } from '@/features/remix';
 import Home from '@/pages/home';
@@ -47,7 +47,7 @@ function Router() {
   return (
     <ReturnContext><NotificationsProvider><PlaybackCoordinator/><PresentationRuntime/><AppShell>
       <RoutedErrorBoundary>
-        <Switch>
+        <MessagesLayout><Switch>
           <Route path="/presentation" component={PresentationPage} />
           <Route path="/" component={Home} />
           <Route path="/explore" component={Explore} />
@@ -79,7 +79,7 @@ function Router() {
           <Route path="/login" component={Login} />
           <Route path="/register" component={Register} />
           <Route component={NotFound} />
-        </Switch>
+        </Switch></MessagesLayout>
       </RoutedErrorBoundary>
     </AppShell></NotificationsProvider></ReturnContext>
   );

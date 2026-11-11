@@ -1,3 +1,4 @@
+import { RefreshNotice } from '@/components/loading-states';
 import { SectionSkeleton } from '@/components/loading-states';
 import { useEffect, useId, useState, type ReactNode } from 'react';
 import { Link, useSearch } from 'wouter';
@@ -43,13 +44,14 @@ function RecordingArtists({ recording }: {recording:PresentationRecording}) {
 export function FeaturedRecording({ example, recording, showKicker = true }: {example:PresentationRemixExample; recording:PresentationRecording; showKicker?:boolean}) {
   const query = usePublication(recording.postId), isRemix = recording.postId === example.remix.postId;
   if (query.isPending) return <SectionSkeleton variant="player" label="Loading featured recording"/>;
-  if (query.isError) return <div role="alert" className="space-y-2"><p>This recording is unavailable.</p><button className="underline min-h-11" onClick={()=>void query.refetch()}>Retry recording</button></div>;
+  if (query.isError && !query.data) return <div role="alert" className="space-y-2"><p>This recording is unavailable.</p><button className="underline min-h-11" onClick={()=>void query.refetch()}>Retry recording</button></div>;
   const post=query.data; if(!post || post.status!=='published') return null;
   return <section aria-label={`Featured recording: ${post.title}`} className="rounded-2xl border border-accent/30 bg-surface p-5 sm:p-6 space-y-5">
+    <RefreshNotice error={query.error} retry={query.refetch}/>
     {showKicker && <p className="voice text-xs text-accent">{isRemix?'FEATURED REMIX':'ORIGINAL / COLLABORATION'}</p>}
     <div className="flex items-center gap-4 sm:gap-6">{post.coverUrl&&<Link href={`/project/${recording.projectId}`} aria-label={`View project: ${post.title}`} className="shrink-0"><img src={post.coverUrl} alt="" className="h-24 w-24 sm:h-32 sm:w-32 rounded-xl object-cover"/></Link>}<div className="min-w-0"><h2 className="text-2xl font-semibold break-words"><Link href={`/project/${recording.projectId}`}>{post.title}</Link></h2><RecordingArtists recording={recording}/><p className="text-xs text-muted">{time(recording.durationSeconds)} · {isRemix?'Remix':'Original track'}</p></div></div>
     <AudioPreview src={post.media.url} title={post.title} waveformUrl={`/api/publications/${post.id}/waveform?listen=1`}/>
-    <div className="border-t border-border pt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm"><Link className="min-h-11 inline-flex items-center underline" href={`/project/${isRemix?example.original.projectId:example.remix.projectId}`}>{isRemix?'Original: luna · gramz & SANNFERNNA':'Listen to luna - chilz remix'}</Link><Link className="min-h-11 inline-flex items-center text-muted underline" href={`/discovery?post=post-${post.id}`}>Open in Discovery</Link></div>
+    <div className="border-t border-border pt-3 flex flex-wrap gap-x-5 gap-y-1 text-sm"><Link className="min-h-11 inline-flex items-center underline" href={`/project/${isRemix?example.original.projectId:example.remix.projectId}`}>{isRemix?'Original: luna · gramz & SANNFERNNA':'Listen to luna - chilz remix'}</Link></div>
   </section>;
 }
 
@@ -113,14 +115,14 @@ export function SilentDemoPlayer({ track, coverUrl, compact = false }: { track: 
 
 export function ReleaseCard({ release, title = release.title, coverUrl = release.coverUrl }: { release: PresentationRelease; title?: string; coverUrl?: string | null }) {
   return <Link href={`/project/${release.projectId}`} className="group block min-w-0 space-y-3 rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent">
-    <div className="aspect-square rounded-xl overflow-hidden bg-surfaceAlt relative">{coverUrl ? <img src={coverUrl} alt={`${title} artwork`} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none"/> : <Disc3 className="absolute inset-0 m-auto h-12 w-12 text-muted"/>}<span className="absolute bottom-3 right-3 rounded-full w-11 h-11 bg-bg/80 grid place-items-center"><ArrowUpRight size={20} aria-hidden/></span></div>
+    <div className="aspect-square rounded-xl overflow-hidden bg-surfaceAlt relative">{coverUrl ? <img src={coverUrl} alt={`${title} artwork`} loading="lazy" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none"/> : <Disc3 className="absolute inset-0 m-auto h-12 w-12 text-muted"/>}</div>
     <div><h3 className="font-semibold leading-snug break-words">{title}</h3><p className="text-sm text-muted mt-1">{release.dateKind === 'upload' ? 'YouTube · ' : ''}{release.year} · {release.formatLabel ?? release.type}</p></div>
   </Link>;
 }
 
 export function ArtistDiscography({ catalog, projects, limit }: { catalog: PresentationCatalog; projects: Project[]; limit?: number }) {
   const releases = catalog.releases.flatMap(release => { const project = projects.find(p => p.id === release.projectId); return project ? [{...release, title:project.title, coverUrl:project.coverUrl ?? release.coverUrl}] : []; });
-  return <section className="space-y-6" aria-label="Discography"><div className="flex justify-between items-end gap-4"><div><p className="voice text-[10px] text-accent mb-2">RELEASES / {catalog.artistName}</p><h2 className="text-2xl font-semibold">Discography</h2></div><span className="text-sm text-muted">{releases.length} releases</span></div>
+  return <section className="space-y-6" aria-label="Discography"><div className="flex justify-between items-end gap-4"><div><h2 className="text-2xl font-semibold">Discography</h2></div><span className="text-sm text-muted">{releases.length} releases</span></div>
     <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-7 sm:gap-x-6">{releases.slice(0, limit).map(release => <ReleaseCard key={release.projectId} release={release}/>)}</div>
     <p className="text-xs text-muted"><a href={catalog.source} target="_blank" rel="noreferrer" className="underline inline-flex min-h-11 items-center">{catalog.releases.some(release => release.sourcePlatform === 'youtube') ? 'Spotify profile' : 'Listen on Spotify'} <ArrowUpRight size={12}/></a></p>
   </section>;

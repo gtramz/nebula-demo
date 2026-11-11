@@ -1,3 +1,5 @@
+import { RefreshNotice } from '@/components/loading-states';
+import { useInitialAssets } from '@/hooks/use-initial-assets';
 import { useProjectProductCopy, useProjectPresentationCatalog } from '@/features/presentation/catalog';
 import { ProjectMusic } from '@/features/project/music';
 import { useState } from "react";
@@ -33,8 +35,9 @@ export default function ProjectDetail() {
   const [fundAmount, setFundAmount] = useState<number>(500);
   const [isFundModalOpen, setIsFundModalOpen] = useState(false);
 
-  if (isLoading) return <DetailLoading label="Loading project…"/>;
-  if (error) return <ContentWidth className="py-12 space-y-4"><p role="alert">{error.message}</p><button className="inline-flex min-h-11 items-center underline" onClick={() => void refetch()}>Retry project</button></ContentWidth>;
+  const assetsReady = useInitialAssets(`project:${projectId}:${user?.artistId ?? user?.investorId ?? 'guest'}`, [detail?.project.coverUrl, detail?.artist.picture], !!detail);
+  if (isLoading || !assetsReady) return <DetailLoading label="Loading project…"/>;
+  if (error && !detail) return <ContentWidth className="py-12 space-y-4"><p role="alert">{error.message}</p><button className="inline-flex min-h-11 items-center underline" onClick={() => void refetch()}>Retry project</button></ContentWidth>;
   if (!detail) return <div className="flex-1 p-8 text-center text-muted voice">PROJECT NOT FOUND</div>;
 
   const { project, artist, backers, supporters, viewerHasSupported } = detail;
@@ -67,7 +70,7 @@ export default function ProjectDetail() {
 
   return (
     <div data-page-scroll className="flex-1 overflow-y-auto">
-      <ContentWidth className="py-6 md:py-10 space-y-8 pb-20">
+      <ContentWidth className="py-6 md:py-10 space-y-8 pb-20"><RefreshNotice error={error} retry={refetch}/>
         <header className="grid sm:grid-cols-[220px_1fr] lg:grid-cols-[260px_1fr] gap-6 md:gap-8 items-end">
           <ProjectArtwork key={`${project.id}:${project.coverUrl}`} src={project.coverUrl} title={project.title} />
           <div className="min-w-0 space-y-4">

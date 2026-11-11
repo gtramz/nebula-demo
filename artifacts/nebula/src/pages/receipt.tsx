@@ -9,11 +9,12 @@ export default function Receipt() {
   const { id } = useParams<{ id: string }>();
   const investmentId = Number(id);
 
-  const { data: receipt, isLoading } = useGetInvestment(investmentId, {
+  const { data: receipt, isLoading, error, refetch } = useGetInvestment(investmentId, {
     query: { enabled: !!investmentId, queryKey: getGetInvestmentQueryKey(investmentId) }
   });
 
   if (isLoading) return <PageSkeleton variant="receipt" label="Loading contribution receipt"/>;
+  if (error && !receipt) return <div role="alert" className="p-8"><p>{error.message}</p><button onClick={() => void refetch()}>Retry receipt</button></div>;
   if (!receipt) return <div className="flex-1 p-8 text-center text-muted voice flex items-center justify-center">RECEIPT NOT FOUND</div>;
 
   return (

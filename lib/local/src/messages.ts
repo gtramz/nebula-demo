@@ -2,7 +2,7 @@ export type ConversationKind = 'collaboration' | 'general';
 export type Admission = 'pending' | 'accepted' | 'rejected' | 'withdrawn';
 export type ConversationMessage = { id: number; authorId: number; author: string; text: string; kind: string; createdAt: string };
 export type ConversationCard = {
-  kind: ConversationKind; id: number; counterpartId: number; counterpartName: string;
+  kind: ConversationKind; id: number; counterpartId: number; counterpartName: string; counterpartPicture: string | null;
   context: string | null; admission: Admission; legacy: boolean; direction: 'received' | 'sent';
   workStatus: string | null; updatedAt: string; unreadCount: number; lastActivityId: number | null;
 };

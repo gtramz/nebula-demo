@@ -71,10 +71,10 @@ export function notifications(db: DatabaseSync, artist: (id: number) => PublicAc
     const latest = db.prepare('SELECT MAX(id) id FROM artist_notifications WHERE recipient=?').get(recipient) as { id: number | null };
     return { unreadCount: unread.n, latestId: latest.id };
   }
-  function list(recipient: number, before: number): NotificationPage {
+  function list(recipient: number, before: number, unreadOnly = false): NotificationPage {
     const rows = db.prepare(`SELECT n.*,c.terms,c.id AS accessible_thread FROM artist_notifications n
       LEFT JOIN collaborations c ON n.target_kind='collaboration' AND c.id=n.thread AND (c.owner=n.recipient OR c.applicant=n.recipient)
-      WHERE n.recipient=? AND n.id<? ORDER BY n.id DESC LIMIT 31`).all(recipient, before) as Row[];
+      WHERE n.recipient=? AND n.id<? ${unreadOnly ? 'AND n.read_at IS NULL' : ''} ORDER BY n.id DESC LIMIT 31`).all(recipient, before) as Row[];
     return { ...summary(recipient), nextCursor: rows.length > 30 ? rows[29].id : null,
       items: rows.slice(0,30).map((row): ArtistNotification => {
         const actor = artist(row.actor);

@@ -5,6 +5,7 @@ import { apiRequest, type Waveform } from '@nebula/local';
 import { Disc3, Maximize, Play, Volume2, VolumeX } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotificationsOpen } from '@/features/notifications';
+import { AmbientArtwork } from './ambient-artwork';
 import { DiscoveryArtwork } from './cover-artwork';
 import type { FeedPlaybackState } from './feed-preparation';
 import type { DemoPost } from './demo-posts';
@@ -17,7 +18,7 @@ export function VideoDiscoveryPlayer({ children }: { children: ReactNode }) {
 export function AudioDiscoveryCard({ post, info, controls, playback, playbackToggle, eager }: { post: DemoPost; eager?: boolean; info: ReactNode; controls: ReactNode; playback: ReactNode; playbackToggle?: ReactNode }) {
   return <>
     <div className="discovery-audio-stage">
-      <div className="discovery-cover"><DiscoveryArtwork post={post} eager={eager} retryable />{playback}{playbackToggle}</div>
+      <AmbientArtwork post={post} enabled={eager}/><div className="discovery-cover"><DiscoveryArtwork post={post} eager={eager} retryable />{playback}{playbackToggle}</div>
     </div>
     {info}
     {controls}
@@ -195,6 +196,6 @@ export const DiscoveryMedia = memo(function DiscoveryMedia({ post, active, nearb
     onKeyDown={event => { if (event.target !== event.currentTarget || event.altKey || event.ctrlKey || event.metaKey || event.repeat || ![' ', 'k', 'K'].includes(event.key)) return; event.preventDefault(); event.stopPropagation(); if (!failed) toggle(); }}>
     <span id={keyboardHint} className="sr-only">{playing ? 'Playing.' : 'Paused.'} Tap the video or cover, or focus the player and press Space or K to pause or resume. Use the volume control to enable sound.</span>
     {audio ? <><AudioDiscoveryCard post={post} eager={nearby && !blocked} info={info} controls={controls} playback={playback} playbackToggle={playbackToggle} />{nearby && <audio {...mediaProps} ref={element => { media.current = element; }} aria-label={`${post.title} audio`} />}</>
-      : <><VideoDiscoveryPlayer>{nearby ? <AdaptiveVideo composition={post.composition} {...mediaProps} ref={element => { media.current = element; }} poster={post.coverUrl ?? undefined} playsInline className="discovery-video" aria-label={`${post.title} video`} /> : post.coverUrl ? <img src={post.coverUrl} alt="" loading="lazy" className="discovery-video" /> : <Disc3 aria-hidden="true" size={48} />}{playback}{playbackToggle}<button type="button" className="discovery-video-sound" disabled={!active || blocked || failed} aria-label={`${muted ? 'Unmute' : 'Mute'} ${post.title}`} aria-pressed={muted} onClick={() => { if(media.current) { media.current.volume=1; media.current.muted=!muted; } if (playbackState) playbackState.muted = !muted; setMuted(value=>!value); }}>{muted?<VolumeX size={17}/>:<Volume2 size={17}/>}</button></VideoDiscoveryPlayer>{controls}{info}</>}
+      : <><VideoDiscoveryPlayer><AmbientArtwork post={post} enabled={nearby}/>{nearby ? <AdaptiveVideo composition={post.composition} {...mediaProps} ref={element => { media.current = element; }} poster={post.coverUrl ?? undefined} playsInline className="discovery-video" aria-label={`${post.title} video`} /> : post.coverUrl ? <img src={post.coverUrl} alt="" loading="lazy" className="discovery-video" /> : <Disc3 aria-hidden="true" size={48} />}{playback}{playbackToggle}<button type="button" className="discovery-video-sound" disabled={!active || blocked || failed} aria-label={`${muted ? 'Unmute' : 'Mute'} ${post.title}`} aria-pressed={muted} onClick={() => { if(media.current) { media.current.volume=1; media.current.muted=!muted; } if (playbackState) playbackState.muted = !muted; setMuted(value=>!value); }}>{muted?<VolumeX size={17}/>:<Volume2 size={17}/>}</button></VideoDiscoveryPlayer>{controls}{info}</>}
   </div>;
 });

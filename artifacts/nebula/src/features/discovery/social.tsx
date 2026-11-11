@@ -1,9 +1,10 @@
+import { useInitialAssets } from '@/hooks/use-initial-assets';
 import { DesktopComments, type ReplyTarget } from './desktop-comments';
-import { Bookmark } from 'lucide-react';
+import { Bookmark, Music2 } from 'lucide-react';
 import { AudioPreview } from '@/components/audio-preview';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'wouter';
-import { useInfiniteQuery, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { apiRequest, isServerMode, type Publication } from '@nebula/local';
 import { useAuth } from '@/context/AuthContext';
 import { SectionSkeleton } from '@/components/loading-states';
@@ -44,21 +45,45 @@ function PlainComments({ postId, drafts }: { postId: number; drafts?: Map<number
   </>;
 }
 
-export function SavedPublications() {
+function SavedArtwork({ src }: { src: string | null }) {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [src]);
+  return <div className="h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-surfaceAlt grid place-items-center" aria-hidden="true">{src && !failed ? <img src={src} alt="" onError={() => setFailed(true)} className="h-full w-full object-cover"/> : <Music2 className="text-muted" size={24}/>}</div>;
+}
+function SavedMedia({ post }: { post: Publication }) {
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const element = root.current;
+    if (!element) return;
+    const pause = () => element.querySelectorAll<HTMLMediaElement>('audio,video').forEach(media => media.pause());
+    const observer = new IntersectionObserver(entries => { if (!entries.some(entry => entry.isIntersecting)) pause(); });
+    const hide = () => { if (document.hidden) pause(); };
+    observer.observe(element); document.addEventListener('visibilitychange', hide);
+    return () => { pause(); observer.disconnect(); document.removeEventListener('visibilitychange', hide); };
+  }, [post.id]);
+  return <div ref={root}>{post.media.kind === 'video' ? <video src={post.media.url} controls playsInline preload="metadata" className="w-full max-h-80 object-contain" /> : <AudioPreview src={post.media.url} title={post.title} waveformUrl={`/api/publications/${post.id}/waveform?listen=1`}/>}</div>;
+}
+
+export function SavedPublications() { const { user } = useAuth(); return <SavedCollection key={`${user?.role}:${user?.artistId ?? user?.investorId ?? 'guest'}`}/>; }
+function SavedCollection() {
   const { user } = useAuth(), client = useQueryClient();
   const [error, setError] = useState(''), [pending, setPending] = useState<number | null>(null);
-  const query = useInfiniteQuery({ queryKey: ['saved', user?.artistId ?? user?.investorId ?? null], initialPageParam: null as number | null,
+  const saving = useRef(false);
+  const query = useInfiniteQuery({ queryKey: ['saved', user ? `${user.role}:${user.artistId ?? user.investorId}` : null], initialPageParam: null as number | null,
     queryFn: ({ pageParam }) => apiRequest<{ items: Publication[]; nextCursor: number | null }>(`/api/saved${pageParam ? `?before=${pageParam}` : ''}`),
     getNextPageParam: page => page.nextCursor ?? undefined, enabled: !!user && isServerMode(), refetchOnWindowFocus: true, refetchInterval: 15_000,
   });
+  const loadedItems = query.data?.pages.flatMap(page => page.items) ?? [];
+  const assetsReady = useInitialAssets(`saved:${user?.role}:${user?.artistId ?? user?.investorId}`, loadedItems.slice(0,2).map(post=>post.coverUrl), !!query.data);
   if (!user) return <div className="p-8"><p>Log in to see your private collection.</p><Link href="/login">log in</Link></div>;
   if (!isServerMode()) return <div className="p-8">Saved publications are unavailable. Please try again later.</div>;
   const items = query.data?.pages.flatMap(page => page.items) ?? [];
   return <section className="w-full max-w-3xl mx-auto p-6 space-y-6"><h1 className="text-3xl font-bold">Saved publications</h1>
     {(error || query.error) && <p role="alert">{error || query.error?.message}</p>}{query.error && <button onClick={() => void query.refetch()}>Try again</button>}
-    {query.isLoading ? <SectionSkeleton variant="player" label="Loading saved publications"/> : !items.length && !query.error ? <p>No saved publications yet.</p> : items.map(post => <article key={post.id} className="rounded-2xl border border-border bg-white/[0.025] p-5 space-y-4"><div className="flex items-center gap-4">{post.coverUrl && <img src={post.coverUrl} alt="" className="h-16 w-16 shrink-0 rounded-xl object-cover"/>}<div className="min-w-0"><Link className="text-lg font-semibold leading-snug hover:underline" href={`/discovery?post=post-${post.id}`}>{post.title}</Link><p className="mt-1 text-sm text-muted">{post.artistName}</p></div></div>{post.media.kind === 'video' ? <video src={post.media.url} controls playsInline preload="metadata" className="w-full max-h-80 object-contain" /> : <AudioPreview src={post.media.url} title={post.title} waveformUrl={`/api/publications/${post.id}/waveform?listen=1`}/>}<div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3"><Link className="inline-flex min-h-11 items-center text-sm font-medium hover:underline" href={`/discovery?post=post-${post.id}`}>Open original</Link><button className="min-h-11 min-w-11 flex items-center justify-center rounded-full text-accent hover:bg-surfaceAlt focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent" aria-label={`Unsave ${post.title}`} title="Remove from saved" aria-pressed={true} disabled={pending !== null} onClick={async () => {
-      setPending(post.id); setError(''); try { await apiRequest(`/api/publications/${post.id}/save`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: false }) }); await refreshSocial(client); } catch (error) { setError((error as Error).message); } finally { setPending(null); }
+    {query.isLoading || !assetsReady ? <SectionSkeleton variant="saved" label="Loading saved publications" rows={2}/> : !items.length && !query.error ? <p>No saved publications yet.</p> : items.map(post => <article key={post.id} className="rounded-xl border border-border bg-white/[0.025] p-4 space-y-3"><div className="flex items-center gap-4"><SavedArtwork src={post.coverUrl}/><div className="min-w-0"><Link className="text-lg font-semibold leading-snug hover:underline" href={`/discovery?post=post-${post.id}`}>{post.title}</Link><Link href={`/artist/${post.artistId}`} className="mt-1 inline-flex min-h-11 items-center text-sm text-muted hover:underline">{post.artistName}</Link></div></div><SavedMedia post={post}/><div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3"><Link className="inline-flex min-h-11 items-center text-sm font-medium hover:underline" href={`/discovery?post=post-${post.id}`}>Open original</Link><button className="min-h-11 min-w-11 flex items-center justify-center rounded-full text-accent hover:bg-surfaceAlt focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent" aria-label={`Unsave ${post.title}`} title="Remove from saved" aria-pressed={true} disabled={pending !== null} onClick={async () => {
+      if (saving.current) return; saving.current = true; setPending(post.id); setError(''); try { await apiRequest(`/api/publications/${post.id}/save`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled: false }) }); client.setQueryData(['saved', user ? `${user.role}:${user.artistId ?? user.investorId}` : null], (data: InfiniteData<{items: Publication[]; nextCursor: number | null}> | undefined) => data && ({ ...data, pages: data.pages.map(page => ({ ...page, items: page.items.filter((item: Publication) => item.id !== post.id) })) })); await Promise.all(['saved', 'publication', 'discovery-feed', 'opportunity-projects'].map(key => client.invalidateQueries({ queryKey: [key] }))); } catch (error) { setError((error as Error).message); } finally { saving.current = false; setPending(null); }
     }}><Bookmark aria-hidden size={24} fill="currentColor" /></button></div></article>)}
+    {query.isFetchingNextPage && <SectionSkeleton variant="saved" label="Loading more saved publications" rows={1}/>}
     {query.hasNextPage && <button disabled={query.isFetchingNextPage} onClick={() => void query.fetchNextPage()}>Load more</button>}
   </section>;
 }

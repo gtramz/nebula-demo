@@ -49,7 +49,7 @@ export function messages(d:Dependencies) {
    ) SELECT * FROM threads WHERE ${admission} ${side}
    AND (@date IS NULL OR updated<@date OR (updated=@date AND (scope<@scope OR (scope=@scope AND id<@id))))
    ORDER BY updated DESC,scope DESC,id DESC LIMIT 31`).all({viewer,date:cursor?.[0]??null,scope:cursor?.[1]??null,id:cursor?.[2]??null}) as {scope:ConversationKind;id:number;sender:number;recipient:number;context:string|null;admission:Admission;legacy:number;workStatus:string|null;updated:string}[];
-  const items:ConversationCard[]=rows.slice(0,30).map(row=>{const counterpart=row.sender===viewer?row.recipient:row.sender;return {kind:row.scope,id:row.id,counterpartId:counterpart,counterpartName:name(counterpart),context:row.context,admission:row.admission,legacy:!!row.legacy,direction:row.recipient===viewer?'received':'sent',workStatus:row.workStatus,updatedAt:row.updated,...store.reading(row.scope,row.id,viewer)};});
+  const items:ConversationCard[]=rows.slice(0,30).map(row=>{const counterpart=row.sender===viewer?row.recipient:row.sender;return {kind:row.scope,id:row.id,counterpartId:counterpart,counterpartName:name(counterpart),counterpartPicture:d.artist(counterpart)?.picture ?? null,context:row.context,admission:row.admission,legacy:!!row.legacy,direction:row.recipient===viewer?'received':'sent',workStatus:row.workStatus,updatedAt:row.updated,...store.reading(row.scope,row.id,viewer)};});
   const last=rows[29];return {items,nextCursor:rows.length>30?Buffer.from(JSON.stringify([last.updated,last.scope,last.id,viewer,view,direction,closed])).toString('base64url'):null};
  }
  async function handle(req:IncomingMessage,res:ServerResponse,url:URL) {

@@ -1,0 +1,19 @@
+.messages-workspace { display:grid; grid-template-columns:320px minmax(0,1fr); width:100%; flex:1; min-height:0; overflow:hidden; }
+.messages-inbox { border-right:1px solid #ffffff20; overflow-y:auto; overscroll-behavior:contain; }
+.messages-inbox>section { padding:20px 12px; }
+.messages-inbox h1 { font-size:24px; }
+.messages-inbox .text-tabs { gap:12px; }
+.message-row { display:block; padding:14px 10px; border-bottom:1px solid #ffffff15; border-radius:8px; }
+.message-row>*+* { margin-top:6px; }
+.message-row:hover,.message-row[aria-current=page] { background:#ffffff08; }
+.message-row[aria-current=page] { box-shadow:inset 2px 0 var(--color-accent); }
+.message-avatar { display:grid; place-items:center; flex-shrink:0; width:36px; height:36px; border-radius:50%; overflow:hidden; background:#20302a; color:#d6f436; font-size:11px; }
+.message-avatar img { width:100%; height:100%; object-fit:cover; }
+.messages-detail { overflow-y:auto; overscroll-behavior:contain; min-width:0; }
+.messages-detail>section { padding:24px; }
+.messages-detail h1 { font-size:24px; }
+.messages-detail [aria-label="Private conversation"]>form { position:sticky; bottom:0; z-index:1; padding-top:12px; background:var(--color-bg,#080909); }
+.messages-detail [aria-label="Messages"] { max-height:48vh; overflow-y:auto; overflow-anchor:auto; padding-right:8px; }
+.messages-detail .xl\:grid-cols-\[minmax\(0\,1\.2fr\)_minmax\(0\,1fr\)\] { grid-template-columns:1fr; }
+@media(max-width:900px) { .messages-workspace { grid-template-columns:260px minmax(0,1fr); } }
+@media(max-width:767px) { .messages-workspace { display:block; overflow:visible; }.messages-workspace[data-selected=true] .messages-inbox,.messages-workspace[data-selected=false] .messages-detail { display:none; }.messages-detail { overflow:visible; }.messages-inbox { border:0; } }

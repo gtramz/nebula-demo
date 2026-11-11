@@ -68,7 +68,7 @@ export default function Search() {
           </div>
         </div>
         <p id="search-status" role="status" aria-live="polite" aria-atomic="true" className={waiting && !composing ? 'sr-only' : 'text-sm text-muted'}>
-          {!eligible ? (search ? "Enter at least 2 characters." : "Search artists and projects.")
+          {!eligible ? (search ? "Enter at least 2 characters." : "")
             : composing ? "Finish typing to search."
             : waiting ? "Searching…"
             : error ? "Search could not be completed."

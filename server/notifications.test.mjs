@@ -147,3 +147,20 @@ test('messages migration preserves prior Follow schema, read state, unique occur
  assert.equal(service.list(3,Number.MAX_SAFE_INTEGER).items[0].target.available,false);
  notifications(db,actor);assert.equal(db.prepare('SELECT COUNT(*) n FROM artist_notifications').get().n,4);
 });
+
+
+test('handoff unread filter paginates before limiting and preserves read history', t => {
+ const db=fixture(t),service=notifications(db,actor);
+ for(let i=0;i<75;i++) service.record(2,1,7,'message',date);
+ for(let id=36;id<=75;id++)service.read(2,id,readDate);
+ const first=service.list(2,Number.MAX_SAFE_INTEGER,true), second=service.list(2,first.nextCursor,true);
+ assert.equal(first.items.length,30);assert.equal(second.items.length,5);assert.equal(second.nextCursor,null);
+ assert.equal(new Set([...first.items,...second.items].map(item=>item.id)).size,35);
+ assert.ok([...first.items,...second.items].every(item=>item.readAt===null));
+ service.readThrough(2,first.latestId,readDate);
+ service.record(2,1,7,'message',date);
+ assert.equal(service.list(2,Number.MAX_SAFE_INTEGER,true).items.length,1);
+ assert.equal(db.prepare('SELECT COUNT(*) n FROM artist_notifications').get().n,76);
+ assert.ok(service.list(2,Number.MAX_SAFE_INTEGER).items.some(item=>item.readAt!==null));
+ assert.equal(service.list(3,Number.MAX_SAFE_INTEGER,true).items.length,0);
+});

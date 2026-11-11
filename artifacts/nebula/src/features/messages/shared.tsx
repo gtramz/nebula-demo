@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'wouter';
 import { useQueryClient } from '@tanstack/react-query';
-import { apiRequest, isServerMode, type ConversationKind, type ConversationMessage } from '@nebula/local';
+import { apiRequest, isServerMode, useGetArtist, type ConversationKind, type ConversationMessage } from '@nebula/local';
 import { useAuth } from '@/context/AuthContext';
 import { useWorkspaceDraft } from '@/features/collaborations/drafts';
 import { Panel, controlStyles } from '@/components/antiq/workspace';
@@ -46,4 +46,11 @@ export function ViewedActivity({kind,id,throughId,unread}:{kind:ConversationKind
 export function Transcript({messages,artistId,children}:{messages:ConversationMessage[];artistId:number;children?:ReactNode}) {
  return <Panel aria-label="Private conversation"><h2 className="text-xl font-bold">Conversation</h2><p className="text-xs text-muted">Only the participants can read this conversation.</p>
  <div className="space-y-4" aria-label="Messages">{!messages.length&&<p className="text-sm text-muted">No messages yet.</p>}{messages.map(m=><article key={m.id} className={`border-l-2 pl-3 ${m.authorId===artistId?'border-accent':'border-border'}`}><p className="text-sm font-bold">{m.author}</p>{m.kind&&m.kind!=='message'&&<p className="text-xs text-accent">{({request:'Introduction',revision:'Revision requested',reject:'Request declined',accept:'Request accepted'} as Record<string,string>)[m.kind]??m.kind}</p>}<p className="text-sm whitespace-pre-wrap break-words">{m.text.split('\n').map((line,index)=><span key={index}>{index>0&&'\n'}{/^\/discovery\?post=post-[1-9]\d*$/.test(line)?<Link className="inline-flex min-h-11 items-center text-accent underline" href={line}>Open shared publication</Link>:line}</span>)}</p><time className="text-xs text-muted" dateTime={m.createdAt}>{new Date(m.createdAt).toLocaleString()}</time></article>)}</div>{children}</Panel>;
+}
+
+export function PeerAvatar({ artistId, name }: { artistId: number; name: string }) {
+ const query=useGetArtist(artistId,{query:{staleTime:15000}}), [failed,setFailed]=useState(false);
+ const picture=query.data?.artist.picture;
+ useEffect(()=>setFailed(false),[picture]);
+ return <span className="message-avatar" aria-hidden="true">{picture&&!failed?<img src={picture} alt="" onError={()=>setFailed(true)}/>:name.slice(0,2).toUpperCase()}</span>;
 }

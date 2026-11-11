@@ -1,5 +1,5 @@
 import { SectionSkeleton } from '@/components/loading-states';
-import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Bell, X } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
@@ -33,8 +33,29 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 function NotificationCenter({ artistId, children }: { artistId?: number; children: ReactNode }) {
   const [location] = useLocation(), client = useQueryClient();
   const [openedFor, setOpenedFor] = useState<number>(), [locked, setLocked] = useState(false), [reading, setReading] = useState(false);
+  const [anchor, setAnchor] = useState({ left: 12, top: 72, maxHeight: 480 });
   const trigger = useRef<HTMLElement | null>(null), previousArtist = useRef(artistId);
+  const [panelElement, setPanelElement] = useState<HTMLDivElement | null>(null);
   const open = !!artistId && openedFor === artistId;
+  useLayoutEffect(() => {
+    if (!open) return;
+    const position = () => {
+      const rect = trigger.current?.getBoundingClientRect();
+      if (!rect) return;
+      const width = Math.min(380, window.innerWidth - 24);
+      const beside = rect.left < 260;
+      const left = Math.max(12, Math.min(window.innerWidth - width - 12, beside ? rect.right + 12 : rect.right - width));
+      const maxHeight = Math.min(480, window.innerHeight - 24);
+      const height = Math.min(maxHeight, panelElement?.getBoundingClientRect().height || maxHeight);
+      const desired = beside ? (rect.top > window.innerHeight / 2 ? rect.bottom - height : rect.top)
+        : rect.bottom + 8 + height <= window.innerHeight - 12 ? rect.bottom + 8 : rect.top - height - 8;
+      const top = Math.max(12, Math.min(desired, window.innerHeight - height - 12));
+      setAnchor(previous => previous.left === left && previous.top === top && previous.maxHeight === maxHeight ? previous : { left, top, maxHeight });
+    };
+    position(); const observer = new ResizeObserver(position); if (panelElement) observer.observe(panelElement);
+    window.addEventListener('resize', position); window.addEventListener('scroll', position, true);
+    return () => { observer.disconnect(); window.removeEventListener('resize', position); window.removeEventListener('scroll', position, true); };
+  }, [open, panelElement]);
   const summary = useQuery({ queryKey: ['notification-summary', artistId],
     queryFn: ({ signal }) => apiRequest<NotificationSummary>('/api/notifications/summary', { signal }),
     enabled: !!artistId && !reading, staleTime: 5000, refetchInterval: 10_000, refetchOnWindowFocus: true });
@@ -64,7 +85,7 @@ function NotificationCenter({ artistId, children }: { artistId?: number; childre
     {children}
     <Dialog.Root open={open} onOpenChange={value => { if (!value) setOpenedFor(undefined); }}>
       <Dialog.Portal><Dialog.Overlay className="notifications-overlay" />
-        <Dialog.Content className="notifications-panel" onCloseAutoFocus={event => {
+        <Dialog.Content ref={setPanelElement} className="notifications-panel" style={anchor} onCloseAutoFocus={event => {
           event.preventDefault();
           // Discovery hides its mobile header. A panel opened on desktop can still
           // be closed after resizing, when its former bell is no longer visible.
@@ -76,7 +97,7 @@ function NotificationCenter({ artistId, children }: { artistId?: number; childre
           const target = trigger.current?.isConnected && trigger.current.getClientRects().length ? trigger.current : fallback;
           target?.focus({ preventScroll: true });
         }}>
-          <header className="notifications-heading"><p className="voice text-xs text-accent">STAY IN THE LOOP</p><Dialog.Title className="text-3xl font-bold">Notifications</Dialog.Title><Dialog.Description className="text-sm text-muted">Updates from your requests, conversations, collaborations and followers.</Dialog.Description></header>
+          <header className="notifications-heading"><Dialog.Title className="text-lg font-semibold">Notifications</Dialog.Title><Dialog.Description className="sr-only">Unread activity</Dialog.Description></header>
           <Dialog.Close className="notifications-close" aria-label="Close notifications"><X size={22} aria-hidden="true" /></Dialog.Close>
           {artistId && <NotificationList key={artistId} artistId={artistId} panel />}
         </Dialog.Content>
@@ -109,8 +130,8 @@ function NotificationList({ artistId, panel = false }: { artistId: number; panel
   const request = useRef<AbortController | null>(null);
   useEffect(() => () => { request.current?.abort(); setReading(false); }, [setReading]);
   const [pending, setPending] = useState(false), [error, setError] = useState('');
-  const query = useInfiniteQuery({ queryKey: ['notifications', artistId], initialPageParam: null as number | null,
-    queryFn: ({ pageParam, signal }) => apiRequest<NotificationPage>(`/api/notifications${pageParam ? `?before=${pageParam}` : ''}`, { signal }),
+  const query = useInfiniteQuery({ queryKey: ['notifications', artistId, panel ? 'unread' : 'all'], initialPageParam: null as number | null,
+    queryFn: ({ pageParam, signal }) => apiRequest<NotificationPage>(`/api/notifications?unreadOnly=${panel ? 1 : 0}${pageParam ? `&before=${pageParam}` : ''}`, { signal }),
     getNextPageParam: page => page.nextCursor ?? undefined, enabled: !pending, refetchOnWindowFocus: false });
   const first = query.data?.pages[0];
   const items = [...new Map(query.data?.pages.flatMap(page => page.items).map(item => [item.id, item]) ?? []).values()];
@@ -129,25 +150,25 @@ function NotificationList({ artistId, panel = false }: { artistId: number; panel
     } catch (error) { if (!abort.signal.aborted) setError((error as Error).message); }
     finally { if (!abort.signal.aborted) { request.current = null; setPending(false); setReading(false); } }
   }
-  return <section className={panel ? "space-y-6" : "mx-auto w-full max-w-3xl p-6 pb-24 space-y-6"}>
+  return <section className={panel ? "space-y-3" : "mx-auto w-full max-w-3xl p-6 pb-24 space-y-6"}>
 
-    <div className="flex flex-wrap items-center justify-between gap-3">{panel ? <Link href="/messages" onClick={close} className="inline-flex min-h-11 items-center underline text-sm">Your messages</Link> : <div><p className="voice text-xs text-accent">STAY IN THE LOOP</p><h1 className="text-3xl font-bold">Notifications</h1></div>}
+    <div className="flex flex-wrap items-center justify-between gap-3">{panel ? null : <div><h1 className="text-3xl font-bold">Notifications</h1></div>}
       <button className={button} disabled={pending || !first?.unreadCount || !!query.error} onClick={() => first?.latestId && void markRead({ throughId: first.latestId })}>Mark all as read</button></div>
 
     {first && <p role="status" className="text-sm text-accent">{first.unreadCount} unread</p>}
     {(error || query.error) && <p role="alert" className="text-sm text-danger">{error || (query.error as Error).message}</p>}
     {query.error && <button className={button} onClick={() => void query.refetch()}>Retry notifications</button>}
     {query.isLoading && <SectionSkeleton variant="list" label="Loading notifications" rows={4}/>}
-    {!query.isLoading && !query.error && !items.length && <div className="border border-border p-6 space-y-3"><h2 className="text-xl font-semibold">You’re all caught up.</h2><p className="text-muted">New followers, requests, messages, proposals and work updates will appear here.</p></div>}
+    {!query.isLoading && !query.error && !items.length && <div className="border border-border p-6 space-y-3"><h2 className="text-xl font-semibold">You’re all caught up.</h2></div>}
     <div className="space-y-3">{items.map(item => {
       const follow = item.kind === 'artist.followed';
       const heading = item.kind === 'artist.followed' ? `${item.actorName} started following you` : labels[item.kind];
       const description = item.kind === 'artist.followed' ? null : 'conversationId' in item ? item.actorName : `${item.actorName} · ${item.projectTitle}${item.need ? ` · ${item.need}` : ''}`;
       const href = notificationHref(item);
       const accessibleName = item.kind === 'artist.followed' ? heading : 'conversationId' in item ? `${heading} · ${item.actorName}` : `${heading} · ${item.projectTitle} · ${item.need}`;
-      return <article key={item.id} aria-label={accessibleName} className={`border p-5 space-y-3 ${item.readAt ? 'border-border' : 'border-accent/60 bg-accent/5'}`}>
+      return <article key={item.id} aria-label={accessibleName} className={`rounded-lg border p-3 space-y-2 ${item.readAt ? 'border-border' : 'border-accent/60 bg-accent/5'}`}>
         <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-xs text-muted"><time dateTime={item.createdAt}>{new Date(item.createdAt).toLocaleString()}</time></p><span className={`text-xs ${item.readAt ? 'text-muted' : 'text-accent'}`}>{item.readAt ? 'Read' : 'Unread'}</span></div>
-        <h2 className="text-lg font-semibold break-words">{heading}</h2>{description && <p className="break-words text-sm">{description}</p>}
+        <h2 className="text-sm font-semibold break-words">{heading}</h2>{description && <p className="break-words text-sm">{description}</p>}
         {!href && <p className="text-sm text-muted">{follow ? 'This artist profile is no longer available.' : 'This conversation is no longer available.'}</p>}
         <div className="flex flex-wrap gap-3">{href && <Link className={button} href={href} aria-disabled={pending} onClick={event => { if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return; event.preventDefault(); if (pending) return; if (item.readAt) { close(); navigate(href); } else void markRead({ id: item.id }, href); }}>{follow ? 'View artist' : 'conversationId' in item ? 'View conversation' : 'View collaboration'}</Link>}
           {!item.readAt && <button className="px-2 py-3 text-sm underline disabled:opacity-40" disabled={pending} onClick={() => void markRead({ id: item.id })}>Mark as read</button>}</div>

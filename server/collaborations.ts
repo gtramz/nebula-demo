@@ -153,7 +153,8 @@ export function collaborations(d: Dependencies) {
     if (notification) {
       if (req.method === 'GET' && notification[1] === 'summary') { d.json(res, alerts.summary(viewer)); return true; }
       if (req.method === 'GET' && !notification[1]) {
-        d.json(res, alerts.list(viewer, id(Number(url.searchParams.get('before') ?? Number.MAX_SAFE_INTEGER)))); return true;
+        ensure(!url.searchParams.has('unreadOnly') || ['0','1'].includes(url.searchParams.get('unreadOnly')!), 'Invalid unread filter.');
+        d.json(res, alerts.list(viewer, id(Number(url.searchParams.get('before') ?? Number.MAX_SAFE_INTEGER)), url.searchParams.get('unreadOnly') === '1')); return true;
       }
       if (req.method === 'PATCH' && notification[1] === 'read') {
         const data = await d.body(req), now = new Date().toISOString();

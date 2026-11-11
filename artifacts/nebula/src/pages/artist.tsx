@@ -1,3 +1,5 @@
+import { RefreshNotice } from '@/components/loading-states';
+import { useInitialAssets } from '@/hooks/use-initial-assets';
 import { ArtistDiscography, FeaturedRecording, usePresentationRemixExample, usePresentationCatalog } from '@/features/presentation/catalog';
 import { ProjectOffers } from '@/features/collaborations';
 import { useParams, Link } from 'wouter';
@@ -14,10 +16,11 @@ import { ArtistProjectGrid } from '@/features/artist-identity/project-grid';
 export default function ArtistProfile() {
   const { id } = useParams<{ id: string }>(), artistId = Number(id);
   const query = usePublicArtist(artistId), { user } = useAuth();
-  if (query.isLoading) return <DetailLoading label="Loading artist…" artist/>;
-  if (query.isError) return <ContentWidth className="py-12 space-y-4"><p role="alert">{query.error.message}</p><button className={controlStyles.button} onClick={() => void query.refetch()}>Retry profile</button></ContentWidth>;
+  const assetsReady = useInitialAssets(`artist:${artistId}:${user?.artistId ?? user?.investorId ?? 'guest'}`, [query.data?.artist.picture, ...query.data?.projects.slice(0,2).map(project=>project.coverUrl) ?? []], !!query.data);
+  if (query.isLoading || !assetsReady) return <DetailLoading label="Loading artist…" artist/>;
+  if (query.isError && !query.data) return <ContentWidth className="py-12 space-y-4"><p role="alert">{query.error.message}</p><button className={controlStyles.button} onClick={() => void query.refetch()}>Retry profile</button></ContentWidth>;
   if (!query.data) return <ContentWidth className="py-12 space-y-4"><h1 className="text-3xl font-bold">Artist not found</h1></ContentWidth>;
-  return <ArtistProfileContent key={`${artistId}:${user?.role ?? 'guest'}:${user?.artistId ?? user?.investorId ?? ''}`} detail={query.data} />;
+  return <><RefreshNotice error={query.error} retry={query.refetch}/><ArtistProfileContent key={`${artistId}:${user?.role ?? 'guest'}:${user?.artistId ?? user?.investorId ?? ''}`} detail={query.data} /></>;
 }
 
 function ArtistProfileContent({ detail }: { detail: PublicArtistProfile }) {

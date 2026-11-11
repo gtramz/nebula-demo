@@ -1,7 +1,7 @@
 import { SectionSkeleton } from '@/components/loading-states';
 import { useState } from 'react';
 import { Link } from 'wouter';
-import { ArrowUpRight, ChevronDown, Music2 } from 'lucide-react';
+import { ChevronDown, Music2 } from 'lucide-react';
 import { sumMoney, useGetProject, type ReceivedInvestment } from '@nebula/local';
 import { formatMoney } from '@/lib/utils';
 
@@ -15,18 +15,12 @@ export function ReceivedProject({ movements, filtered }: { movements: ReceivedIn
   const total = sumMoney(movements.map(entry => entry.amount));
   const percent = project && project.goalAmount > 0 ? Math.min(100, Math.round(project.raisedAmount / project.goalAmount * 100)) : 0;
   return <article aria-label={`${first.projectTitle} history`} className="min-w-0 overflow-hidden rounded-2xl border border-border bg-surface">
-    <div className="relative h-48 sm:h-56 overflow-hidden bg-surfaceAlt">
-      {project?.coverUrl && failedCover !== project.coverUrl
-        ? <img src={project.coverUrl} alt={`${first.projectTitle} cover`} loading="lazy" onError={() => setFailedCover(project.coverUrl!)} className="h-full w-full object-cover" />
-        : <div className="h-full grid place-items-center bg-gradient-to-br from-accent/10 to-transparent"><Music2 size={44} className="text-muted" aria-hidden="true" /></div>}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
-      <span className="absolute top-4 left-4 rounded-full border border-white/20 bg-black/70 px-3 py-1 text-xs text-white capitalize">{first.projectArchived ? 'Removed project' : project?.status === 'funding' ? 'Funding open' : project?.status ?? 'Current project'}</span>
-      {!first.projectArchived && <Link href={`/project/${first.projectId}`} aria-label={`View project: ${first.projectTitle}`} className="absolute bottom-4 right-4 flex items-center gap-2 rounded-full bg-cream text-bg min-h-11 px-4 text-xs font-semibold focus-visible:outline focus-visible:outline-accent">View project<ArrowUpRight size={16} aria-hidden="true"/></Link>}
-      {project && <p className="absolute bottom-5 left-5 text-white text-xs uppercase tracking-widest">{project.category}</p>}
-    </div>
-    <div className="p-5 sm:p-6 space-y-5">
-      <div><h3 className="text-2xl font-semibold break-words">{first.projectTitle}</h3><p className="text-xs text-muted mt-2">{movements.length} contribution{movements.length === 1 ? '' : 's'}{filtered ? ' in this selection' : ''}</p></div>
-      <div><p className="text-xs text-muted">{filtered ? 'Received in this selection' : 'Total received'}</p><p className="text-3xl font-semibold text-accent mt-1 break-words">{formatMoney(total)}</p></div>
+    <div className="p-4 space-y-3">
+      <div className="flex items-center gap-4">
+        <div className="h-16 w-16 shrink-0 rounded-lg overflow-hidden bg-surfaceAlt">{project?.coverUrl && failedCover !== project.coverUrl ? <img src={project.coverUrl} alt={`${first.projectTitle} cover`} loading="lazy" onError={() => setFailedCover(project.coverUrl!)} className="h-full w-full object-cover"/> : <Music2 className="m-5 text-muted" size={24} aria-hidden/>}</div>
+        <div className="min-w-0 flex-1"><h3 className="text-base font-semibold break-words">{!first.projectArchived ? <Link href={`/project/${first.projectId}`} aria-label={`View project: ${first.projectTitle}`} className="hover:underline">{first.projectTitle}</Link> : first.projectTitle}</h3><p className="text-xs text-muted mt-1">{movements.length} contribution{movements.length === 1 ? '' : 's'}{filtered ? ' in this selection' : ''} · {first.projectArchived ? 'Removed project' : project?.category ?? 'Project'}</p></div>
+        <div className="text-right"><p className="text-xs text-muted">{filtered ? 'In selection' : 'Received'}</p><p className="text-lg font-semibold text-accent tabular-nums">{formatMoney(total)}</p></div>
+      </div>
       {project && project.goalAmount > 0 && <div className="space-y-2">
         <div className="flex flex-wrap justify-between gap-2 text-xs text-muted"><span>{filtered ? `${formatMoney(project.raisedAmount)} total · ` : ''}Goal {formatMoney(project.goalAmount)}</span><span>{percent}% funded</span></div>
         <div role="progressbar" aria-label={`${first.projectTitle} funding`} aria-valuenow={percent} aria-valuemin={0} aria-valuemax={100} className="h-1.5 rounded-full overflow-hidden bg-white/10"><div className="h-full bg-accent rounded-full" style={{ width: `${percent}%` }} /></div>

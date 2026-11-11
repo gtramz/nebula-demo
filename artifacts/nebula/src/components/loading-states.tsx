@@ -1,7 +1,12 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import './loading-states.css';
 
-type SectionVariant = 'list' | 'cards' | 'player' | 'profile' | 'form' | 'comments' | 'conversation' | 'tabs' | 'waveform' | 'media';
+export function RefreshNotice({ error, retry }: { error: unknown; retry: () => unknown }) {
+  if (!error) return null;
+  return <div role="alert" className="flex flex-wrap items-center gap-3 text-sm text-muted"><span>Could not refresh. Showing the last available content.</span><button type="button" className="min-h-11 underline" onClick={() => void retry()}>Retry update</button></div>;
+}
+
+type SectionVariant = 'saved' | 'received' | 'list' | 'cards' | 'player' | 'profile' | 'form' | 'comments' | 'conversation' | 'tabs' | 'waveform' | 'media';
 type PageVariant = 'feed' | 'cards' | 'profile' | 'account' | 'project' | 'list' | 'form' | 'receipt' | 'landing';
 type LoadingProps<T> = { variant?: T; label?: string; rows?: number; className?: string };
 const waveHeights = [20,36,58,42,72,50,90,64,40,76,100,66,38,82,54,30,62,44,24,48,70,36,56,22];
@@ -25,6 +30,8 @@ function Form({ rows }: { rows: number }) {
 }
 function Tabs() { return <div className="loading-tabs">{repeat(5).map(index => <Skeleton className="loading-tab" key={index}/>)}</div>; }
 function SectionContent({ variant, rows }: { variant: SectionVariant; rows: number }) {
+  if (variant === 'saved') return <div className="space-y-4">{repeat(rows).map(index => <div key={index} className="rounded-xl border border-border p-4 space-y-4"><ListRows rows={1}/><Skeleton className="h-14 w-full"/><Skeleton className="h-11 w-full"/></div>)}</div>;
+  if (variant === 'received') return <div className="space-y-4"><Skeleton className="h-24 w-full"/><ListRows rows={rows}/></div>;
   if (variant === 'cards') return <Cards rows={rows}/>;
   if (variant === 'player') return <Player/>;
   if (variant === 'waveform') return <div className="loading-wave loading-wave-compact">{waveHeights.map((height, index) => <Skeleton key={index} style={{ height: `${height}%` }}/>)}</div>;

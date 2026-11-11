@@ -1,3 +1,4 @@
+import { RefreshNotice } from '@/components/loading-states';
 import { useViewState } from '@/components/shell/return-context';
 import { isServerMode, useListProjects } from "@nebula/local";
 import { useAuth } from '@/context/AuthContext';
@@ -39,8 +40,8 @@ function ProjectCatalog() {
           ))}
         </div>
 
-        <div className="px-4 lg:px-0">
-          {error ? <div role="alert" className="space-y-3"><p>{error.message}</p><button className="underline" onClick={() => void refetch()}>Try again</button></div> : projectsLoading ? (
+        <div className="px-4 lg:px-0">{projects && <RefreshNotice error={error} retry={refetch}/>}
+          {error && !projects ? <div role="alert" className="space-y-3"><p>{error.message}</p><button className="underline" onClick={() => void refetch()}>Try again</button></div> : projectsLoading ? (
             <SectionSkeleton variant="cards" label="Loading projects" rows={3}/>
           ) : projects?.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-64 text-center border border-border p-8">

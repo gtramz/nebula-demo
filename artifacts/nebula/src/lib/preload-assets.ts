@@ -4,7 +4,7 @@ const images = new Map<string, Promise<void>>();
 export async function warmImageAssets(sources: Array<string | null | undefined>, { priority = 'low', maxWaitMs = 0 }: { priority?: 'high' | 'low' | 'auto'; maxWaitMs?: number } = {}) {
   if (typeof window === 'undefined' || document.hidden) return;
   const urls = [...new Set(sources.filter((source): source is string => !!source))].flatMap(source => {
-    try { const url = new URL(source, location.href); return url.origin === location.origin && /^https?:$/.test(url.protocol) ? [url.href] : []; }
+    try { const url = new URL(source, location.href); return (url.origin === location.origin && /^https?:$/.test(url.protocol)) || url.protocol === 'data:' ? [url.href] : []; }
     catch { return []; }
   }).slice(0, 6);
   const pending = urls.map(url => {

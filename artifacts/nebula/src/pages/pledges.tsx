@@ -1,3 +1,4 @@
+import { RefreshNotice } from '@/components/loading-states';
 import { Link } from 'wouter';
 import { useListMyInvestments, useReceivedInvestments } from '@nebula/local';
 import { useAuth } from '@/context/AuthContext';
@@ -23,15 +24,15 @@ export default function Pledges({ received = false }: { received?: boolean }) {
 }
 
 function InvestorHistory() {
-  const { data, isLoading, error } = useListMyInvestments();
+  const { data, isLoading, error, refetch } = useListMyInvestments();
   if (isLoading) return <SectionSkeleton variant="list" label="Loading your contribution history" rows={4}/>;
-  if (error) return <p role="alert" className="text-danger">{error.message}</p>;
-  return <ContributionHistory entries={data ?? []} />;
+  if (error && !data) return <p role="alert" className="text-danger">{error.message} <button onClick={() => void refetch()}>Retry history</button></p>;
+  return <><RefreshNotice error={error} retry={refetch}/><ContributionHistory entries={data ?? []}/></>;
 }
 
 function ReceivedHistory() {
-  const { data, isLoading, error } = useReceivedInvestments();
-  if (isLoading) return <SectionSkeleton variant="list" label="Loading contributions received" rows={4}/>;
-  if (error) return <p role="alert" className="text-danger">{error.message}</p>;
-  return <ContributionHistory entries={data ?? []} received />;
+  const { data, isLoading, error, refetch } = useReceivedInvestments();
+  if (isLoading) return <SectionSkeleton variant="received" label="Loading contributions received" rows={4}/>;
+  if (error && !data) return <p role="alert" className="text-danger">{error.message} <button onClick={() => void refetch()}>Retry history</button></p>;
+  return <><RefreshNotice error={error} retry={refetch}/><ContributionHistory entries={data ?? []} received/></>;
 }

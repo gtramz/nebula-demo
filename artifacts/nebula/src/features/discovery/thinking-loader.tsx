@@ -12,12 +12,11 @@ export function DiscoveryThinkingLoader() {
     <span className="sr-only">Preparing your next sounds</span>
     <div className="discovery-thinking-character" aria-hidden="true">
       <motion.svg viewBox={`0 0 ${AVATAR_VIEW} ${AVATAR_VIEW}`} focusable="false" initial={false}
-        animate={reduced ? {} : { y: [0, -3, 0], rotate: [-1, 1, -1] }} transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }}>
+        animate={reduced ? {} : { y: [0, -4, -2, 0], rotate: [0, -2, 1, 0] }} transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }}>
         <motion.path fill={face.face} initial={false} animate={{ d: reduced ? shape : [shape, breathing, shape] }} transition={{ duration: 3.6, repeat: Infinity, ease: 'easeInOut' }}/>
         <g className="discovery-thinking-gaze"><g className="discovery-thinking-blink">{eyeShapes(face).map((eye,index)=><path key={index} d={eye.d} fill={eye.stroke?'none':color} stroke={eye.stroke?color:undefined} strokeWidth={stroke} strokeLinecap="round"/>)}</g></g>
         {mouth&&<path d={mouth.d} fill={mouth.stroke?'none':color} stroke={mouth.stroke?color:undefined} strokeWidth={stroke} strokeLinecap="round"/>}
       </motion.svg>
-      <div className="discovery-thinking-dots"><i/><i/><i/></div>
     </div>
   </div>;
 }

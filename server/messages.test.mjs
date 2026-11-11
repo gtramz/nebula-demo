@@ -150,3 +150,17 @@ test('general request, acceptance and chat writes roll back together with failed
  fail('conversation.message');const message=op({text:'All or nothing'});assert.equal((await a.request(`${path}/messages`,'POST',message)).status,500);assert.equal((await json(await b.request(path))).messages.length,2);
  db.exec('DROP TRIGGER fail_atomic');await json(await a.request(`${path}/messages`,'POST',message));assert.equal((await json(await b.request(path))).messages.length,3);
 });
+
+
+test('handoff inbox uses the peer image for both participants with nullable fallback',async t=>{
+ const {a,b,A,B}=await setup(t);
+ const picture='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aG5kAAAAASUVORK5CYII=';
+ await json(await a.request('/api/rpc','POST',{method:'updateArtistIdentity',args:[{profile:{picture}}]}));
+ const thread=await json(await a.request('/api/messages/requests','POST',op({recipientId:B.artistId,text:'An image-aware introduction'})),201);
+ const sent=(await json(await a.request('/api/messages?view=requests&direction=sent'))).items.find(item=>item.id===thread.id);
+ const received=(await json(await b.request('/api/messages?view=requests'))).items.find(item=>item.id===thread.id);
+ assert.equal(sent.counterpartId,B.artistId);assert.equal(received.counterpartId,A.artistId);
+ assert.ok(sent.counterpartPicture===null||typeof sent.counterpartPicture==='string');
+ assert.equal(received.counterpartPicture,picture);
+ assert.notEqual(sent.counterpartPicture,picture);
+});

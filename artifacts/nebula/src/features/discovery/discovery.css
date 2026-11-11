@@ -403,3 +403,9 @@
 .discovery-refresh-state { position:absolute; z-index:10; top:max(12px,env(safe-area-inset-top)); left:50%; transform:translateX(-50%); max-width:90%; padding:10px 16px; border:1px solid #ffffff30; border-radius:24px; background:#111; color:#fff; font-size:12px; box-shadow:0 2px 12px #0007; }
 .discovery-refresh-state button { display:inline-flex; align-items:center; min-height:44px; margin-left:8px; text-decoration:underline; }
 .discovery-demo-badge { position:absolute; top:8px; left:20px; z-index:3; font:9px var(--font-mono); color:#ddd; background:#111b; padding:4px 6px; border-radius:4px; }
+
+/* Cover-derived color occupies only uncovered stage space, behind real media. */
+.discovery-video-stage,.discovery-audio-stage { position:relative; isolation:isolate; }
+.discovery-ambient { position:absolute; inset:0; z-index:-1; pointer-events:none; background:radial-gradient(ellipse at 15% 25%,var(--ambient-a),transparent 70%),radial-gradient(ellipse at 90% 80%,var(--ambient-b),transparent 70%),#08090b; }
+.discovery-media:fullscreen .discovery-ambient { display:none; }
+@media(max-width:767px) { .discovery-media.is-video .discovery-ambient { display:none; } }

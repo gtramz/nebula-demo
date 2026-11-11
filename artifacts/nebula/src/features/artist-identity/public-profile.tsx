@@ -1,3 +1,4 @@
+import { RefreshNotice } from '@/components/loading-states';
 import { SectionSkeleton } from '@/components/loading-states';
 import { StaticFace } from '@/components/blob-face';
 import { ArtistFollowControls } from '@/features/following';
@@ -62,9 +63,10 @@ export function ArtistPublications({ artistId, music = false, owner, featured = 
   const presentation = useMemo(() => current ? publicPost(current) : undefined, [current]);
   if (!isServerMode()) return <Panel><h3 className="font-semibold">{music ? 'No project audio to display.' : 'No publications to display.'}</h3></Panel>;
   if (query.isLoading) return <SectionSkeleton variant={music ? "player" : "cards"} label={music ? "Loading artist music" : "Loading artist publications"} rows={3} className="py-8"/>;
-  if (query.isError) return <Panel><p role="alert">{query.error.message}</p><button className={controlStyles.button} onClick={() => void query.refetch()}>Retry publications</button></Panel>;
+  if (query.isError && !query.data) return <Panel><p role="alert">{query.error.message}</p><button className={controlStyles.button} onClick={() => void query.refetch()}>Retry publications</button></Panel>;
   if (hideEmpty && !posts.length && !query.hasNextPage) return null;
   return <div className="space-y-6">
+    <RefreshNotice error={query.error} retry={query.refetch}/>
     {music && <div><h2 className="text-2xl font-bold">{featured ? 'Featured music' : 'Music'}</h2><p className="text-sm text-muted mt-2">Tracks and sessions from this artist.</p></div>}
     {!posts.length ? <Panel><Disc3 className="text-accent" size={32} aria-hidden /><h3 className="text-xl font-bold">{music ? 'The music starts here.' : 'No Discovery posts yet.'}</h3><p className="text-sm text-muted">{music ? 'No published audio is linked to a public music project yet. Independent audio and videos appear in Discovery Posts.' : 'Published audio and video will appear here. Drafts stay private.'}</p>{owner && <Link href="/publish" className={controlStyles.button}>Create publication</Link>}</Panel>
       : music ? <div className={featured ? "space-y-4" : "grid lg:grid-cols-[minmax(0,1fr)_minmax(240px,.8fr)] gap-6"}>
