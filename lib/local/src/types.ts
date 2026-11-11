@@ -154,6 +154,9 @@ export const ProjectInputStatus = {
 } as const;
 
 export interface ProjectInput {
+  songs?: import("./works.js").SongEntry[];
+  primaryRecordingId?: string | null;
+  operationId?: string;
   /**
      * @minLength 1
      * @maxLength 160
@@ -218,6 +221,8 @@ export const ProjectUpdateStatus = {
 } as const;
 
 export interface ProjectUpdate {
+  tracklist?: {revision: number; songs: import("./works.js").SongEntry[]; primaryRecordingId?: string | null};
+  operationId?: string;
   expected?: Partial<Project>;
   /**
      * @minLength 1

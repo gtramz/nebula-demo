@@ -2,6 +2,7 @@ import type { CollaborationOffer } from './collaborations.js';
 import type { Project } from './types.js';
 
 export type PublicationInput = {
+  newSong?: { title: string; description: string; tracklistRevision: number };
   workId?: number | null;
   remix?: RemixInput | null;
   title: string;

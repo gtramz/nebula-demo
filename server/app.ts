@@ -1,3 +1,4 @@
+import { projectRecordings } from './project-recordings.js';
 import { works } from './works.js';
 import { presentation } from './presentation.js';
 import { musicalProject } from '../lib/local/src/works.js';
@@ -95,7 +96,8 @@ export async function createNebulaServer(options: { dataDir: string; publicDir: 
     return user;
   }
   function mediaRow(mediaId: string): MediaRow | undefined { return db.prepare('SELECT * FROM media WHERE id=?').get(mediaId) as MediaRow | undefined; }
-  const songStore = works(db, (id, viewer) => domain(viewer).getProject(id)?.project ?? null);
+  const recordingStore = projectRecordings(db, (id, viewer) => domain(viewer).getProject(id)?.project ?? null, media => drafts.isPrivate(media));
+  const songStore = works(db, (id, viewer) => domain(viewer).getProject(id)?.project ?? null, recordingStore);
   const mediaDto = (row: MediaRow): UploadedMedia => ({ id: row.id, name: row.name ?? `${row.kind}-${row.id}`, kind: row.kind, mime: row.mime, size: row.size, url: `/media/${row.id}` });
   const remixStore = remixes(db, owner => domain(null).getArtist(owner)?.artist.name ?? 'Artist');
   function postDto(row: PostRow, viewer: number | null): Publication {
@@ -112,6 +114,8 @@ export async function createNebulaServer(options: { dataDir: string; publicDir: 
   function projectPreview(projectId: number, viewer: number | null) {
     const project = domain(null).getProject(projectId)?.project;
     if (!project) return null;
+    const chosen = recordingStore.preview(projectId, viewer);
+    if (chosen !== undefined) return chosen;
     const rows = db.prepare("SELECT posts.* FROM posts JOIN media ON media.id=json_extract(posts.data,'$.mediaId') WHERE posts.owner=? AND json_extract(posts.data,'$.projectId')=? AND json_extract(posts.data,'$.status')='published' AND media.kind='audio' ORDER BY posts.id ASC").all(project.artistId, projectId) as PostRow[];
     if (rows.length) {
       const post = postDto(rows[0], viewer);
@@ -144,7 +148,6 @@ export async function createNebulaServer(options: { dataDir: string; publicDir: 
     if (projectId) {
       const linked = domain(owner).getProject(projectId)?.project;
       ensure(linked && linked.artistId === owner, 'Link one of your available projects.');
-      ensure(data.status !== 'published' || linked.status !== 'draft', 'Publish the project before linking it to a public post.');
     }
     const song = songStore.validateLink(projectId,data.workId,owner);
     return { ...(song ? {workId:song.id} : {}), title: text(data.title, 'Title', 160, 1), description: text(data.description, 'Description', 2000),
@@ -248,7 +251,7 @@ export async function createNebulaServer(options: { dataDir: string; publicDir: 
         case 'createProject': {
           const owner=current(req,true).artistId!, raw=object(args[0]);
           ensure(raw.songs===undefined || (typeof raw.operationId==='string' && raw.operationId.length>=16),'Provide an operation ID when creating a project with songs.');
-          const create=()=>{const created=store.createProject(project(raw) as unknown as ProjectInput);if(raw.songs!==undefined)songStore.save(created.id,owner,{revision:0,songs:raw.songs});return created;};
+          const create=()=>{const created=store.createProject(project(raw) as unknown as ProjectInput);if(raw.songs!==undefined)songStore.save(created.id,owner,{revision:0,songs:raw.songs,primaryRecordingId:raw.primaryRecordingId});recordingStore.validate(created.id,owner);return created;};
           result=raw.operationId ? transaction(db,()=>songStore.operation(owner,raw.operationId,'project:create',raw,create)) : transaction(db,create);break;
         }
         case 'updateProject': {
@@ -256,9 +259,14 @@ export async function createNebulaServer(options: { dataDir: string; publicDir: 
           ensure(store.getProject(id(args[0]))?.project.artistId === owner, 'Project not found.', 404);
           const raw=object(args[1]), existing=store.getProject(id(args[0]))!.project;
           const changes=project(raw);
+          const update=()=>{
           if(raw.expected!==undefined){const expected=object(raw.expected);for(const key of Object.keys(changes))ensure(JSON.stringify((existing as unknown as Record<string,unknown>)[key]??null)===JSON.stringify(expected[key]??null),'Project changed in another tab. Reload and review your draft.',409);}
           if(changes.category!==undefined && !musicalProject(String(changes.category)))ensure(!songStore.list(existing.id,owner!).songs.length,'Remove unreferenced songs before changing to a non-musical format.',409);
-          result = store.updateProject(id(args[0]), changes); break;
+            const updated=store.updateProject(existing.id,changes);
+            if(raw.tracklist!==undefined)songStore.save(existing.id,owner!,raw.tracklist);
+            if(raw.tracklist!==undefined || changes.category!==undefined || changes.status!==undefined && changes.status!==existing.status || changes.goalAmount!==undefined && existing.category.toLowerCase()==='video')recordingStore.validate(existing.id,owner!);
+            return updated;};
+          result=transaction(db,()=>raw.operationId?songStore.operation(owner!,raw.operationId,`project:update:${existing.id}`,raw,update):update()); break;
         }
         case 'deleteProject': {
           const owner = current(req, true).artistId;
@@ -475,7 +483,7 @@ export async function createNebulaServer(options: { dataDir: string; publicDir: 
           : { basis: summary.usesExplicitPreferences && summary.usesPublicProfile ? 'mixed' : summary.usesExplicitPreferences ? 'preferences' : 'profile' };
         const signature = createHash('sha256').update(JSON.stringify({ search, category, mode, viewerAccount, signals })).digest('hex');
         const page = pageHomeProjects(items, mode, cursor, before, signature, homeCursors, summary?.hasSignals ? affinity!.entries : undefined);
-        json(res, { ...page, items: page.items.map(item => ({ ...item, genres: artists.find(a => a.id === item.project.artistId)?.genreIds ?? [], preview: projectPreview(item.project.id, viewerAccount) })),
+        json(res, { ...page, items: page.items.map(item => ({ ...item, genres: artists.find(a => a.id === item.project.artistId)?.genreIds ?? [], preview: projectPreview(item.project.id, viewerAccount), previewSelection: recordingStore.primary(item.project.id)!==undefined })),
           eligibleCount: inventory.length, ...(followed ? { followedArtistCount: followed.size } : {}), facets: homeFacetOptions(inventory, artists),
           ...(mode === 'for-you' ? { forYou } : {}) }); return;
       }
@@ -521,7 +529,7 @@ export async function createNebulaServer(options: { dataDir: string; publicDir: 
       if (mediaMatch && ['GET', 'HEAD'].includes(req.method ?? '')) {
         const row = mediaRow(mediaMatch[1]); ensure(row, 'Not found.', 404);
         const publicPost = db.prepare("SELECT id FROM posts WHERE json_extract(data,'$.status')='published' AND (json_extract(data,'$.mediaId')=? OR json_extract(data,'$.coverId')=?) LIMIT 1").get(row.id, row.id);
-        ensure(publicPost || row.owner === accountId(req) || collaboration.canReadMedia(row.id, accountId(req)), 'Not found.', 404);
+        ensure(publicPost || row.owner === accountId(req) || collaboration.canReadMedia(row.id, accountId(req)) || recordingStore.canReadMedia(row.id, accountId(req)), 'Not found.', 404);
         res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
         if (['document','archive'].includes(row.kind) || url.searchParams.get('download') === '1') res.setHeader('Content-Disposition', `attachment; filename="download"; filename*=UTF-8''${encodeURIComponent(row.name ?? row.id).replace(/'/g, '%27')}`);
         await sendFile(req, res, join(mediaDirectory, row.id), row.mime, true); return;
@@ -530,13 +538,13 @@ export async function createNebulaServer(options: { dataDir: string; publicDir: 
       if (uploadMatch && req.method === 'DELETE') {
         const owner = current(req, true).artistId!, row = mediaRow(uploadMatch[1]);
         ensure(row && row.owner === owner, 'Not found.', 404);
-        ensure(!drafts.used(row.id) && !collaboration.mediaUsed(row.id) && !db.prepare("SELECT id FROM posts WHERE json_extract(data,'$.mediaId')=? OR json_extract(data,'$.coverId')=?").get(row.id, row.id), 'This file is used by a publication or collaboration.', 409);
+        ensure(!drafts.used(row.id) && !collaboration.mediaUsed(row.id) && !recordingStore.mediaUsed(row.id) && !db.prepare("SELECT id FROM posts WHERE json_extract(data,'$.mediaId')=? OR json_extract(data,'$.coverId')=?").get(row.id, row.id), 'This file is used by a publication or collaboration.', 409);
         db.prepare('DELETE FROM remix_private_media WHERE media=?').run(row.id); db.prepare('DELETE FROM media WHERE id=?').run(row.id); await unlink(join(mediaDirectory, row.id)).catch(() => {}); await waveformStore.remove(row.id); json(res, { ok: true }); return;
       }
       if (url.pathname === '/api/uploads' && req.method === 'GET') {
         const owner = current(req, true).artistId!;
         const rows = db.prepare("SELECT * FROM media WHERE owner=? AND NOT EXISTS (SELECT 1 FROM posts WHERE json_extract(data,'$.mediaId')=media.id OR json_extract(data,'$.coverId')=media.id) ORDER BY created DESC").all(owner) as MediaRow[];
-        json(res, rows.filter(row => !drafts.used(row.id) && !collaboration.mediaUsed(row.id)).map(mediaDto)); return;
+        json(res, rows.filter(row => !drafts.used(row.id) && !collaboration.mediaUsed(row.id) && !recordingStore.mediaUsed(row.id)).map(mediaDto)); return;
       }
       if (url.pathname === '/api/feed' && req.method === 'GET') {
         db.prepare('DELETE FROM feed_snapshots WHERE expires<?').run(Date.now());
@@ -662,8 +670,9 @@ export async function createNebulaServer(options: { dataDir: string; publicDir: 
         const before = url.searchParams.get('before') ? Number(url.searchParams.get('before')) : Number.MAX_SAFE_INTEGER;
         ensure(Number.isSafeInteger(before) && before > 0, 'Invalid cursor.');
         const projectIds = projectAudio ? domain(null).getPublicArtist(artist!)?.projects.filter(p => ['album','ep','single'].includes(p.category.toLowerCase())).map(p => p.id) ?? [] : [];
-        const params = [before, ...(mine ? [viewer!] : []), ...(artist ? [artist] : []), ...projectIds, ...(songId?[songProject!,songId]:[])];
-        const rows = db.prepare(`SELECT * FROM posts WHERE id<? AND ${mine ? 'owner=?' : "json_extract(data,'$.status')='published'"}${artist ? ' AND owner=?' : ''}${projectAudio ? ` AND json_extract(data,'$.projectId') IN (${projectIds.map(() => '?').join(',') || 'NULL'}) AND EXISTS(SELECT 1 FROM media WHERE media.id=json_extract(posts.data,'$.mediaId') AND media.kind='audio')` : ''}${songId ? " AND json_extract(data,'$.projectId')=? AND json_extract(data,'$.workId')=?" : ''} ORDER BY id DESC LIMIT 21`).all(...params) as PostRow[];
+        const search = mine ? (url.searchParams.get('q') ?? '').trim().toLowerCase() : '';
+        const params = [before, ...(search ? [`%${search.replace(/[\\%_]/g, '\\$&')}%`] : []), ...(mine ? [viewer!] : []), ...(artist ? [artist] : []), ...projectIds, ...(songId?[songProject!,songId]:[])];
+        const rows = db.prepare(`SELECT * FROM posts WHERE id<? ${search ? "AND lower(json_extract(data,'$.title')) LIKE ? ESCAPE '\\'" : ''} AND ${mine ? 'owner=?' : "json_extract(data,'$.status')='published'"}${artist ? ' AND owner=?' : ''}${projectAudio ? ` AND json_extract(data,'$.projectId') IN (${projectIds.map(() => '?').join(',') || 'NULL'}) AND EXISTS(SELECT 1 FROM media WHERE media.id=json_extract(posts.data,'$.mediaId') AND media.kind='audio')` : ''}${songId ? " AND json_extract(data,'$.projectId')=? AND json_extract(data,'$.workId')=?" : ''} ORDER BY id DESC LIMIT 21`).all(...params) as PostRow[];
         json(res, { items: rows.slice(0, 20).map(row => postDto(row, artist ? null : viewer)), nextCursor: rows.length > 20 ? rows[19].id : null }); return;
       }
       const postMatch = /^\/api\/publications\/(\d+)$/.exec(url.pathname);
@@ -676,6 +685,13 @@ export async function createNebulaServer(options: { dataDir: string; publicDir: 
         const owner = current(req, true).artistId!, input = await body(req);
         const write = () => {
           const now = new Date().toISOString();
+          let prepared = input;
+          if(input.newSong!==undefined) {
+            const projectId=id(input.projectId), draft=object(input.newSong), tracks=songStore.list(projectId,owner);
+            ensure(draft.tracklistRevision===tracks.revision,'The song list changed. Reload and review your draft.',409);
+            const next=songStore.save(projectId,owner,{revision:tracks.revision,songs:[...tracks.songs.map(song=>({workId:song.id,revision:song.revision,title:song.title,description:song.description})),{title:draft.title,description:draft.description??''}]},false);
+            prepared={...input,workId:next.songs.at(-1)!.id};
+          }
           let postId: number;
           if (postMatch) {
             postId = Number(postMatch[1]);
@@ -683,17 +699,19 @@ export async function createNebulaServer(options: { dataDir: string; publicDir: 
             ensure(row && row.owner === owner, 'Publication not found.', 404);
             ensure(input.revision === row.revision, 'This publication changed in another tab. Reload before saving.', 409);
             const previous = JSON.parse(row.data);
-            const data: StoredPublication = publicationInput({...input,workId:Object.hasOwn(input,'workId')?input.workId:previous.workId}, owner) as StoredPublication;
+            const data: StoredPublication = publicationInput({...prepared,workId:Object.hasOwn(prepared,'workId')?prepared.workId:previous.workId}, owner) as StoredPublication;
+            ensure(!previous.projectId || !data.projectId || previous.projectId===data.projectId,'Unlink the post before choosing another project.',409);
             ensure(!previous.remix || data.status !== 'published' || previous.status === 'published', 'Public release of remixes is deferred. Keep this remix private.', 409);
             data.remix = remixStore.validate(input.remix, data, previous);
             db.prepare('UPDATE posts SET data=?,revision=revision+1,updated=? WHERE id=?').run(JSON.stringify(data), now, postId);
           } else {
             rateLimit(req, 'publish', 100, 3600, String(owner));
-            const data: StoredPublication = publicationInput(input, owner) as StoredPublication;
+            const data: StoredPublication = publicationInput(prepared, owner) as StoredPublication;
             ensure(input.remix == null, 'Create a private remix draft in Remix studio.', 409);
             data.remix = null;
             postId = Number(db.prepare('INSERT INTO posts(owner,data,created,updated) VALUES(?,?,?,?)').run(owner, JSON.stringify(data), now, now).lastInsertRowid);
           }
+          recordingStore.syncPost(postId);
           return postId;
         };
         const postId = input.operationId === undefined ? transaction(db, write) : transaction(db, () => songStore.operation(owner, input.operationId, `publication:${url.pathname}`, input, write));
