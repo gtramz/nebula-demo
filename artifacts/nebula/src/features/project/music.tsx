@@ -1,10 +1,11 @@
+import { AntiqAudioPlayer } from '@/components/antiq-audio-player';
 import { SectionSkeleton } from '@/components/loading-states';
 import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import * as Tabs from '@radix-ui/react-tabs';
 import { Link, useSearch } from 'wouter';
 import { ChevronDown, Disc3, ArrowUpRight } from 'lucide-react';
-import { apiRequest, isServerMode, type Project, type Publication, type Song, type CollaborationOffer, type PresentationTrack } from '@nebula/local';
+import { apiRequest, isServerMode, type Project, type Publication, type Song, type ProjectRecording, type CollaborationOffer, type PresentationTrack } from '@nebula/local';
 import { useAuth } from '@/context/AuthContext';
 import { useViewState, useIsReturnNavigation } from '@/components/shell/return-context';
 import { AudioPreview } from '@/components/audio-preview';
@@ -68,7 +69,8 @@ function ProjectMusicContent({ project, identity }: { project: Project; identity
   const representedMedia = new Set(songs.data?.songs.flatMap(song => {
     const post = recordingsForSong(song.id)[0];
     const reference = songOffers(song.id).find(offer => offer.available && offer.reference)?.reference;
-    return post ? [post.media.id] : reference ? [reference.id] : [];
+    const direct=(song.recordings??[]).filter(r=>!r.publicationId&&r.available);
+    return direct.length?direct.map(r=>r.mediaId):post?[post.media.id]:reference?[reference.id]:[];
   }));
   return <Tabs.Root value={tab} onValueChange={value => { stopPlayback(); setTab(value); }} className="min-w-0 space-y-5">
     <Tabs.List aria-label="Project content" className="flex gap-2 border-b border-border pb-3">
@@ -85,6 +87,7 @@ function ProjectMusicContent({ project, identity }: { project: Project; identity
         {songs.data?.songs.map((song, index) => {
           const track = allTracks.find(track => track.workId === song.id);
           const related = recordingsForSong(song.id);
+          const direct = song.recordings?.filter(recording=>!recording.publicationId && recording.available)??[];
           const songOfferList = songOffers(song.id);
           const reference = songOfferList.find(offer => offer.available && ['audio','video'].includes(offer.reference?.kind ?? ''))?.reference;
           const open = songOfferList.filter(offer => offer.available).length;
@@ -92,12 +95,12 @@ function ProjectMusicContent({ project, identity }: { project: Project; identity
             <button type="button" aria-expanded={active === song.id} aria-controls={`song-details-${song.id}`} onClick={() => chooseSong(song.id)} className="w-full min-h-11 flex gap-3 items-center text-left rounded-lg focus-visible:outline focus-visible:outline-accent">
               <span className="text-xs text-muted tabular-nums w-5 shrink-0">{String(index + 1).padStart(2,'0')}</span><span className="min-w-0 flex-1"><strong className="block break-words">{song.title}</strong>{open > 0 && <span className="text-xs text-accent">{open} open {open === 1 ? 'opportunity' : 'opportunities'}</span>}</span>{track && <span className="text-xs text-muted tabular-nums">{clock(track.durationSeconds)}</span>}<ChevronDown size={18} className={`shrink-0 ${active === song.id ? 'rotate-180' : ''}`} aria-hidden="true"/>
             </button>
-            <SongRecording song={song} post={related[0]} reference={reference} track={track} coverUrl={project.coverUrl ?? ''}/>
+            <SongRecording song={song} direct={direct} post={related[0]} reference={reference} track={track} coverUrl={project.coverUrl ?? ''}/>
             {active === song.id && <div id={`song-details-${song.id}`} className="space-y-4">
               {!!song.description && !track && <details><summary className="min-h-11 flex items-center cursor-pointer text-xs text-muted">About this song</summary><p className="text-sm whitespace-pre-wrap break-words">{song.description}</p></details>}
               {related[0] && <Link className="min-h-11 inline-flex items-center underline text-sm" href={`/discovery?post=post-${related[0].id}`}>Open in Discovery</Link>}
               {related[0]?.remix && <RemixCredits post={related[0]}/>}
-              {related.length > 1 && <PublicationList posts={related.slice(1)} representedMedia={representedMedia} label="More recordings"/>}
+              {(direct.length>0?related.length>0:related.length>1) && <PublicationList posts={direct.length?related:related.slice(1)} representedMedia={representedMedia} label="More recordings"/>}
               <ProjectOffers projectLayout projectId={project.id} ownerId={project.artistId} scopeWorkId={song.id}/>
             </div>}
           </div>;
@@ -114,7 +117,8 @@ function ProjectMusicContent({ project, identity }: { project: Project; identity
   </Tabs.Root>;
 }
 function LoadError({label,retry}:{label:string;retry:()=>void}) { return <p role="alert" className="text-sm text-muted">{label} could not load. <button className="underline min-h-11" onClick={retry}>Retry</button></p>; }
-function SongRecording({song,post,reference,track,coverUrl}:{song:Song;post?:Publication;reference?:CollaborationOffer['reference'];track?:PresentationTrack;coverUrl:string}) {
+function SongRecording({song,direct=[],post,reference,track,coverUrl}:{song:Song;direct?:ProjectRecording[];post?:Publication;reference?:CollaborationOffer['reference'];track?:PresentationTrack;coverUrl:string}) {
+  if(direct.length)return <section aria-label={`Project recordings: ${song.title}`} className="space-y-3">{direct.map(recording=>recording.media?.kind==='audio'?<AntiqAudioPlayer key={recording.id} label={song.title} src={recording.media.url}/>:recording.media?.kind==='video'?<AdaptiveVideo key={recording.id} aria-label={song.title} src={recording.media.url} controls playsInline preload="metadata" className="w-full max-h-64"/>:null)}</section>;
   if (post) return <section aria-label={`Featured recording: ${post.title}`}><PostPlayer post={post}/></section>;
   if (reference?.kind === 'audio') return <AudioPreview key={reference.id} title={song.title} src={reference.url} waveformLoader={signal => referenceWaveform(reference,signal)}/>;
   if (reference?.kind === 'video') return <AdaptiveVideo aria-label={song.title} src={reference.url} controls playsInline preload="metadata" className="w-full max-h-64"/>;

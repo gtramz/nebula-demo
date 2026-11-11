@@ -2,7 +2,7 @@ import { MorphAdvanceButton, type MorphAdvanceHandle } from '@/components/blob-f
 import { AntiqAudioPlayer } from '@/components/antiq-audio-player';
 import { CreationFrame, useCreationSteps } from '@/components/guided/creation';
 import { JourneyBack, JourneyNext, JourneyContext, pauseJourneyMedia } from '@/components/guided/journey';
-import { SongSelector } from '@/features/songs';
+import { useSongs } from '@/features/songs';
 import { useLeaveGuard } from '@/components/shell/navigation-guard';
 
 import { useEffect, useRef, useState } from 'react';
@@ -82,7 +82,13 @@ function PublicationForm({ existing }: { existing?: Publication }) {
   const [allowRemix, setAllowRemix] = useState(existing?.allowRemix ?? false);
   const [workId,setWorkId]=useState<number|null>(existing?.workId??null);
   const [songNotice,setSongNotice]=useState('');
+  const [newSong,setNewSong]=useState<{title:string;description:string}|null>(null);
   const [projectId, setProjectId] = useState(String(existing?.projectId ?? ''));
+  const songs=useSongs(projectId?Number(projectId):undefined);
+  const selectedProject = projects.data?.find(project => String(project.id) === projectId);
+  const singleProject=!!selectedProject&&['Single','Video'].includes(selectedProject.category);
+  useEffect(()=>{if(singleProject&&songs.data){if(songs.data.songs.length===1){setWorkId(songs.data.songs[0].id);setNewSong(null);}else if(!songs.data.songs.length){setWorkId(null);setNewSong(current=>current??{title:title,description:''});}}},[projectId,singleProject,songs.data]);
+  useEffect(()=>{void projects.refetch();},[]);
   const [media, setMedia] = useState<UploadedMedia | null>(existing?.media ?? null);
   const [cover, setCover] = useState<{ id: string; url: string } | null>(existing?.coverId ? { id: existing.coverId, url: existing.coverUrl! } : null);
   const [progress, setProgress] = useState<number | null>(null);
@@ -98,14 +104,14 @@ function PublicationForm({ existing }: { existing?: Publication }) {
   const save = useMutation({ mutationFn: (status: PublicationInput['status']) => {
     if (!media) throw new Error('Upload audio or video first.');
     if (!title.trim()) throw new Error('Add a title.');
-    const input = { title, description, mediaId: media.id, coverId: cover?.id ?? null, allowRemix, projectId: projectId ? Number(projectId) : null, workId, status };
+    const input = { ...(newSong?{newSong:{...newSong,tracklistRevision:songs.data!.revision}}:{}), title, description, mediaId: media.id, coverId: cover?.id ?? null, allowRemix, projectId: projectId ? Number(projectId) : null, workId, status };
     const signature = JSON.stringify([existing?.id, existing?.revision, input]);
     const operationId = operations.current.get(signature) ?? crypto.randomUUID();
     operations.current.set(signature, operationId);
     return savePublication(input, existing, operationId);
   }, onSuccess: async () => {
     setDirty(false);
-    await client.invalidateQueries({ queryKey: ['publications'] }); await client.invalidateQueries({ queryKey: ['publication'] }); await client.invalidateQueries({ queryKey: ['unused-uploads', user?.artistId] });
+    await client.invalidateQueries({ queryKey: ['publications'] }); await client.invalidateQueries({ queryKey: ['publication'] }); await client.invalidateQueries({ queryKey: ['unused-uploads', user?.artistId] });await Promise.all(['project-songs','my-songs','opportunity-projects','recording-posts'].map(key=>client.invalidateQueries({queryKey:[key]})));
   } });
   async function selectFile(file: File | undefined, isCover: boolean) {
     if (!file) return;
@@ -125,15 +131,14 @@ function PublicationForm({ existing }: { existing?: Publication }) {
   const busy = progress !== null || save.isPending || advancing;
   const allowDeparture = useLeaveGuard(dirty || busy ? 'Leave without saving these changes? Completed uploads remain in your unused uploads; unfinished uploads will be cancelled.' : null);
   async function saveVersion(status: PublicationInput['status']) {
-    if (writing.current || progress !== null || save.isPending || !flow.validate()) return false;
+    if (writing.current || progress !== null || save.isPending || (!!projectId && (songs.isPending||!!songs.error)) || !flow.validate()) return false;
     if (status === 'published' && (!playable || (!!existing?.remix && existing.status !== 'published'))) return false;
     writing.current = true;
     try { await save.mutateAsync(status); return alive.current; }
     finally { writing.current = false; }
   }
   function complete() { if (alive.current) { allowDeparture(); navigate('/studio'); } }
-  function validateStep() { return flow.step === 0 ? !!media && playable : flow.validate(flow.step); }
-  const selectedProject = projects.data?.find(project => String(project.id) === projectId);
+  function validateStep() { return flow.step === 0 ? !!media && playable : flow.step===2 && projectId && (songs.isPending||!!songs.error) ? false : flow.validate(flow.step); }
   return <ContentWidth className="py-4 md:py-8 max-w-6xl space-y-4 md:space-y-6">
     <header><h1 className="text-2xl md:text-3xl font-bold">{existing ? 'Edit publication' : 'Share your sound'}</h1></header>
     <form ref={flow.form} noValidate onSubmit={event => { event.preventDefault(); if (!busy) advance.current?.run(); }} onChange={() => setDirty(true)}>
@@ -158,13 +163,20 @@ function PublicationForm({ existing }: { existing?: Publication }) {
         {cover && <div className="flex gap-4 items-center"><img src={cover.url} alt="Publication cover preview" className="h-32 w-32 object-cover" /><button type="button" className={button} onClick={() => { setCover(null); setDirty(true); }}>Remove cover</button></div>}
       </section>
       <section data-creation-step="2" hidden={flow.step !== 2} className="space-y-6">
-        <label className="block space-y-2"><span>Link a project (optional)</span><select className={field} value={projectId} onChange={event => {setProjectId(event.target.value);if(workId){setWorkId(null);setSongNotice('Song selection cleared because the project changed. Choose a song from the new project.');}}}><option value="">Independent publication</option>{projects.data?.filter(project => project.artistId === user?.artistId).map(project => <option key={project.id} value={project.id}>{project.title}{project.status === 'draft' ? ' (draft — publish project first)' : ''}</option>)}</select></label>
-        {projectId && <SongSelector projectId={Number(projectId)} value={workId} onChange={id=>{setWorkId(id);setSongNotice('');}}/>}{songNotice&&<p role="status">{songNotice}</p>}
+        <label className="block space-y-2"><span>Link a project (optional)</span><select className={field} value={projectId} disabled={projects.isPending} onChange={event => {setProjectId(event.target.value);setNewSong(null);if(workId){setWorkId(null);setSongNotice('Song selection cleared because the project changed. Choose a song from the new project.');}}}><option value="">Independent publication</option>{projects.data?.filter(project => project.artistId === user?.artistId).map(project => <option key={project.id} value={project.id}>{project.title}{project.status === 'draft' ? ' (draft — private project)' : ''}</option>)}</select></label>
+        {projects.isPending&&<p role="status">Loading your projects…</p>}
+        {projectId&&<div className="space-y-3"><label className="block">Song (optional)<select className={field} value={newSong?'new':workId??''} disabled={songs.isPending||!!songs.error||singleProject&&!!songs.data?.songs.length} onChange={event=>{setWorkId(event.target.value&&event.target.value!=='new'?Number(event.target.value):null);setNewSong(event.target.value==='new'?{title,description:''}:null);setSongNotice('');}}>
+          {!singleProject&&<option value="">Project-wide</option>}{songs.data?.songs.map(song=><option key={song.id} value={song.id}>{song.title}</option>)}
+          {selectedProject&&['Single','Video','Album','EP'].includes(selectedProject.category)&&(!singleProject||!songs.data?.songs.length)&&<option value="new">Create a song in this project</option>}
+        </select></label>
+        {newSong&&<><label className="block">Song title<input className={field} required maxLength={160} value={newSong.title} onChange={event=>setNewSong({...newSong,title:event.target.value})}/></label><label className="block">Song description<textarea className={field} maxLength={4000} value={newSong.description} onChange={event=>setNewSong({...newSong,description:event.target.value})}/></label></>}
+        {songs.isPending&&<p role="status">Loading songs…</p>}{songs.error&&<p role="alert">Could not load songs. <button type="button" onClick={()=>void songs.refetch()}>Retry songs</button></p>}
+        {selectedProject?.status==='draft'&&<p className="text-sm text-muted">Your post can be public while this project remains private. Publishing this post does not publish the project.</p>}</div>}{songNotice&&<p role="status">{songNotice}</p>}
         {projects.error && <p role="alert">Could not load your projects. <button type="button" onClick={() => projects.refetch()}>Retry</button></p>}
         <div className="border border-border p-5 space-y-3"><label className="flex gap-3 items-center"><input type="checkbox" disabled={!!existing?.remix} checked={allowRemix} onChange={event => setAllowRemix(event.target.checked)} />Allow other artists to remix this publication</label><p className="text-xs text-muted">Remix permission does not include royalties or collaboration approval.</p></div>
       </section>
       <section data-creation-step="3" hidden={flow.step !== 3} className="space-y-5">
-        <div className="creation-summary"><h3 className="text-xl font-semibold">{title}</h3>{description && <p className="text-sm text-muted whitespace-pre-wrap">{description}</p>}<dl><dt>Project</dt><dd>{selectedProject?.title || 'Independent publication'}</dd><dt>Remix</dt><dd>{allowRemix ? 'Allowed' : 'Not allowed'}</dd><dt>Visibility</dt><dd>Public when published</dd></dl></div>
+        <div className="creation-summary"><h3 className="text-xl font-semibold">{title}</h3>{description && <p className="text-sm text-muted whitespace-pre-wrap">{description}</p>}<dl><dt>Project</dt><dd>{selectedProject?.title || 'Independent publication'}</dd><dt>Song</dt><dd>{newSong?.title||songs.data?.songs.find(song=>song.id===workId)?.title||'Project-wide'}</dd><dt>Remix</dt><dd>{allowRemix ? 'Allowed' : 'Not allowed'}</dd><dt>Visibility</dt><dd>Public when published</dd></dl></div>
       </section>
       </fieldset>
       {progress !== null && <div role="status" className="space-y-3"><p>Uploading… {progress}%</p><progress className="w-full" value={progress} max={100} /><button type="button" className={button} onClick={() => abort.current?.abort()}>Cancel upload</button></div>}

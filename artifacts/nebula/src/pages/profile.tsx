@@ -5,7 +5,7 @@ import { StaticFace } from '@/components/blob-face';
 import { OpportunityFields, emptyOpportunity } from '@/features/collaborations/opportunity-fields';
 import { ProjectOffers } from '@/features/collaborations';
 import { apiRequest, type OfferInput, type Tracklist } from '@nebula/local';
-import { SongFields, SongManager } from '@/features/songs';
+import { SongFields, useSongs } from '@/features/songs';
 import { musicalProject, type SongEntry, type ProjectUpdate } from '@nebula/local';
 import { ArtistIdentityEditor, ArtistCompletionPrompt } from '@/features/artist-identity/editor';
 import { useLeaveGuard } from '@/components/shell/navigation-guard';
@@ -331,8 +331,14 @@ function ProjectEditor({
   }
 
   const [songs,setSongs]=useState<SongEntry[]>([]);
-  // Existing Single projects remain readable/editable; new tracklists belong to Album/EP only.
-  const hasTracklist = ['Album', 'EP'].includes(formData.category);
+  const hasTracklist = musicalProject(formData.category);
+  const trackQuery=useSongs(project?.id), loadedTracks=useRef(false);
+  const [trackRevision,setTrackRevision]=useState(0),[tracksChanged,setTracksChanged]=useState(false),[primaryRecordingId,setPrimaryRecordingId]=useState<string|null|undefined>(undefined);
+  useEffect(()=>{if(trackQuery.data&&!loadedTracks.current){loadedTracks.current=true;setTrackRevision(trackQuery.data.revision);setSongs(trackQuery.data.songs.map(song=>({workId:song.id,revision:song.revision,title:song.title,description:song.description,recordings:song.recordings?.map(recording=>({...recording,playable:false}))})));setPrimaryRecordingId(trackQuery.data.primaryRecordingId);}},[trackQuery.data]);
+  function changeSongs(next:SongEntry[]|((current:SongEntry[])=>SongEntry[]),metadataOnly=false){setSongs(next);if(!metadataOnly)setTracksChanged(true);}
+  function choosePrimary(next:string|null){setPrimaryRecordingId(next);setTracksChanged(true);}
+  const tracklist={revision:trackRevision,songs,primaryRecordingId};
+  async function reloadSongs(){if(tracksChanged&&!confirm('Discard your song-list changes and reload saved songs?'))return;const result=await trackQuery.refetch();if(result.data&&!result.error){setTrackRevision(result.data.revision);setSongs(result.data.songs.map(song=>({workId:song.id,revision:song.revision,title:song.title,description:song.description,recordings:song.recordings?.map(recording=>({...recording,playable:false}))})));setPrimaryRecordingId(result.data.primaryRecordingId);setTracksChanged(false);setOpportunityError('');}}
   const projectFormat = formData.category === 'Video' ? 'Music video' : formData.category;
   const projectSongs = hasTracklist ? songs : [];
   const [seeking,setSeeking]=useState(false),[offer,setOffer]=useState<OfferInput>(emptyOpportunity),[scope,setScope]=useState(''),[opportunityBusy,setOpportunityBusy]=useState(false),[opportunityError,setOpportunityError]=useState('');
@@ -341,7 +347,7 @@ function ProjectEditor({
   const createOperation=useRef({key:'',id:''});
   const baseline=useRef(formData);
   async function persistProject(status?: ProjectInputStatus) {
-    if (writing.current || opportunityBusy || createProject.isPending || updateProject.isPending || !flow.validate()) return false;
+    if (writing.current || songEditing.busy || opportunityBusy || createProject.isPending || updateProject.isPending || !flow.validate()) return false;
     writing.current = true;
     try {
     const fundingChanged = !project || initialFunding.current !== fundingEnabled
@@ -353,6 +359,7 @@ function ProjectEditor({
       return false;
     }
     setOpportunityError('');
+    if((status??formData.status)!=='draft' && songs.some(song=>song.recordings?.some(recording=>(recording as {available?:boolean}).available!==false && (recording as {playable?:boolean}).playable===false))){setOpportunityError('Wait for the selected recordings to load, or choose a playable file.');flow.reveal(1);return false;}
     const submittedData = {...formData, status: status ?? formData.status,
       ...(!fundingEnabled ? { goalAmount: 0, useOfFunds: [] } : {})};
     if(!project && seeking && isServerMode()) {
@@ -361,8 +368,8 @@ function ProjectEditor({
       setOpportunityBusy(true);setOpportunityError('');
       try {
         if(!created.current) {
-          const key=JSON.stringify({submittedData,songs});if(createOperation.current.key!==key)createOperation.current={key,id:crypto.randomUUID()};
-          const saved=await createProject.mutateAsync({data:{...submittedData,status:ProjectInputStatus.draft,...{operationId:createOperation.current.id},...(hasTracklist?{songs:projectSongs}:{})}});
+          const key=JSON.stringify({submittedData,songs,primaryRecordingId});if(createOperation.current.key!==key)createOperation.current={key,id:crypto.randomUUID()};
+          const saved=await createProject.mutateAsync({data:{...submittedData,status:ProjectInputStatus.draft,...{operationId:createOperation.current.id},...(hasTracklist?{songs:projectSongs,primaryRecordingId}:{})}});
           created.current={project:saved};
         }
         const saved=created.current.project;
@@ -379,12 +386,14 @@ function ProjectEditor({
       return false;
     }
     if (project) {
-      await updateProject.mutateAsync({ id: project.id, data: { ...Object.fromEntries(Object.entries(submittedData).filter(([key,value]) => JSON.stringify(value) !== JSON.stringify((baseline.current as unknown as Record<string,unknown>)[key]))), expected: project } as ProjectUpdate });
+      const update={ ...Object.fromEntries(Object.entries(submittedData).filter(([key,value]) => JSON.stringify(value) !== JSON.stringify((baseline.current as unknown as Record<string,unknown>)[key]))), expected: project,...(tracksChanged?{tracklist}:{}) };
+      const key=JSON.stringify(update);if(createOperation.current.key!==key)createOperation.current={key,id:crypto.randomUUID()};
+      await updateProject.mutateAsync({id:project.id,data:{...update,operationId:createOperation.current.id} as ProjectUpdate});
     } else {
-      const key = JSON.stringify({submittedData,songs}); if(createOperation.current.key !== key) createOperation.current = {key,id:crypto.randomUUID()};
-      await createProject.mutateAsync({ data: { ...submittedData, ...(isServerMode() ? {operationId:createOperation.current.id,...(hasTracklist ? {songs:projectSongs} : {})} : {}) } });
+      const key = JSON.stringify({submittedData,songs,primaryRecordingId}); if(createOperation.current.key !== key) createOperation.current = {key,id:crypto.randomUUID()};
+      await createProject.mutateAsync({ data: { ...submittedData, ...(isServerMode() ? {operationId:createOperation.current.id,...(hasTracklist ? {songs:projectSongs,primaryRecordingId} : {})} : {}) } });
     }
-    await queryClient.invalidateQueries({ queryKey: ['projects'] });
+    await Promise.all(['projects','project-songs','my-songs','recording-posts','publications','publication','opportunity-projects','unused-uploads'].map(key=>queryClient.invalidateQueries({queryKey:[key]})));
     return true;
     } catch (cause) { setOpportunityError((cause as Error).message); return false; }
     finally { writing.current = false; }
@@ -406,8 +415,9 @@ function ProjectEditor({
   };
 
   const isPending = createProject.isPending || updateProject.isPending || opportunityBusy || advancing;
+  const tracksUnavailable=!!project && hasTracklist && (!loadedTracks.current || !!trackQuery.error);
   const initial = useRef(JSON.stringify(formData));
-  const changed = initial.current !== JSON.stringify(formData) || initialFunding.current !== fundingEnabled || songs.length > 0 || seeking;
+  const changed = initial.current !== JSON.stringify(formData) || initialFunding.current !== fundingEnabled || tracksChanged || seeking;
   const allowDeparture = useLeaveGuard(isPending || changed ? 'Leave without saving your project changes?' : null);
 
   const identityFields = <>
@@ -434,7 +444,7 @@ function ProjectEditor({
               onChange={(e) => {
                 const category = e.target.value;
                 setFormData({ ...formData, category });
-                if (!['Album', 'EP'].includes(category) && scope !== '') {
+                if (!musicalProject(category) && scope !== '') {
                   setScope('');
                   setOffer(current => ({ ...current, referenceMediaId: null }));
                   setOpportunityError('');
@@ -444,7 +454,7 @@ function ProjectEditor({
             >
               <option>Album</option>
               <option>EP</option>
-              {project?.category === 'Single' && <option value="Single">Single</option>}
+              <option value="Single">Single</option>
               <option>Tour</option>
               <option value="Video">Music video</option>
             </select>
@@ -518,7 +528,8 @@ function ProjectEditor({
 
   </>;
   const songFields = <>
-        {!project && isServerMode() && hasTracklist && <><SongFields value={songs} onChange={setSongs} disabled={isPending}/></>}
+        {project&&hasTracklist&&<button type="button" disabled={isPending||songEditing.busy} className="min-h-11 underline text-sm" onClick={()=>void reloadSongs()}>Reload saved songs</button>}
+        {isServerMode() && hasTracklist && <>{trackQuery.isPending&&project?<SectionSkeleton variant="form" label="Loading songs" rows={2}/>:<SongFields value={songs} onChange={changeSongs} disabled={isPending} category={formData.category} projectId={project?.id} primary={primaryRecordingId} onPrimary={choosePrimary} onBusy={busy=>setSongEditing({dirty:false,busy})} references={Object.fromEntries((trackQuery.data?.songs??[]).map(song=>[song.id,song.references]))}/>} {trackQuery.error&&<p role="alert">Could not load songs. <button type="button" onClick={()=>void trackQuery.refetch()}>Retry songs</button></p>}</>}
   </>;
   const opportunityFields = <>
         {!project && isServerMode() && <section className="space-y-4 border-t border-border pt-6">
@@ -561,19 +572,19 @@ function ProjectEditor({
   </section>;
 
   function goProject(next: number) {
-    if (isPending) return;
+    if (isPending || songEditing.busy) return;
     if (next > 2 && seeking && !offer.referenceMediaId) { flow.reveal(2); setOpportunityError('Choose a musical reference.'); return; }
     setOpportunityError(''); flow.go(next);
   }
   return <div className="max-w-6xl mx-auto py-4 md:py-6 space-y-6">
     <header className="flex items-center justify-between gap-4"><h1 className="text-2xl font-semibold">{project ? 'Edit Project' : 'New Project'}</h1><button type="button" className="min-h-11 px-3 text-sm text-muted" disabled={isPending} onClick={() => { if (!changed || confirm('Leave without saving your project changes?')) { allowDeparture(); onClose(); } }}>Cancel</button></header>
     <form ref={flow.form} noValidate onSubmit={event => { event.preventDefault(); if (!isPending) advance.current?.run(); }}>
-      <CreationFrame label="Project" steps={['Identity',hasTracklist ? 'Songs & story' : 'Story','Opportunities','Review']} flow={{...flow,go:goProject}} locked={isPending}
+      <CreationFrame label="Project" steps={['Identity',hasTracklist ? 'Songs & story' : 'Story','Opportunities','Review']} flow={{...flow,go:goProject}} locked={isPending||songEditing.busy}
         context={<JourneyContext cover={formData.coverUrl} title={formData.title || 'New project'} artist={projectFormat} />}
         footer={<>
-          {flow.step > 0 && <JourneyBack disabled={isPending} onClick={() => goProject(flow.step - 1)} />}
-          <button type="button" className="creation-save" disabled={isPending || !formData.title.trim()} onClick={() => { void persistProject(project ? undefined : ProjectInputStatus.draft).then(saved => { if (saved) completeProject(); }); }}>{isPending ? 'Saving…' : 'Save & exit'}</button>
-          <MorphAdvanceButton ref={advance} buttonType="submit" disabled={createProject.isPending || updateProject.isPending || opportunityBusy || songEditing.dirty || songEditing.busy} onPendingChange={setAdvancing} onBeforeAdvance={() => { if (flow.step === 2 && seeking && !offer.referenceMediaId) { setOpportunityError('Choose a musical reference.'); return false; } return flow.validate(flow.step); }} onAttempt={() => flow.step === 3 ? persistProject() : undefined} onAdvance={() => flow.step === 3 ? completeProject() : flow.go(flow.step + 1)} buttonClassName="guided-next" faceSize={72}>{flow.step < 3 ? 'Continue' : project || formData.status === 'draft' ? 'Save project' : 'Publish project'}</MorphAdvanceButton>
+          {flow.step > 0 && <JourneyBack disabled={isPending||songEditing.busy} onClick={() => goProject(flow.step - 1)} />}
+          <button type="button" className="creation-save" disabled={isPending || songEditing.busy || tracksUnavailable || !formData.title.trim()} onClick={() => { void persistProject(project ? undefined : ProjectInputStatus.draft).then(saved => { if (saved) completeProject(); }); }}>{isPending ? 'Saving…' : 'Save & exit'}</button>
+          <MorphAdvanceButton ref={advance} buttonType="submit" disabled={createProject.isPending || updateProject.isPending || opportunityBusy || tracksUnavailable || songEditing.busy} onPendingChange={setAdvancing} onBeforeAdvance={() => { if (flow.step === 1 && ['Single','Video'].includes(formData.category) && songs.length>1) { setOpportunityError('Choose one song for this format.'); return false; } if (flow.step === 2 && seeking && !offer.referenceMediaId) { setOpportunityError('Choose a musical reference.'); return false; } return flow.validate(flow.step); }} onAttempt={() => flow.step === 3 ? persistProject() : undefined} onAdvance={() => flow.step === 3 ? completeProject() : flow.go(flow.step + 1)} buttonClassName="guided-next" faceSize={72}>{flow.step < 3 ? 'Continue' : project || formData.status === 'draft' ? 'Save project' : 'Publish project'}</MorphAdvanceButton>
         </>}>
         <fieldset disabled={isPending} className="space-y-6">
           <section data-creation-step="0" hidden={flow.step !== 0} className="space-y-6">{identityFields}{coverField}</section>
@@ -581,15 +592,13 @@ function ProjectEditor({
           <section data-creation-step="2" hidden={flow.step !== 2} className="space-y-6">{opportunityFields}</section>
           <section data-creation-step="3" hidden={flow.step !== 3} className="space-y-6">
             <div className="creation-summary"><h3 className="text-xl font-semibold">{formData.title}</h3><dl><dt>Format</dt><dd>{projectFormat}</dd>{hasTracklist && <><dt>Songs</dt><dd>{songs.length}</dd></>}<dt>Collaboration</dt><dd>{seeking ? offer.need : 'Not seeking'}</dd>{seeking && <><dt>Compensation</dt><dd>{offer.compensation.kind === 'split' ? `${offer.compensation.percent}% royalties` : `USD ${offer.compensation.amount}`}</dd><dt>Song</dt><dd>{scope === '' ? 'Entire project' : songs[Number(scope)]?.title}</dd><dt>Deliverable</dt><dd>{offer.deliverable}</dd></>}</dl>{seeking && offer.requirements && <details><summary className="min-h-11 cursor-pointer text-sm">Terms</summary><p className="text-sm text-muted whitespace-pre-wrap">{offer.requirements}</p></details>}</div>
-            {fundingFields}{statusField}
+            <p className="text-sm text-muted">Project recordings become accessible when you publish this project. This does not publish new posts in Discovery.</p>{fundingFields}{statusField}
           </section>
         </fieldset>
         {(createProject.error || updateProject.error || opportunityError) && <p role="alert" className="text-sm text-danger">{opportunityError || createProject.error?.message || updateProject.error?.message}</p>}
       </CreationFrame>
     </form>
-    {project && isServerMode() && musicalProject(project.category) && <div hidden={flow.step !== 1}><SongManager projectId={project.id} status={project.status} onStateChange={setSongEditing}/></div>}
     {project && isServerMode() && <div hidden={flow.step !== 2}><ProjectOffers projectId={project.id} ownerId={project.artistId}/></div>}
-    {songEditing.dirty && <p className="text-sm text-muted">Save or reload your song-list changes before saving project details.</p>}
     {project && <button type="button" onClick={handleDelete} disabled={isPending || deleteProject.isPending || songEditing.busy} className="min-h-11 text-sm text-danger">Remove project</button>}
     {deleteProject.error && <p role="alert">{deleteProject.error.message}</p>}
   </div>;
