@@ -1,280 +1,122 @@
-import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
+import { forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState, type ReactNode } from 'react';
+import { AVATAR_VIEW, angryAvatarParams, angryFeatures, blobPath, eyeShapes, featureColor, happyAvatarParams, mouthShape, seededAvatarParams, strokeWidth, type AvatarParams } from '@/lib/avatar';
 
-type EyeStyle = "bars" | "dots" | "sleepy" | "wink" | "side";
-type FaceMood = "happy" | "angry";
+export type FaceMood = 'happy' | 'angry';
 
-type FaceParams = {
-  radii: number[];
-  wobble: number;
-  scale: number;
-  face: string;
-  eyes: EyeStyle;
-};
+function Features({ params }: { params: AvatarParams }) {
+  const fg = featureColor(params.face), sw = strokeWidth(params), mouth = mouthShape(params);
+  return <>{[...eyeShapes(params), ...(mouth ? [mouth] : [])].map((shape, i) => <path key={i} d={shape.d} fill={shape.stroke ? 'none' : fg} stroke={shape.stroke ? fg : undefined} strokeWidth={sw} strokeLinecap="round" />)}</>;
+}
 
+/** Decorative by default: the surrounding link/image label names the person. */
+export function StaticFace({ seed = 'nebula', params, size = 64, className }: { seed?: string | number; params?: AvatarParams; size?: number; className?: string }) {
+  const stable = useMemo(() => params ?? seededAvatarParams(seed), [params, seed]);
+  return <svg viewBox={`0 0 ${AVATAR_VIEW} ${AVATAR_VIEW}`} width={size} height={size} className={className} aria-hidden="true" focusable="false"><path d={blobPath(stable.radii, stable.wobble, stable.scale)} fill={stable.face} /><Features params={stable}/></svg>;
+}
+
+export function SpringFace({ mood = 'happy', params, size = 80, onDone }: { mood?: FaceMood; params?: AvatarParams; size?: number; onDone?: () => void }) {
+  const reduced = useReducedMotion(), [generated] = useState(() => mood === 'angry' ? angryAvatarParams() : happyAvatarParams());
+  const face = params ?? generated, fg = featureColor(face.face), sw = strokeWidth(face), mouth = mouthShape(face), angry = angryFeatures(face);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null), entered = useRef(false), done = useRef(onDone); done.current = onDone;
+  function completeEntrance() {
+    if (entered.current || !done.current) return;
+    entered.current = true;
+    timer.current = setTimeout(() => { timer.current = null; done.current?.(); }, reduced ? 100 : mood === 'angry' ? 650 : 380);
+  }
+  useEffect(() => {
+    if (reduced) completeEntrance();
+    return () => { if (timer.current) clearTimeout(timer.current); entered.current = false; };
+  }, [reduced]);
+  return <motion.div data-blob-mood={mood} aria-hidden="true" className="shrink-0" style={{ width: size, height: size }}
+    initial={reduced ? false : { scale: 0, opacity: 0, rotate: -18 }}
+    animate={{ scale: 1, opacity: 1, rotate: 0, ...(mood === 'angry' && !reduced ? { x: [0, -6, 6, -5, 5, -3, 0] } : {}) }}
+    transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 340, damping: 20, x: { delay: .5, duration: .45 } }}
+    exit={reduced ? { opacity: 0, transition: { duration: .01 } } : { scale: 0, opacity: 0, rotate: 18, transition: { duration: .22, ease: 'easeIn' } }}
+    onAnimationComplete={completeEntrance}>
+    <svg viewBox={`0 0 ${AVATAR_VIEW} ${AVATAR_VIEW}`} className="h-full w-full overflow-visible" focusable="false">
+      <path d={blobPath(face.radii, face.wobble, face.scale)} fill={face.face} />
+      {eyeShapes(face).map((shape, i) => <motion.path key={i} d={shape.d} fill={shape.stroke ? 'none' : fg} stroke={shape.stroke ? fg : undefined} strokeWidth={sw} strokeLinecap="round"
+        style={{ transformBox: 'fill-box', transformOrigin: 'center' }} initial={reduced ? false : { scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={reduced ? { duration: 0 } : { delay: .18 + i * .06, type: 'spring', stiffness: 500, damping: 18 }} />)}
+      {mood === 'angry' && angry.brows.map((d,i) => <motion.path key={d} d={d} fill="none" stroke={fg} strokeWidth={sw} strokeLinecap="round" initial={reduced ? false : { y: -16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={reduced ? { duration: 0 } : { delay: .24+i*.05, type: 'spring', stiffness: 500, damping: 18 }} />)}
+      {(mouth || mood === 'angry') && <motion.path d={mood === 'angry' ? angry.mouth : mouth!.d} fill={mood === 'angry' || mouth?.stroke ? 'none' : fg} stroke={mood === 'angry' || mouth?.stroke ? fg : undefined} strokeWidth={sw} strokeLinecap="round" initial={reduced ? false : { pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }} transition={reduced ? { duration: 0 } : { delay: .32, duration: mood === 'angry' ? .35 : .4 }} />}
+    </svg>
+  </motion.div>;
+}
+
+export function FieldError({ message, id }: { message?: string | null; id?: string }) {
+  return message ? <p id={id} role="alert" className="flex items-start gap-2 text-sm text-danger"><StaticFace seed="field-error" params={{ ...seededAvatarParams('field-error'), face: '#ff5a3c', eyes: 'bars', mouth: 'flat' }} size={20} className="shrink-0"/><span>{message}</span></p> : null;
+}
+
+export function OnboardingBadge() {
+  const reduced = useReducedMotion();
+  return <motion.span className="inline-flex items-center gap-2 voice text-[10px] tracking-widest text-accent" initial={reduced ? false : { opacity: 0, scale: .6 }} animate={{ opacity: 1, scale: 1 }} transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: 360, damping: 22 }}><StaticFace seed="onboarding" size={32}/><span>ARTIST SETUP</span></motion.span>;
+}
+
+/** A once-per-mount heading accent; query refetches cannot restart it. */
+export function WinkFace({ active = true, size = 36, placeholder = '.' }: { active?: boolean; size?: number; placeholder?: ReactNode }) {
+  const reduced = useReducedMotion(), [phase, setPhase] = useState<'hidden'|'blooming'|'winking'|'done'>('hidden'), completed = useRef(false);
+  const [params] = useState(() => happyAvatarParams()), fg = featureColor(params.face), sw = strokeWidth(params), mouth = mouthShape(params);
+  useEffect(() => {
+    if (!active || completed.current) return;
+    if (reduced) { completed.current = true; setPhase('done'); return; }
+    const timers = [setTimeout(() => setPhase('blooming'), 700), setTimeout(() => setPhase('winking'), 1500), setTimeout(() => { completed.current = true; setPhase('done'); }, 2400)];
+    return () => timers.forEach(clearTimeout);
+  }, [active, reduced]);
+  const visible = phase === 'blooming' || phase === 'winking';
+  return <span className="relative inline-block" data-blob-wink={phase}>
+    <span style={{ opacity: visible ? 0 : 1 }}>{placeholder}</span>
+    <motion.span aria-hidden="true" className="absolute pointer-events-none" style={{ width: size, height: size, left: '50%', bottom: '-.05em', translateX: '-50%', transformOrigin: '50% 100%' }} initial={false} animate={{ scale: visible ? 1 : 0, opacity: visible ? 1 : 0 }} transition={reduced ? { duration: 0 } : { type: 'spring', stiffness: visible ? 300 : 260, damping: visible ? 16 : 22 }}>
+      <svg viewBox="0 0 512 512" className="h-full w-full overflow-visible" focusable="false"><path d={blobPath(params.radii, params.wobble, params.scale)} fill={params.face}/>{eyeShapes(params).map((shape,i) => <motion.path key={i} d={shape.d} fill={shape.stroke ? 'none' : fg} stroke={shape.stroke ? fg : undefined} strokeWidth={sw} strokeLinecap="round" style={{ transformBox: 'fill-box', transformOrigin: 'center' }} animate={{ scaleY: i === 0 && phase === 'winking' ? 0 : 1 }} transition={{ type: 'spring', stiffness: 420, damping: 18 }}/>) }{mouth && <motion.path d={mouth.d} fill="none" stroke={fg} strokeWidth={sw} strokeLinecap="round" animate={{ pathLength: visible ? 1 : 0 }} transition={{ delay: .22, duration: .36 }}/>}</svg>
+    </motion.span>
+  </span>;
+}
+
+export type MorphAdvanceHandle = { run: () => void };
 type MorphAdvanceButtonProps = {
-  children: ReactNode;
-  onAdvance: () => void;
-  onBeforeAdvance?: () => boolean;
-  onPendingChange?: (pending: boolean) => void;
-  invalid?: boolean;
-  disabled?: boolean;
-  className?: string;
-  buttonClassName?: string;
-  faceSize?: number;
+  children: ReactNode; onAdvance: () => void; onBeforeAdvance?: () => boolean | 'cancel';
+  /** Resolve only after real persistence. A rejection shows angry feedback and never advances. */
+  onAttempt?: () => Promise<void | boolean> | void | boolean;
+  onError?: (error: unknown) => void; onPendingChange?: (pending: boolean) => void;
+  invalid?: boolean; disabled?: boolean; className?: string; buttonClassName?: string; faceSize?: number; buttonType?: 'button' | 'submit';
 };
-
-const HAPPY_COLORS = ["#ff5a3c", "#2b3cff", "#ffb02e", "#cdf03f"];
-const EYE_STYLES: EyeStyle[] = ["bars", "dots", "side", "wink", "sleepy"];
-
-function randomFace(previous: FaceParams | null): FaceParams {
-  const availableColors = HAPPY_COLORS.filter((color) => color !== previous?.face);
-  const availableEyes = EYE_STYLES.filter((eyes) => eyes !== previous?.eyes);
-
-  return {
-    radii: Array.from({ length: 8 }, () => Math.random()),
-    wobble: 0.42 + Math.random() * 0.43,
-    scale: 0.84 + Math.random() * 0.16,
-    face: availableColors[Math.floor(Math.random() * availableColors.length)],
-    eyes: availableEyes[Math.floor(Math.random() * availableEyes.length)],
-  };
-}
-
-function angryFace(): FaceParams {
-  return {
-    radii: Array.from({ length: 8 }, () => Math.random()),
-    wobble: 0.55 + Math.random() * 0.3,
-    scale: 0.86 + Math.random() * 0.14,
-    face: "#ff5a3c",
-    eyes: "bars",
-  };
-}
-
-function blobPath({ radii, wobble, scale }: FaceParams) {
-  const center = 256;
-  const baseRadius = 512 * 0.335;
-  const points = radii.map((radius, index) => {
-    const angle = (index / 8) * Math.PI * 2 - Math.PI / 2;
-    const factor = 1 + wobble * 0.26 * (radius * 2 - 1);
-    const distance = baseRadius * scale * factor;
-    return {
-      x: center + Math.cos(angle) * distance,
-      y: center + Math.sin(angle) * distance,
-    };
-  });
-
-  return points.reduce((path, point, index) => {
-    const next = points[(index + 1) % points.length];
-    const previous = points[(index + points.length - 1) % points.length];
-    const afterNext = points[(index + 2) % points.length];
-    const controlOne = {
-      x: point.x + (next.x - previous.x) * 0.14,
-      y: point.y + (next.y - previous.y) * 0.14,
-    };
-    const controlTwo = {
-      x: next.x - (afterNext.x - point.x) * 0.14,
-      y: next.y - (afterNext.y - point.y) * 0.14,
-    };
-
-    if (index === 0) {
-      return `M ${point.x.toFixed(1)} ${point.y.toFixed(1)} C ${controlOne.x.toFixed(1)} ${controlOne.y.toFixed(1)}, ${controlTwo.x.toFixed(1)} ${controlTwo.y.toFixed(1)}, ${next.x.toFixed(1)} ${next.y.toFixed(1)}`;
-    }
-    return `${path} C ${controlOne.x.toFixed(1)} ${controlOne.y.toFixed(1)}, ${controlTwo.x.toFixed(1)} ${controlTwo.y.toFixed(1)}, ${next.x.toFixed(1)} ${next.y.toFixed(1)}`;
-  }, "") + " Z";
-}
-
-function Eye({ style, side }: { style: EyeStyle; side: "left" | "right" }) {
-  const x = side === "left" ? 192 : 320;
-
-  if (style === "dots") {
-    return <circle cx={x} cy="222" r="13" fill="#080808" />;
+export const MorphAdvanceButton = forwardRef<MorphAdvanceHandle, MorphAdvanceButtonProps>(function MorphAdvanceButton(props, ref) {
+  const reduced = useReducedMotion(), [phase, setPhase] = useState<'idle'|'saving'|'face'|'exiting'>('idle'), [mood, setMood] = useState<FaceMood>('happy'), [face, setFace] = useState<AvatarParams>();
+  const latest = useRef(props); latest.current = props;
+  const mounted = useRef(true), locked = useRef(false), settled = useRef(true), accepted = useRef(false), previous = useRef<AvatarParams>(undefined), button = useRef<HTMLButtonElement>(null), restoreFocus = useRef(false);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; locked.current = false; latest.current.onPendingChange?.(false); }; }, []);
+  useEffect(() => { if (phase === 'idle' && restoreFocus.current) { restoreFocus.current = false; button.current?.focus(); } }, [phase]);
+  async function run() {
+    const current = latest.current;
+    if (locked.current || current.disabled) return;
+    locked.current = true; settled.current = false; accepted.current = false;
+    current.onPendingChange?.(true);
+    let valid = !current.invalid;
+    try {
+      const before = current.onBeforeAdvance?.();
+      if (before === 'cancel') { locked.current = false; settled.current = true; current.onPendingChange?.(false); return; }
+      if (before === false) valid = false;
+      if (valid) { setPhase('saving'); valid = (await current.onAttempt?.()) !== false; }
+    } catch (error) { valid = false; if (mounted.current) current.onError?.(error); }
+    if (!mounted.current) return;
+    accepted.current = valid;
+    const next = valid ? happyAvatarParams(previous.current) : angryAvatarParams();
+    if (valid) previous.current = next;
+    restoreFocus.current = !valid && (document.activeElement === button.current || document.activeElement === document.body);
+    setMood(valid ? 'happy' : 'angry'); setFace(next); setPhase('face');
   }
-  if (style === "sleepy") {
-    return (
-      <path
-        d={side === "left" ? "M178 220 Q192 232 206 220" : "M306 220 Q320 232 334 220"}
-        fill="none"
-        stroke="#080808"
-        strokeLinecap="round"
-        strokeWidth="12"
-      />
-    );
+  useImperativeHandle(ref, () => ({ run: () => { void run(); } }));
+  function finish() {
+    if (phase !== 'exiting' || settled.current || !mounted.current) return;
+    settled.current = true; locked.current = false; setPhase('idle'); latest.current.onPendingChange?.(false);
+    if (accepted.current) latest.current.onAdvance();
   }
-  if (style === "wink" && side === "right") {
-    return <circle cx={x} cy="222" r="13" fill="#080808" />;
-  }
-  if (style === "side") {
-    return <circle cx={x + (side === "left" ? 7 : -7)} cy="222" r="13" fill="#080808" />;
-  }
-  return <rect x={x - 11} y="188" width="22" height="68" rx="11" fill="#080808" />;
-}
-
-function SpringFace({
-  mood,
-  params,
-  size,
-}: {
-  mood: FaceMood;
-  params: FaceParams;
-  size: number;
-}) {
-  const reduceMotion = useReducedMotion();
-  const path = blobPath(params);
-  const spring = reduceMotion ? { duration: 0.01 } : { type: "spring" as const, stiffness: 340, damping: 20 };
-
-  return (
-    <motion.div
-      key={`${mood}-${params.face}-${params.radii[0]}`}
-      initial={{ scale: 0, opacity: 0, rotate: -18 }}
-      animate={mood === "angry" && !reduceMotion
-        ? { scale: 1, opacity: 1, rotate: 0, x: [0, -6, 6, -5, 5, -3, 0] }
-        : { scale: 1, opacity: 1, rotate: 0 }}
-      exit={{ scale: 0, opacity: 0, rotate: 18 }}
-      transition={mood === "angry" && !reduceMotion
-        ? { ...spring, x: { delay: 0.5, duration: 0.45 } }
-        : spring}
-      layout
-      className="grid shrink-0 place-items-center"
-      style={{ width: size, height: size }}
-      aria-hidden="true"
-    >
-      <svg viewBox="0 0 512 512" className="h-full w-full overflow-visible">
-        <path d={path} fill={params.face} />
-        <motion.g
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={reduceMotion ? { duration: 0.01 } : { delay: 0.18, type: "spring", stiffness: 500, damping: 18 }}
-          style={{ transformOrigin: "256px 222px" }}
-        >
-          <Eye style={params.eyes} side="left" />
-        </motion.g>
-        <motion.g
-          initial={{ opacity: 0, scale: 0.5 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={reduceMotion ? { duration: 0.01 } : { delay: 0.24, type: "spring", stiffness: 500, damping: 18 }}
-          style={{ transformOrigin: "320px 222px" }}
-        >
-          <Eye style={params.eyes} side="right" />
-        </motion.g>
-        {mood === "angry" && (
-          <motion.g
-            initial={{ opacity: 0, y: -16 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={reduceMotion ? { duration: 0.01 } : { delay: 0.24, type: "spring", stiffness: 500, damping: 18 }}
-            fill="none"
-            stroke="#080808"
-            strokeLinecap="round"
-            strokeWidth="13"
-          >
-            <path d="M166 166 L215 185" />
-            <path d="M297 185 L346 166" />
-          </motion.g>
-        )}
-        <motion.path
-          d={mood === "angry" ? "M184 355 Q256 286 328 355" : "M184 318 Q256 386 328 318"}
-          fill="none"
-          stroke="#080808"
-          strokeLinecap="round"
-          strokeWidth="13"
-          initial={{ pathLength: 0, opacity: 0 }}
-          animate={{ pathLength: 1, opacity: 1 }}
-          transition={reduceMotion ? { duration: 0.01 } : { delay: 0.32, duration: mood === "angry" ? 0.35 : 0.4 }}
-        />
-      </svg>
-    </motion.div>
-  );
-}
-
-export function MorphAdvanceButton({
-  children,
-  onAdvance,
-  onBeforeAdvance,
-  onPendingChange,
-  invalid = false,
-  disabled = false,
-  className = "",
-  buttonClassName = "",
-  faceSize = 80,
-}: MorphAdvanceButtonProps) {
-  const [mood, setMood] = useState<FaceMood | null>(null);
-  const [face, setFace] = useState<FaceParams | null>(null);
-  const previousFace = useRef<FaceParams | null>(null);
-  const settleTimer = useRef<number | null>(null);
-  const settled = useRef(false);
-  const reduceMotion = useReducedMotion();
-
-  const clearPending = useCallback(() => {
-    if (settleTimer.current !== null) {
-      window.clearTimeout(settleTimer.current);
-      settleTimer.current = null;
-    }
-    onPendingChange?.(false);
-  }, [onPendingChange]);
-
-  useEffect(() => () => clearPending(), [clearPending]);
-
-  const handleClick = () => {
-    if (disabled || mood) return;
-
-    const nativeValid = onBeforeAdvance ? onBeforeAdvance() : true;
-    const isRejected = invalid || !nativeValid;
-    const nextMood: FaceMood = isRejected ? "angry" : "happy";
-    const nextFace = isRejected ? angryFace() : randomFace(previousFace.current);
-
-    settled.current = false;
-    previousFace.current = nextFace;
-    setFace(nextFace);
-    setMood(nextMood);
-    onPendingChange?.(true);
-
-    settleTimer.current = window.setTimeout(() => {
-      if (settled.current) return;
-      settled.current = true;
-      setMood(null);
-      setFace(null);
-
-      // AnimatePresence needs to finish the face exit before either restoring
-      // the CTA or moving the wizard to its next panel.
-      settleTimer.current = window.setTimeout(() => {
-        clearPending();
-        if (!isRejected) onAdvance();
-      }, 220);
-    }, isRejected ? 1250 : 1050);
-  };
-
-  return (
-    <div className={`relative flex h-20 items-center justify-end ${className}`}>
-      <AnimatePresence mode="wait" initial={false}>
-        {mood && face ? (
-          <SpringFace key="face" mood={mood} params={face} size={faceSize} />
-        ) : (
-          <motion.button
-            key="button"
-            type="button"
-            onClick={handleClick}
-            disabled={disabled}
-            layout
-            initial={reduceMotion ? { scale: 1, opacity: 1 } : { scale: 0.94, opacity: 0, y: 8 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={reduceMotion
-              ? { opacity: 0, transition: { duration: 0.01 } }
-              : { scale: 0.92, opacity: 0, y: -4, transition: { duration: 0.22, ease: [0.4, 0, 1, 1] } }}
-            transition={reduceMotion
-              ? { duration: 0.01 }
-              : { type: "spring", stiffness: 420, damping: 26, mass: 0.7 }}
-            className={buttonClassName}
-          >
-            {children}
-          </motion.button>
-        )}
-      </AnimatePresence>
-      <span className="sr-only" role="status" aria-live="polite">
-        {mood === "happy"
-          ? "continuing to the next step"
-          : mood === "angry"
-            ? "some required input is missing or invalid — fix it to continue"
-            : ""}
-      </span>
-    </div>
-  );
-}
+  return <div className={`relative flex min-h-20 min-w-[9.5rem] items-center justify-center ${props.className ?? ''}`} aria-busy={phase !== 'idle'}>
+    <AnimatePresence mode="wait" initial={false} onExitComplete={finish}>
+      {(phase === 'idle' || phase === 'saving') && <motion.button key="button" ref={button} type={props.buttonType ?? 'button'} onClick={event => { event.preventDefault(); void run(); }} disabled={props.disabled || phase === 'saving'} className={props.buttonClassName}
+        initial={reduced ? false : { opacity: 0, scale: .9 }} animate={{ opacity: 1, scale: 1 }} exit={reduced ? { opacity: 0, transition: { duration: .01 } } : { opacity: 0, scale: .4, transition: { duration: .14, ease: 'easeIn' } }}>{props.children}</motion.button>}
+      {phase === 'face' && face && <SpringFace key="face" params={face} mood={mood} size={props.faceSize ?? 80} onDone={() => setPhase('exiting')} />}
+    </AnimatePresence>
+    <span className="sr-only" role="status">{phase === 'face' || phase === 'exiting' ? mood === 'happy' ? 'Continuing to the next step' : 'Some input could not be saved. Review the error and try again.' : ''}</span>
+  </div>;
+});

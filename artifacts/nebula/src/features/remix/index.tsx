@@ -7,6 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { usePublication } from '@/features/discovery/publication-api';
 import { ProjectOffers } from '@/features/collaborations';
 import { activeDraft, createDraft, selectDraft, useRemixDraft } from './draft-api';
+import { ForgeStudio, LegacyAudioDraft } from './forge-studio';
 import { Studio } from './studio';
 const button = 'border border-border px-5 py-3 text-sm hover:border-accent disabled:opacity-40';
 
@@ -36,7 +37,7 @@ function Workspace({ owner, proposal }: { owner: number; proposal: boolean }) {
     // Keep the operation key across a reload after a lost create response.
     window.history.replaceState({ ...entry.current, requestKey: requestKey.current }, '');
     try {
-      const result = await createDraft(original.data.id, original.data.revision, requestKey.current);
+      const result = await createDraft(original.data.id, original.data.revision, requestKey.current, original.data.media.kind === 'audio' ? 'finished-audio' : 'video');
       client.setQueryData(['remix-draft',owner,result.id],result); selectDraft(owner,result.id); setSelected(result.id);
       window.history.replaceState(null,''); entry.current = null;
     } catch (cause) { setError((cause as Error).message); }
@@ -44,13 +45,23 @@ function Workspace({ owner, proposal }: { owner: number; proposal: boolean }) {
   }
   useEffect(() => { if (entry.current?.start && validOriginal && !started.current) { started.current = true; void start(); } }, [validOriginal]);
   function drafts() { selectDraft(owner,null); setSelected(null); entry.current=null; window.history.replaceState(null,''); navigate('/studio/remix'); void list.refetch(); }
+  const workflowKeys=useRef(new Map<string,string>());
+  async function newWorkflow(workflow:'finished-audio'|'video') {
+    if(!original.data)return;
+    const key=`${selected}:${workflow}`;
+    if(!workflowKeys.current.has(key))workflowKeys.current.set(key,crypto.randomUUID());
+    const result=await createDraft(original.data.id,original.data.revision,workflowKeys.current.get(key)!,workflow);
+    client.setQueryData(['remix-draft',owner,result.id],result);selectDraft(owner,result.id);setSelected(result.id);entry.current=null;window.history.replaceState(null,'');
+  }
   if (draft.data && original.data && !proposal) {
     if (!validOriginal || original.data.revision !== draft.data.settings.sourceRevision) return <section className="p-6 space-y-4"><h1 className="text-3xl">Remix unavailable</h1><p>The original changed or remix permission was revoked. Your private draft has been preserved.</p><ReturnButton onClick={drafts}>Your private drafts</ReturnButton><Link className={button} href="/discovery">Find an original</Link></section>;
+    if(draft.data.workflow==='finished-audio')return <ForgeStudio key={draft.data.id} original={original.data} draft={draft.data} onDrafts={drafts} onNewWorkflow={newWorkflow}/>;
+    if(original.data.media.kind==='audio'&&draft.data.workflow!=='video'&&draft.data.contribution?.kind!=='video')return <LegacyAudioDraft key={draft.data.id} original={original.data} draft={draft.data} onDrafts={drafts} onNewWorkflow={newWorkflow}/>;
     return <Studio key={draft.data.id} original={original.data} draft={draft.data} onDrafts={drafts} />;
   }
   if (proposal && draft.data) return <section className="mx-auto max-w-3xl p-6 space-y-6"><ReturnLink href="/studio/remix">Back to Remix studio</ReturnLink><h1 className="text-3xl">Propose your remix</h1><p>{draft.data.title} · Remix of {draft.data.attribution.title} by {draft.data.attribution.artistName}</p>{draft.data.render && draft.data.attribution.projectId ? <ProjectOffers projectId={draft.data.attribution.projectId} proposalDraftId={draft.data.id} /> : <p>Save a preview of a remix linked to a project before proposing it.</p>}</section>;
   if (legacy.data?.remix && legacy.data.artistId === owner) return <section className="p-6 space-y-4"><h1 className="text-3xl">Previously saved remix</h1><p>This older remix contains only the finished mix. Its editable tracks were not saved.</p><p>{legacy.data.title}</p>{legacy.data.remix.projectId && <ProjectOffers projectId={legacy.data.remix.projectId} proposalPublicationId={legacy.data.id} />}<ReturnButton onClick={drafts}>Your private drafts</ReturnButton></section>;
-  return <section className="mx-auto w-full max-w-3xl p-6 space-y-6"><ReturnLink href="/studio" /><h1 className="text-3xl font-bold">Remix studio</h1><p className="text-muted">Your private drafts. Keep editing, then share a finished mix with a project through a proposal.</p>
+  return <section className="mx-auto w-full max-w-3xl p-6 space-y-6"><ReturnLink href="/studio" /><h1 className="text-3xl font-bold">Remix studio</h1><p className="text-muted">Your private drafts.</p>
     {(pending || original.isLoading || draft.isLoading || list.isLoading) && <p role="status">Opening your workspace…</p>}
     {(error || draft.error || original.error || list.error || legacy.error) && <div role="alert" className="space-y-3"><p>{error || draft.error?.message || original.error?.message || list.error?.message || legacy.error?.message}</p><button className={button} onClick={() => { if (selected) void draft.refetch(); else { void original.refetch(); void list.refetch(); } }}>Retry</button><ReturnButton onClick={drafts}>Your private drafts</ReturnButton></div>}
     {entry.current?.sourceId && original.data && <div className="space-y-3"><p>Original: {original.data.title} · {original.data.artistName}</p>{validOriginal ? <button className={button} disabled={pending} onClick={() => void start()}>Start private remix</button> : <p>This original is not available for remixing.</p>}</div>}

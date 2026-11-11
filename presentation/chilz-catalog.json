@@ -1,0 +1,253 @@
+{
+  "version": 1,
+  "artistName": "CHILZ",
+  "artistSpotifyId": "1I6NepqGwgAF7Peq8F7clq",
+  "source": "https://open.spotify.com/artist/1I6NepqGwgAF7Peq8F7clq",
+  "verifiedOn": "2026-11-09",
+  "audioIncluded": false,
+  "picture": {
+    "path": "/presentation/chilz/artist.jpg",
+    "source": "https://image-cdn-ak.spotifycdn.com/image/ab6761610000e5eb80a34ff18e5e438a3c32b277",
+    "sha256": "e3ffaee29b005754b9401ec3aa22093ce0d14c428478e52e024b24d09985dbe0"
+  },
+  "releases": [
+    {
+      "spotifyId": "44OWJRy6K3WS7Kic6IiXQn",
+      "title": "Brain",
+      "type": "Single",
+      "year": 2023,
+      "source": "https://open.spotify.com/album/44OWJRy6K3WS7Kic6IiXQn",
+      "artwork": {
+        "path": "/presentation/chilz/44OWJRy6K3WS7Kic6IiXQn.jpg",
+        "source": "https://image-cdn-ak.spotifycdn.com/image/ab67616d0000b273b57d2d550e9003074e02d173",
+        "sha256": "e100b8cf07e6a68dc42c9f0319b38f23a095615bc95dea2c2d09ab42dfb0ccc4"
+      },
+      "tracks": [
+        {
+          "spotifyId": "0gHpLsrCRVTF8hN4whviOk",
+          "title": "Brain",
+          "artists": "CHILZ",
+          "durationSeconds": 221.413,
+          "explicit": false
+        }
+      ]
+    },
+    {
+      "spotifyId": "76qj3Fto73wPoQtaKPHLBR",
+      "title": "Transition",
+      "type": "Single",
+      "year": 2023,
+      "source": "https://open.spotify.com/album/76qj3Fto73wPoQtaKPHLBR",
+      "artwork": {
+        "path": "/presentation/chilz/76qj3Fto73wPoQtaKPHLBR.jpg",
+        "source": "https://image-cdn-ak.spotifycdn.com/image/ab67616d0000b2738be11fef22db54af8829eda8",
+        "sha256": "5c4d99213a4b6c99dfa332a4d5852cd2d3c4ca3ef6ce4a2e8fa900320c0ace0d"
+      },
+      "tracks": [
+        {
+          "spotifyId": "5RzUY2gyke06kYlXdqzJHX",
+          "title": "Transition",
+          "artists": "CHILZ",
+          "durationSeconds": 185.806,
+          "explicit": false
+        }
+      ]
+    },
+    {
+      "spotifyId": "0JfeZWbNiaj4eoZX4PgNFP",
+      "title": "Overtaking",
+      "type": "Single",
+      "year": 2023,
+      "source": "https://open.spotify.com/album/0JfeZWbNiaj4eoZX4PgNFP",
+      "artwork": {
+        "path": "/presentation/chilz/0JfeZWbNiaj4eoZX4PgNFP.jpg",
+        "source": "https://image-cdn-ak.spotifycdn.com/image/ab67616d0000b273ef2a2b11c67c2477970c61e0",
+        "sha256": "1fb547c73b6cfc3d9b852fe6f4d20f390dac419e7031c08a1830fcddd9bc3e5b"
+      },
+      "tracks": [
+        {
+          "spotifyId": "2oxKbNuqdnLlUZ2zfP1cp1",
+          "title": "Overtaking",
+          "artists": "CHILZ",
+          "durationSeconds": 129.756,
+          "explicit": false
+        }
+      ]
+    },
+    {
+      "spotifyId": "2rXVXFO2squC3bbvEq7nce",
+      "title": "Temperatura",
+      "type": "Single",
+      "year": 2022,
+      "source": "https://open.spotify.com/album/2rXVXFO2squC3bbvEq7nce",
+      "artwork": {
+        "path": "/presentation/chilz/2rXVXFO2squC3bbvEq7nce.jpg",
+        "source": "https://image-cdn-ak.spotifycdn.com/image/ab67616d0000b2737775ef3c9834a8f7a20b2c9e",
+        "sha256": "82b6e3a7e19611467f1b02395f263eae4c046ad802ae79b99c9c75acfc5d0438"
+      },
+      "tracks": [
+        {
+          "spotifyId": "2Esf25HDhgMJQ0mMTgPqHv",
+          "title": "Temperatura",
+          "artists": "CHILZ, Las Prez",
+          "durationSeconds": 132.786,
+          "explicit": false
+        }
+      ]
+    },
+    {
+      "spotifyId": "6jEQk9qkBabRIsua3GE6qq",
+      "title": "Monkey Business",
+      "type": "EP",
+      "year": 2022,
+      "source": "https://open.spotify.com/album/6jEQk9qkBabRIsua3GE6qq",
+      "artwork": {
+        "path": "/presentation/chilz/6jEQk9qkBabRIsua3GE6qq.jpg",
+        "source": "https://image-cdn-ak.spotifycdn.com/image/ab67616d0000b273492ec0fbb85460a746501bde",
+        "sha256": "7346ec3a867f29110e0d8097b390ac2933da99b4ffb454fd86168c1f8dcc85cb"
+      },
+      "tracks": [
+        {
+          "spotifyId": "5jtzs4mQXs84Psbg5ykaYk",
+          "title": "Feelz",
+          "artists": "CHILZ",
+          "durationSeconds": 251.428,
+          "explicit": false
+        },
+        {
+          "spotifyId": "0EogaeY4ngNZGRg8ZnoC5N",
+          "title": "Disco Monkey",
+          "artists": "CHILZ",
+          "durationSeconds": 253.44,
+          "explicit": false
+        },
+        {
+          "spotifyId": "2xFgnXDjjBDdbRbbobKsbf",
+          "title": "Rain",
+          "artists": "CHILZ",
+          "durationSeconds": 232.845,
+          "explicit": false
+        },
+        {
+          "spotifyId": "4Kt4WtQNRugCEBidrsB4nE",
+          "title": "Like This",
+          "artists": "CHILZ",
+          "durationSeconds": 218.88,
+          "explicit": false
+        },
+        {
+          "spotifyId": "7FOh7e5uLXupRMkz3iHvdL",
+          "title": "Time",
+          "artists": "CHILZ, Blac Pearl",
+          "durationSeconds": 240.0,
+          "explicit": false
+        }
+      ]
+    },
+    {
+      "spotifyId": "3YjHJtlVSSuYoHxmKzQ4wG",
+      "title": "SIN PROBARTE",
+      "type": "Single",
+      "year": 2022,
+      "source": "https://open.spotify.com/album/3YjHJtlVSSuYoHxmKzQ4wG",
+      "artwork": {
+        "path": "/presentation/chilz/3YjHJtlVSSuYoHxmKzQ4wG.jpg",
+        "source": "https://image-cdn-ak.spotifycdn.com/image/ab67616d0000b2737f573dfdf12184d7671a1821",
+        "sha256": "ec91e251bf3ea0c084a1eb3c78512e16688d3aff8f12214dfc57945342ad6dff"
+      },
+      "tracks": [
+        {
+          "spotifyId": "1tsJdfQWlh6sddL5qd5Tan",
+          "title": "SIN PROBARTE",
+          "artists": "CHILZ, Fano",
+          "durationSeconds": 168.095,
+          "explicit": true
+        }
+      ]
+    },
+    {
+      "spotifyId": "3OLZTmaqj2LN2qKaNYc7Ns",
+      "title": "FOUND MYSELF",
+      "type": "Single",
+      "year": 2022,
+      "source": "https://open.spotify.com/album/3OLZTmaqj2LN2qKaNYc7Ns",
+      "artwork": {
+        "path": "/presentation/chilz/3OLZTmaqj2LN2qKaNYc7Ns.jpg",
+        "source": "https://image-cdn-fa.spotifycdn.com/image/ab67616d0000b2734856d09c97d32ec1aa8c3aae",
+        "sha256": "d3402d3f4ac9793dab08a6c4c3a8b7613bab745d6c881371ce72af3b89509eb7"
+      },
+      "tracks": [
+        {
+          "spotifyId": "0dUJBK6v2ZEYoJ9QRhCkhv",
+          "title": "FOUND MYSELF",
+          "artists": "CHILZ",
+          "durationSeconds": 138.24,
+          "explicit": false
+        }
+      ]
+    },
+    {
+      "spotifyId": "6cHjHvSRnpVzRymzz8lWCq",
+      "title": "TALK BACK",
+      "type": "Single",
+      "year": 2022,
+      "source": "https://open.spotify.com/album/6cHjHvSRnpVzRymzz8lWCq",
+      "artwork": {
+        "path": "/presentation/chilz/6cHjHvSRnpVzRymzz8lWCq.jpg",
+        "source": "https://image-cdn-ak.spotifycdn.com/image/ab67616d0000b273eb94864fb94af0f9eda45e5c",
+        "sha256": "c9a943093949b2afd51d0e61789eaf4a4218dbe2ab2ea90ef991c41ea91fecf0"
+      },
+      "tracks": [
+        {
+          "spotifyId": "0PcUUVdUclUnWCont9eytW",
+          "title": "TALK BACK",
+          "artists": "CHILZ",
+          "durationSeconds": 232.258,
+          "explicit": false
+        }
+      ]
+    },
+    {
+      "spotifyId": "4zVJvjgL8GnShIwHNPbxIK",
+      "title": "OWN FLOW",
+      "type": "Single",
+      "year": 2022,
+      "source": "https://open.spotify.com/album/4zVJvjgL8GnShIwHNPbxIK",
+      "artwork": {
+        "path": "/presentation/chilz/4zVJvjgL8GnShIwHNPbxIK.jpg",
+        "source": "https://image-cdn-fa.spotifycdn.com/image/ab67616d0000b2731811574188d04969794b2d32",
+        "sha256": "99c98b9d7b3028829ac1982df94e978a359b077e6397c2963b3d9e27d74a78e2"
+      },
+      "tracks": [
+        {
+          "spotifyId": "6HAGxY4nfylJu33O949ezE",
+          "title": "OWN FLOW",
+          "artists": "CHILZ, 808wrld",
+          "durationSeconds": 202.5,
+          "explicit": false
+        }
+      ]
+    },
+    {
+      "spotifyId": "00ggWPaUoZijPC7UFiGlwi",
+      "title": "Back To Love",
+      "type": "Single",
+      "year": 2022,
+      "source": "https://open.spotify.com/album/00ggWPaUoZijPC7UFiGlwi",
+      "artwork": {
+        "path": "/presentation/chilz/00ggWPaUoZijPC7UFiGlwi.jpg",
+        "source": "https://image-cdn-ak.spotifycdn.com/image/ab67616d0000b2732b41afa955a492abb1cb13d7",
+        "sha256": "c0919e4e2d4bbea2b82714a2f266c41c1d57150e63920d0c0fafc4d4862c02f6"
+      },
+      "tracks": [
+        {
+          "spotifyId": "1sAON6fBUcumZOp7K4054b",
+          "title": "Back To Love",
+          "artists": "CHILZ, VADHIR",
+          "durationSeconds": 218.0,
+          "explicit": false
+        }
+      ]
+    }
+  ]
+}

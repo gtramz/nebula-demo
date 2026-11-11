@@ -11,7 +11,7 @@ test('video reference and contribution: actual export, invalidation, cancel, pri
  const offer=await call('/api/projects/12/offers',{workId:4,referenceMediaId:source.media.id,need:'Feature',deliverable:'A video performance',requirements:'Review the original',status:'open',deadline:null,compensation:{kind:'split',percent:15}});
  await call('/api/presentation/switch',{accountId:19});await page.goto(`/messages/offer/${offer.id}`);
  const original=page.getByLabel('Compare Original',{exact:true});await expect(original).toHaveJSProperty('tagName','VIDEO');
- await page.getByLabel('Your contribution audio or video',{exact:true}).setInputFiles({name:'performance.mp4',mimeType:'video/mp4',buffer:await readFile('presentation/assets/video/marea-session.mp4')});
+ await page.getByLabel('Upload file',{exact:true}).setInputFiles({name:'performance.mp4',mimeType:'video/mp4',buffer:await readFile('presentation/assets/video/marea-session.mp4')});
  await expect(page.getByLabel('Contribution preview')).toHaveJSProperty('tagName','VIDEO');
  await page.getByRole('button',{name:'Render proposal',exact:true}).click();
  await page.getByRole('button',{name:'Cancel preparation',exact:true}).click();

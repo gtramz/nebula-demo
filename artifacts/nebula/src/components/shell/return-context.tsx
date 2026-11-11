@@ -1,18 +1,20 @@
 import { createContext, useContext, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type Dispatch, type SetStateAction } from 'react';
 import { useLocation, useSearch } from 'wouter';
 import { useNavigationSafety } from './navigation-guard';
+import { navigationScope, previousEntry } from './return-history';
 import { useAuth } from '@/context/AuthContext';
 
-type Position = { window: number; shell: number; page: number; focus?: string };
+type Position = { body: number; window: number; shell: number; page: number; focus?: string };
 type Memory = { trail: string[]; returning: boolean; positions: Map<string, Position>; values: Map<string, unknown> };
 const Context = createContext<Memory | null>(null);
 const empty = (): Memory => ({ trail: [], returning: false, positions: new Map(), values: new Map() });
 
 /** Per-account, in-memory UI context, never credentials, media or server records. */
 export function ReturnContext({ children }: { children: ReactNode }) {
-  useNavigationSafety();
   const { user } = useAuth();
   const identity = user ? `${user.role}:${user.artistId ?? user.investorId}` : 'guest';
+  const scope = useMemo(() => navigationScope(identity), [identity]);
+  useNavigationSafety(identity, scope);
   const memory = useMemo(empty, [identity]);
   const [path] = useLocation(), search = useSearch(), route = path + (search ? `?${search}` : '');
   const current = useRef(''), previousIndex = useRef<number>(Number(history.state?.__nebulaNavigationIndex ?? 0));
@@ -37,22 +39,23 @@ export function ReturnContext({ children }: { children: ReactNode }) {
       if (restoring) return;
       // WebKit may blur a link on pointer activation before its click fires.
       const active = event.type === 'click' ? (event.target as Element).closest?.('a[href]') ?? document.activeElement : document.activeElement;
-      memory.positions.set(route, { window: window.scrollY, shell: shell()?.scrollTop ?? 0, page: page()?.scrollTop ?? 0,
+      memory.positions.set(route, { body: document.body.scrollTop, window: window.scrollY, shell: shell()?.scrollTop ?? 0, page: page()?.scrollTop ?? 0,
         focus: active instanceof HTMLAnchorElement && shell()?.contains(active) ? active.getAttribute('href') ?? undefined : memory.positions.get(route)?.focus });
     };
     const restore = () => {
       if (!restoring || !saved) return;
       window.scrollTo(0, saved.window);
+      document.body.scrollTop = saved.body;
       if (shell()) shell()!.scrollTop = saved.shell;
       if (page()) page()!.scrollTop = saved.page;
       const focused = saved.focus ? [...document.querySelectorAll<HTMLAnchorElement>('.shell-page a[href]')].find(a => a.getAttribute('href') === saved.focus) : null;
-      if (Math.abs(window.scrollY - saved.window) < 2 && Math.abs((shell()?.scrollTop ?? 0) - saved.shell) < 2 && Math.abs((page()?.scrollTop ?? 0) - saved.page) < 2 && (!saved.focus || focused)) {
+      if (Math.abs(document.body.scrollTop - saved.body) < 2 && Math.abs(window.scrollY - saved.window) < 2 && Math.abs((shell()?.scrollTop ?? 0) - saved.shell) < 2 && Math.abs((page()?.scrollTop ?? 0) - saved.page) < 2 && (!saved.focus || focused)) {
         focused?.focus({ preventScroll: true }); restoring = false; observer.disconnect();
       }
     };
     const observer = new MutationObserver(() => { cancelAnimationFrame(frame); frame = requestAnimationFrame(restore); });
     if (saved) { observer.observe(document.querySelector('.shell-page') ?? document.body, { childList: true, subtree: true }); frame = requestAnimationFrame(restore); }
-    else { window.scrollTo(0, 0); if (shell()) shell()!.scrollTop = 0; }
+    else { window.scrollTo(0, 0); document.body.scrollTop = 0; if (shell()) shell()!.scrollTop = 0; }
     const stop = () => { restoring = false; observer.disconnect(); };
     const timeout = window.setTimeout(stop, 4000);
     document.addEventListener('scroll', capture, true);
@@ -70,15 +73,18 @@ export function useIsReturnNavigation() {
   return useContext(Context)?.returning ?? false;
 }
 
-export function useReturnDestination(fallback: string) {
-  const memory = useContext(Context);
-  return memory && memory.trail.length > 1 ? memory.trail[memory.trail.length - 2] : fallback;
+export function useReturnTarget(fallback: string) {
+  const { user } = useAuth();
+  const identity = user ? `${user.role}:${user.artistId ?? user.investorId}` : 'guest';
+  const scope = useMemo(() => navigationScope(identity), [identity]);
+  const entry = previousEntry(history.state, identity, scope, location.pathname + location.search + location.hash);
+  return { href: entry?.href ?? fallback, delta: entry ? entry.index - Number(history.state.__nebulaNavigationIndex) : null };
 }
 
 export function returnLabel(href: string) {
   const path = href.split('?')[0];
-  const label = ({ '/explore': 'Explore', '/search': 'Search', '/discovery': 'Discovery', '/profile': 'profile', '/studio': 'studio', '/studio/remix': 'Remix studio', '/saved': 'saved publications', '/collaborations': 'collaborations', '/received': 'received pledges', '/pledges': 'pledges' } as Record<string, string>)[path]
-    ?? (path.startsWith('/artist/') ? 'artist' : path.startsWith('/project/') ? 'project' : 'previous page');
+  const label = ({ '/': 'landing page', '/login': 'login', '/register': 'sign up', '/onboarding': 'artist setup', '/publish': 'publication editor', '/presentation': 'presentation tools', '/notifications': 'notifications', '/messages': 'messages', '/explore': 'Explore', '/search': 'Search', '/discovery': 'Discovery', '/profile': 'profile', '/studio': 'studio', '/studio/remix': 'Remix studio', '/saved': 'saved publications', '/collaborations': 'collaborations', '/received': 'received pledges', '/pledges': 'pledges' } as Record<string, string>)[path]
+    ?? (path.startsWith('/messages/') || path.startsWith('/collaborations/') ? 'conversation' : path.startsWith('/receipt/') ? 'receipt' : path.startsWith('/publish/') ? 'publication editor' : path.startsWith('/artist/') ? 'artist' : path.startsWith('/project/') ? 'project' : 'previous page');
   return `Back to ${label}`;
 }
 

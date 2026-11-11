@@ -1,4 +1,5 @@
 import type { RemixInput } from '@nebula/local';
+import { drawFrame, videoRegions, VIDEO_WIDTH, VIDEO_HEIGHT } from './video-geometry';
 
 export function recordingType() {
   if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream) throw new Error('Video remix recording is unavailable in this browser. Try a current browser with MediaRecorder and canvas capture support.');
@@ -40,20 +41,22 @@ export async function renderVideo(options: {
   const media = [base, own]; let stream: MediaStream | null = null, interval: ReturnType<typeof setInterval> | undefined, recorder: MediaRecorder | undefined;
   const destination = context.createMediaStreamDestination(), limiter = context.createDynamicsCompressor();
   limiter.threshold.value = -3; limiter.knee.value = 0; limiter.ratio.value = 20; limiter.connect(destination);
-  canvas.width = 720; canvas.height = 1280;
+  canvas.width = VIDEO_WIDTH; canvas.height = VIDEO_HEIGHT;
   const painter = canvas.getContext('2d'); if (!painter) { await context.close(); throw new Error('Video rendering is unavailable.'); }
-  const drawVideo = (element: HTMLMediaElement, y: number, height: number, label: string) => {
-    if (element instanceof HTMLVideoElement && element.readyState >= 2) {
-      const scale = Math.min(720 / element.videoWidth, height / element.videoHeight), width = element.videoWidth * scale, h = element.videoHeight * scale;
-      painter.drawImage(element, (720 - width) / 2, y + (height - h) / 2, width, h);
-    }
-    painter.fillStyle = '#000b'; painter.fillRect(0, y, 720, 40); painter.fillStyle = '#fff'; painter.font = '22px sans-serif'; painter.fillText(label, 20, y + 28);
-  };
   let ownStarted = false;
   const draw = () => {
-    painter.fillStyle = '#080808'; painter.fillRect(0, 0, 720, 1280);
-    if (options.sourceKind === 'video' && options.contributionKind === 'video') { drawVideo(base, 0, 320, 'Original'); if (ownStarted) drawVideo(own, 320, 960, 'Your contribution'); }
-    else if (options.sourceKind === 'video' || ownStarted) drawVideo(options.sourceKind === 'video' ? base : own, 0, 1280, 'ANTIQ NEBULA · REMIX');
+    painter.fillStyle = '#080808'; painter.fillRect(0, 0, VIDEO_WIDTH, VIDEO_HEIGHT);
+    for (const region of videoRegions(options.sourceKind, settings.composition)) {
+      if (region.track === 'contribution' && !ownStarted) continue;
+      const element = region.track === 'source' ? base : own;
+      if (element instanceof HTMLVideoElement) drawFrame(painter, element, region, settings.composition?.[region.track]);
+      // Preserve the previous rendering for drafts that have not opted into framing.
+      if (!settings.composition) {
+        painter.fillStyle = '#000b'; painter.fillRect(0, region.y, VIDEO_WIDTH, 40);
+        painter.fillStyle = '#fff'; painter.font = '22px sans-serif';
+        painter.fillText(options.sourceKind === 'audio' ? 'ANTIQ NEBULA · REMIX' : region.track === 'source' ? 'Original' : 'Your contribution', 20, region.y + 28);
+      }
+    }
   };
   const hidden = () => { if (document.hidden && recorder?.state === 'recording') recorder.stop(); };
   try {

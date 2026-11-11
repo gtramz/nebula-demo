@@ -23,8 +23,8 @@ test('Home groups real opportunities, retains filters and layout while investor 
   await page.goto('/explore');
   await expect(nav(page).getByRole('link', { name: 'home', exact: true })).toHaveAttribute('aria-current', 'page');
   const card = page.getByRole('article', { name: project.title, exact: true });
-  await expect(card).toHaveCount(1); await expect(card).toContainText('2 open opportunities');
-  await expect(card).toContainText('12% royalty split offered'); await expect(card).toContainText('USD 250.00 fixed fee');
+  await expect(card).toHaveCount(1); await expect(card.getByRole('listitem')).toHaveCount(2);
+  await expect(card.getByRole('listitem').filter({ hasText: 'Feature' })).toContainText('12% royalties'); await expect(card.getByRole('listitem').filter({ hasText: 'Mix' })).toContainText('USD 250 fixed');
   await expect(page.getByRole('article', { name: catalog.title, exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: /^Filters/ }).click(); await page.getByRole('checkbox', { name: 'EP', exact: true }).check(); await page.getByRole('button', { name: /^Apply filters/ }).click();
   await card.getByRole('link', { name: 'View project', exact: true }).click();

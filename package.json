@@ -30,7 +30,7 @@
     "test:presentation": "playwright test --config playwright.presentation.config.ts",
     "start:standard": "node dist-server/server/main.js",
     "demo:seed": "node scripts/presentation.mjs prepare",
-    "test:seed": "node --test scripts/presentation-seed.test.mjs"
+    "test:seed": "node --test scripts/presentation-seed.test.mjs scripts/presentation-catalog.test.mjs scripts/presentation-luna.test.mjs scripts/presentation-gramz.test.mjs scripts/presentation-funding.test.mjs scripts/presentation-funding-music.test.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.56.1",

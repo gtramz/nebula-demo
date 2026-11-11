@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef } from 'react';
+import { readReturnHistory, returnKey } from './return-history';
 
 const guards = new Set<() => string | null>();
 function mayLeave() {
@@ -8,7 +9,7 @@ function mayLeave() {
 const indexKey = '__nebulaNavigationIndex';
 
 /** Protect SPA links/programmatic navigation and same-document browser Back/Forward. */
-export function useNavigationSafety() {
+export function useNavigationSafety(identity: string, scope: string) {
   useLayoutEffect(() => {
     const push = history.pushState, replace = history.replaceState;
     const scrollRestoration = history.scrollRestoration;
@@ -19,21 +20,24 @@ export function useNavigationSafety() {
       if (approved?.href === href && approved.until > Date.now()) { approved = null; return true; }
       approved = null; return mayLeave();
     };
-    replace.call(history, { ...history.state, [indexKey]: currentIndex }, '');
+    replace.call(history, { ...history.state, [indexKey]: currentIndex, [returnKey]: readReturnHistory(history.state, identity, scope) }, '');
     history.pushState = function (data, unused, url) {
       const destination = new URL(String(url ?? location.href), location.href);
       if (destination.href !== location.href && !check(destination.href)) return;
       const nextIndex = currentIndex + 1;
-      push.call(this, { ...data, [indexKey]: nextIndex }, unused, url); currentIndex = nextIndex;
+      const origin = readReturnHistory(history.state, identity, scope);
+      const href = location.pathname + location.search + location.hash;
+      const trail = destination.href === location.href ? origin.trail : [...origin.trail, { href, index: currentIndex }].slice(-100);
+      push.call(this, { ...data, [indexKey]: nextIndex, [returnKey]: { ...origin, trail } }, unused, url); currentIndex = nextIndex;
     };
     history.replaceState = function (data, unused, url) {
       if (url && new URL(String(url), location.href).href !== location.href && !check(new URL(String(url), location.href).href)) return;
-      replace.call(this, { ...data, [indexKey]: currentIndex }, unused, url);
+      replace.call(this, { ...data, [indexKey]: currentIndex, [returnKey]: readReturnHistory(history.state, identity, scope) }, unused, url);
     };
     const pop = (event: PopStateEvent) => {
       const nextIndex = event.state?.[indexKey];
       if (restoring) { restoring = false; event.stopImmediatePropagation(); return; }
-      if (typeof nextIndex === 'number' && nextIndex !== currentIndex && !mayLeave()) {
+      if (typeof nextIndex === 'number' && nextIndex !== currentIndex && !check(location.href)) {
         event.stopImmediatePropagation(); restoring = true; history.go(currentIndex - nextIndex); return;
       }
       if (typeof nextIndex === 'number') currentIndex = nextIndex;
@@ -55,7 +59,7 @@ export function useNavigationSafety() {
     window.addEventListener('popstate', pop, true); window.addEventListener('beforeunload', unload);
     document.addEventListener('click', click, true);
     return () => { history.pushState = push; history.replaceState = replace; history.scrollRestoration = scrollRestoration; window.removeEventListener('popstate', pop, true); window.removeEventListener('beforeunload', unload); document.removeEventListener('click', click, true); };
-  }, []);
+  }, [identity, scope]);
 }
 
 export function useLeaveGuard(message: string | null) {

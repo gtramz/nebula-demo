@@ -5,13 +5,14 @@ import { clamp, fixedFragment, clipDurations, nextClipDuration, timeLabel, type 
 
 const control = 'min-h-11 min-w-11 border border-border px-4 py-2 text-sm hover:border-accent disabled:opacity-40';
 type Drag = { mode: 'move' | 'start' | 'end' | 'seek' | 'overview'; x: number; range: Fragment; width: number; window: number };
-export function FragmentSelector({ postId, mediaId, length, range, mediaRef, disabled, onChange }: {
-  postId: number; mediaId: string; length: number; range: Fragment; mediaRef: RefObject<HTMLMediaElement | null>; disabled: boolean; onChange: (range: Fragment) => void;
+export function FragmentSelector({ postId, mediaId, length, range, mediaRef, disabled, onChange, waveformLoader }: {
+  postId?: number; mediaId: string; length: number; range: Fragment; mediaRef: RefObject<HTMLMediaElement | null>; disabled: boolean; onChange: (range: Fragment) => void;
+  waveformLoader?: (signal: AbortSignal) => Promise<Waveform>;
 }) {
   const [windowSize, setWindowSize] = useState(60), [viewStart, setViewStart] = useState(0);
   const [cursor, setCursor] = useState(0), [playing, setPlaying] = useState(false), [error, setError] = useState('');
   const track = useRef<HTMLDivElement>(null), drag = useRef<Drag | null>(null);
-  const waveform = useQuery({ queryKey: ['remix-waveform', postId, mediaId], queryFn: ({ signal }) => apiRequest<Waveform>(`/api/publications/${postId}/waveform`, { signal }), retry: false, refetchOnWindowFocus: false, gcTime: 0 });
+  const waveform = useQuery({ queryKey: ['remix-waveform', postId ?? 'reference', mediaId], queryFn: ({ signal }) => waveformLoader ? waveformLoader(signal) : apiRequest<Waveform>(`/api/publications/${postId}/waveform`, { signal }), enabled: postId !== undefined || !!waveformLoader, retry: false, refetchOnWindowFocus: false, gcTime: 0 });
   const data = waveform.data?.mediaId === mediaId ? waveform.data : undefined;
   const span = Math.max(.1, Math.min(windowSize, length || 60)), view = clamp(viewStart, 0, length - span), duration = range.end - range.start;
   const percent = (time: number) => (time - view) / span * 100;

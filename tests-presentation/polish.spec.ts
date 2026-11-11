@@ -4,7 +4,7 @@ test('prepared artist: edit, listening preferences, independent previews, Saved,
  test.setTimeout(90000);const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
  const call=async(path:string,data?:unknown)=>{const r=await page.request.fetch(path,{method:data===undefined?'GET':'POST',headers,data});expect(r.ok(),await r.text()).toBeTruthy();return r.json();};
  await call('/api/presentation/reset',{confirm:true});
- await page.goto('/');await expect(page).toHaveURL(/\/explore$/);expect((await call('/api/session')).user.name).toBe('Sol Rivera');
+ await page.goto('/');await expect(page).toHaveURL(/\/explore$/);expect((await call('/api/session')).user.name).toBe('CHILZ');
  const before=(await call('/api/session')).user.artist;
  await page.goto('/profile');await page.getByRole('button',{name:'Edit profile',exact:true}).click();await page.getByLabel('bio',{exact:true}).fill('A warm sound, built together.');
  await page.getByText('Private discovery & collaboration preferences',{exact:true}).click();await page.getByRole('button',{name:'Choose genres to explore',exact:true}).click();const search=page.getByRole('combobox',{name:'Search genres to explore',exact:true});await search.fill('jazz');await search.press('Enter');await search.press('Escape');
@@ -21,13 +21,13 @@ test('prepared artist: edit, listening preferences, independent previews, Saved,
  await page.getByRole('article').filter({has:page.getByRole('link',{name:'Afterglow · from Blue Hour',exact:true})}).getByRole('button',{name:'Remove from saved',exact:true}).click();await page.goto('/explore');await expect(page.getByRole('article',{name:'Blue Hour',exact:true}).getByRole('button',{name:'Save Afterglow · from Blue Hour',exact:true})).toBeVisible();
  await call('/api/presentation/switch',{accountId:7});await page.goto('/profile');await expect(page.getByRole('link',{name:/My Pledges/})).toBeVisible();await expect(page.getByRole('button',{name:'Edit profile',exact:true})).toHaveCount(0);
  await call('/api/presentation/reset',{confirm:true});await page.goto('/');await expect(page).toHaveURL(/\/explore$/);expect((await call('/api/session')).user.artist).toEqual(before);
- await call('/api/presentation/reset',{confirm:true});await page.reload();expect((await call('/api/session')).user.name).toBe('Sol Rivera');
+ await call('/api/presentation/reset',{confirm:true});await page.reload();expect((await call('/api/session')).user.name).toBe('CHILZ');
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(errors).toEqual([]);await page.screenshot({path:info.outputPath('prepared-home.png')});
 });
 
 test('prepared private proposal sends, accepts and chats in one thread; rejection preserves its response',async({page})=>{
  const call=async(path:string,data?:unknown)=>{const r=await page.request.fetch(path,{method:data===undefined?'GET':'POST',headers,data});expect(r.ok(),await r.text()).toBeTruthy();return r.json();};
- await call('/api/presentation/reset',{confirm:true});await page.goto('/messages/offer/1');
+ await call('/api/presentation/reset',{confirm:true});await call('/api/presentation/switch',{accountId:19});await page.goto('/messages/offer/1');
  await expect(page.getByRole('button',{name:'Your proposal',exact:true})).toBeVisible();
  await page.getByRole('button',{name:'Your proposal',exact:true}).click();await page.getByRole('slider',{name:/Comparison position/}).fill('8');
  await page.getByRole('checkbox',{name:'I reviewed the current deliverable, compensation and terms.',exact:true}).check();await page.getByRole('button',{name:'Send request',exact:true}).click();await expect(page).toHaveURL(/\/messages\/collaboration\/\d+$/);
@@ -38,5 +38,5 @@ test('prepared private proposal sends, accepts and chats in one thread; rejectio
  const rejected=await call('/api/offers/8/conversations',{operationId:crypto.randomUUID(),introduction:'A different mix approach.',text:'A full-track production reference.',offerRevision:offer.revision,acceptTerms:true,mediaId:file.id});
  await call('/api/presentation/events',{action:'reject'});const result=await call(`/api/collaborations/${rejected.id}`);expect(result.admission).toBe('rejected');
  await page.goto(`/messages/collaboration/${rejected.id}`);await expect(page.getByText(/Thank you for sharing your take/)).toBeVisible();await expect(page.getByLabel('Message',{exact:true})).toHaveCount(0);
- await call('/api/presentation/reset',{confirm:true});const restored=await call('/api/offers/1/conversations');expect(restored.existing).toBeNull();expect(restored.draft.files.length).toBeGreaterThan(0);
+ await call('/api/presentation/reset',{confirm:true});await call('/api/presentation/switch',{accountId:19});const restored=await call('/api/offers/1/conversations');expect(restored.existing).toBeNull();expect(restored.draft.files.length).toBeGreaterThan(0);
 });

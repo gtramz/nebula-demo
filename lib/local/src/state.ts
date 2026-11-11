@@ -14,7 +14,7 @@ type Account = {
   artistPreferences?: ArtistPreferences;
   artistOnboarding?: ArtistOnboarding;
 };
-export type StoredProject = ProjectInput & { id: number; artistId: number; createdAt: string; archivedAt?: string };
+export type StoredProject = ProjectInput & { id: number; artistId: number; createdAt: string; archivedAt?: string; presentationCatalogId?: string };
 export type StoredInvestment = Investment & { investorId: number };
 export type State = {
   version: 3;
@@ -44,6 +44,8 @@ const date = (value: unknown) => string(value) && Number.isFinite(Date.parse(val
 const optionalStrings = (value: Record<string, unknown>, fields: string[]) => fields.every(key => value[key] == null || string(value[key]));
 const image = (value: unknown) => value == null || (string(value) && value.length <= 1_000_000 && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+=*$/.test(value));
 const arrayOf = (value: unknown, valid: (item: unknown) => boolean): value is unknown[] => Array.isArray(value) && value.every(valid);
+export const isPresentationCatalogId = (value: unknown): value is string => typeof value === 'string'
+  && /^(spotify:[A-Za-z0-9]{22}|youtube:[A-Za-z0-9_-]{11}|local:luna-(original|chilz-remix))$/.test(value);
 
 export function parseState(raw: string): State {
   let value: unknown;
@@ -64,7 +66,10 @@ export function parseState(raw: string): State {
     && arrayOf(value.artists, item => record(item) && id(item.id) && string(item.name) && image(item.picture)
       && optionalStrings(item, ['username', 'genre', 'basedIn', 'bio', 'recordLabel']) && validStoredProfessionalIdentity(item))
     && arrayOf(value.projects, item => record(item) && id(item.id) && id(item.artistId) && string(item.title)
-      && string(item.category) && isMoney(item.goalAmount, 0.01, 100_000_000) && item.currency === 'USD'
+      && string(item.category) && (isMoney(item.goalAmount, 0.01, 100_000_000)
+        || (item.goalAmount === 0 && (isPresentationCatalogId(item.presentationCatalogId)
+          ? (item.status === 'published' || (item.status === 'closed' && date(item.archivedAt)))
+          : (!item.presentationCatalogId && ['draft', 'published', 'closed'].includes(String(item.status)))))) && item.currency === 'USD'
       && date(item.createdAt) && (item.archivedAt === undefined || date(item.archivedAt))
       && string(item.status) && ['draft', 'published', 'funding', 'funded', 'closed'].includes(item.status) && image(item.coverUrl)
       && optionalStrings(item, ['subcategory', 'format', 'pitch', 'story', 'returnModel', 'targetReleaseDate'])

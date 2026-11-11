@@ -1,4 +1,4 @@
-import { useRef, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest, isServerMode, subscribeHomeRanking, getHomeRankingGeneration, type Publication, type PublicationInput, type UploadedMedia } from '@nebula/local';
 import { useAuth } from '@/context/AuthContext';
@@ -52,14 +52,33 @@ export function useDiscoveryFeed() {
   const client = useQueryClient();
   const cached = client.getQueryData<{ pages: { snapshot: string }[] }>(['discovery-feed', identity]);
   const snapshot = useRef<{ identity: string; token?: string }>({ identity, token: cached?.pages[0]?.snapshot });
+  const refreshRequest = useRef<AbortController | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  useEffect(() => () => { refreshRequest.current?.abort(); refreshRequest.current = null; }, [identity]);
+  useEffect(() => { setRefreshing(false); }, [identity]);
   if (snapshot.current.identity !== identity) snapshot.current = { identity };
-  return useInfiniteQuery({ queryKey: ['discovery-feed', identity], initialPageParam: 0,
-    queryFn: async ({ pageParam }) => {
-      const result = await apiRequest<{ items: Publication[]; snapshot: string; nextCursor: number | null }>(`/api/feed?offset=${pageParam}${snapshot.current.token ? `&snapshot=${snapshot.current.token}` : ''}`);
-      snapshot.current.token = result.snapshot;
+  const query = useInfiniteQuery({ queryKey: ['discovery-feed', identity], initialPageParam: 0,
+    queryFn: async ({ pageParam, signal }) => {
+      const result = await apiRequest<{ items: Publication[]; snapshot: string; nextCursor: number | null }>(`/api/feed?offset=${pageParam}${snapshot.current.token ? `&snapshot=${snapshot.current.token}` : ''}`, { signal });
+      if (!signal.aborted && snapshot.current.identity === identity) snapshot.current.token = result.snapshot;
       return result;
     },
     getNextPageParam: page => page.nextCursor ?? undefined,
-    refetchInterval: 15_000, refetchOnWindowFocus: true, gcTime: 5 * 60_000,
+    enabled: !refreshing, refetchInterval: refreshing ? false : 15_000, refetchOnWindowFocus: !refreshing, gcTime: 5 * 60_000,
   });
+  const refresh = useCallback(async () => {
+    if (refreshRequest.current) return;
+    const controller = new AbortController(); refreshRequest.current = controller; setRefreshing(true);
+    try {
+      await client.cancelQueries({ queryKey: ['discovery-feed', identity], exact: true });
+      const page = await apiRequest<{ items: Publication[]; snapshot: string; nextCursor: number | null }>('/api/feed?offset=0', { signal: controller.signal });
+      if (controller.signal.aborted || snapshot.current.identity !== identity) return;
+      snapshot.current.token = page.snapshot;
+      client.setQueryData(['discovery-feed', identity], { pages: [page], pageParams: [0] });
+      return page.items[0]?.id;
+    } finally {
+      if (refreshRequest.current === controller) { refreshRequest.current = null; setRefreshing(false); }
+    }
+  }, [client, identity]);
+  return { ...query, refresh, refreshing };
 }

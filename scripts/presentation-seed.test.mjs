@@ -13,7 +13,7 @@ test('portable fixture excludes credentials and sessions, installs all media and
   try {
     const fixture = new DatabaseSync(resolve('presentation/seed/scene.sqlite'), { readOnly: true });
     const baseline = JSON.parse(fixture.prepare('SELECT value FROM state').get().value);
-    assert.equal(baseline.accounts.length, 9);
+    assert.equal(baseline.accounts.length, 12);
     assert(baseline.accounts.every(a => !a.salt && !a.passwordDigest && a.email.endsWith('@nebula.local')));
     assert.equal(fixture.prepare('SELECT count(*) AS n FROM sessions').get().n, 0);
     fixture.close();
@@ -22,7 +22,7 @@ test('portable fixture excludes credentials and sessions, installs all media and
     const state = JSON.parse(db.prepare('SELECT value FROM state').get().value);
     assert.deepEqual(state.projects, baseline.projects);
     assert.deepEqual(state.artists, baseline.artists);
-    assert.equal(db.prepare('SELECT count(*) AS n FROM posts').get().n, 16);
+    assert.equal(db.prepare('SELECT count(*) AS n FROM posts').get().n, JSON.parse(await readFile('presentation/seed/manifest.json', 'utf8')).counts.posts);
     const principal = state.accounts.find(a => a.id === 19);
     assert.equal(principal.passwordDigest, pbkdf2Sync('Nebula2026!', principal.salt, 600_000, 32, 'sha256').toString('hex'));
     const manifest = JSON.parse(await readFile('presentation/seed/manifest.json', 'utf8'));

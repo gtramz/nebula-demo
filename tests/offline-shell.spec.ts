@@ -122,7 +122,7 @@ test('all interface flows run with no network after the first page load', async 
   await expect(page.getByText('NO PROJECTS YET', { exact: true })).toBeVisible();
   page.once('dialog', (dialog) => dialog.accept());
   await page.getByRole('button', { name: 'More', exact: true }).filter({visible:true}).click();
-  await page.getByRole('menuitem', { name: 'clear demo data', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Clear saved activity', exact: true }).click();
   await expect(page).toHaveURL(/\/$/);
   await go(page, '/explore');
   await expect(page.getByText('no projects found', { exact: true })).toBeVisible();

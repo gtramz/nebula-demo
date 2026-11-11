@@ -32,6 +32,7 @@ import Login from '@/pages/login';
 import Register from '@/pages/register';
 import NotFound from '@/pages/not-found';
 import { PresentationPage, PresentationRuntime } from '@/features/presentation';
+import { MobilePreview } from '@/features/presentation/mobile-preview';
 import { PlaybackCoordinator } from '@/components/playback-coordinator';
 
 const queryClient = new QueryClient({
@@ -39,6 +40,8 @@ const queryClient = new QueryClient({
 });
 
 function Router() {
+  const [path] = useLocation();
+  if (path === '/presentation/mobile') return <MobilePreview />;
   return (
     <ReturnContext><NotificationsProvider><PlaybackCoordinator/><PresentationRuntime/><AppShell>
       <RoutedErrorBoundary>

@@ -9,11 +9,11 @@ const homeInput = (page: Page) => page.getByRole('combobox', { name: 'Search Hom
 const card = (page: Page, title: string) => page.getByRole('article', { name: title, exact: true });
 async function edit(page: Page) {
   await page.getByRole('navigation', { name: 'Primary navigation' }).getByRole('link', { name: 'profile', exact: true }).click();
-  await page.getByRole('button', { name: 'EDIT PROFILE', exact: true }).click();
+  await page.getByRole('button', { name: 'Edit profile', exact: true }).click();
 }
 async function save(page: Page) {
-  await page.getByRole('button', { name: 'save profile', exact: true }).click();
-  await expect(page.getByRole('button', { name: 'EDIT PROFILE', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Save profile', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Edit profile', exact: true })).toBeVisible();
 }
 async function navigate(page: Page, label: string) {
   await page.getByRole('navigation', { name: 'Primary navigation' }).getByRole('link', { name: label.toLowerCase(), exact: true }).click();
@@ -27,7 +27,7 @@ test('saved structured genres update Home facets, autocomplete, retained history
   await rpc(page, 'updateMyArtistPreferences', { discovery: { genreIds: ['classical'] } });
   const project = await rpc(page, 'createProject', { title: `Neutral work ${user.artistId}`, category: 'EP', status: 'funding', goalAmount: 1000 });
   await page.goto('/profile');
-  await page.getByRole('button', { name: 'EDIT PROFILE', exact: true }).click();
+  await page.getByRole('button', { name: 'Edit profile', exact: true }).click();
   await page.getByRole('button', { name: 'Clear musical genres', exact: true }).click();
   await page.getByRole('button', { name: 'Choose musical genres', exact: true }).click();
   const genres = page.getByRole('combobox', { name: 'Search musical genres' });
@@ -63,7 +63,7 @@ test('saved structured genres update Home facets, autocomplete, retained history
   await navigate(page, 'Search');
   await expect(page.getByRole('searchbox')).toHaveValue('Electrónica');
   await expect(page.locator('#search-results').getByRole('link').filter({ hasText: name })).toHaveCount(0);
-  await expect(page.getByRole('status')).not.toHaveText('Searching…');
+  await expect(page.locator('#search-status')).not.toHaveText('Searching…');
   await page.getByRole('searchbox').fill('DnB');
   await expect(page.locator('#search-results').getByRole('link').filter({ hasText: name })).toBeVisible();
   await navigate(page, 'Home');
@@ -84,7 +84,7 @@ test('saved structured genres update Home facets, autocomplete, retained history
   await navigate(page, 'Search');
   for (const query of ['DnB', 'Reggae']) {
     await page.getByRole('searchbox').fill(query);
-    await expect(page.getByRole('status')).toContainText(query);
+    await expect(page.locator('#search-status')).toContainText(query);
     await expect(page.locator('#search-results').getByRole('link').filter({ hasText: name })).toHaveCount(0);
   }
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);

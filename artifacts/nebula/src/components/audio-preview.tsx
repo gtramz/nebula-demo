@@ -2,15 +2,17 @@ import {useEffect,useRef,useState} from 'react';
 import {useQuery} from '@tanstack/react-query';
 import {apiRequest,type Waveform} from '@nebula/local';
 import {Pause,Play} from 'lucide-react';
+import {useAuth} from '@/context/AuthContext';
 import {WaveformProgress} from '@/features/discovery/media-player';
 const clock=(v:number)=>`${Math.floor(v/60)}:${String(Math.floor(v%60)).padStart(2,'0')}`;
 /** One real media element, with waveform values decoded from this exact source. */
-export function AudioPreview({src,title,waveformUrl}:{src:string;title:string;waveformUrl:string}) {
+export function AudioPreview({src,title,waveformUrl,waveformLoader}:{src:string;title:string;waveformUrl?:string;waveformLoader?:(signal:AbortSignal)=>Promise<Waveform>}) {
+ const {user}=useAuth();
  const audio=useRef<HTMLAudioElement>(null),root=useRef<HTMLDivElement>(null);
  const [visible,setVisible]=useState(false),[playing,setPlaying]=useState(false),[position,setPosition]=useState(0),[duration,setDuration]=useState(0),[error,setError]=useState('');
  useEffect(()=>{const el=root.current;if(!el)return;const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){setVisible(true);observer.disconnect();}},{rootMargin:'120px'});observer.observe(el);return()=>observer.disconnect();},[]);
  useEffect(()=>{const el=audio.current;const pause=()=>{if(document.hidden)el?.pause();};document.addEventListener('visibilitychange',pause);return()=>{el?.pause();document.removeEventListener('visibilitychange',pause);};},[src]);
- const wave=useQuery({queryKey:['audio-preview-wave',src,waveformUrl],queryFn:({signal})=>apiRequest<Waveform>(waveformUrl,{signal}),enabled:visible,staleTime:300000,retry:1});
+ const wave=useQuery({queryKey:['audio-preview-wave',src,waveformUrl,user?`${user.role}:${user.artistId??user.investorId}`:'guest'],queryFn:({signal})=>waveformLoader?waveformLoader(signal):apiRequest<Waveform>(waveformUrl!,{signal}),enabled:visible,staleTime:300000,retry:1});
  const length=duration||wave.data?.duration||0;
  async function toggle(){const el=audio.current;if(!el)return;if(!el.paused){el.pause();return;}try{setError('');await el.play();}catch{setError('Could not play. Try again.');}}
  return <div className="audio-preview" ref={root} aria-label={`Audio preview: ${title}`}>

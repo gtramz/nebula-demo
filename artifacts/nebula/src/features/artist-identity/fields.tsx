@@ -31,7 +31,7 @@ export function CreativeFields({ value, onChange, disabled }: ProfileFieldsProps
 }
 export function PreferenceFields({ value, onChange, disabled }: { value: ArtistPreferences; onChange: Dispatch<SetStateAction<ArtistPreferences>>; disabled?: boolean }) {
   return <div className="space-y-6">
-    <p className="text-sm text-muted">What would you like to work on? These preferences stay private and help you discover relevant projects.</p>
+    <p className="text-sm text-muted">Your preferences stay private.</p>
     <TaxonomyMultiSelect label="Opportunities to discover" options={interestOptions} selected={value.discovery.opportunityTypes} onChange={opportunityTypes => onChange(v => ({ ...v, discovery: { ...v.discovery, opportunityTypes } }))} disabled={disabled} />
     <TaxonomyMultiSelect label="Roles I want to perform" options={creativeRoleTaxonomy} selected={value.collaboration.creativeRoles} onChange={creativeRoles => onChange(v => ({ ...v, collaboration: { ...v.collaboration, creativeRoles } }))} disabled={disabled} />
     <TaxonomyMultiSelect label="Genres to explore" options={musicalGenreTaxonomy} selected={value.discovery.genreIds ?? []} onChange={genreIds => onChange(v => ({ ...v, discovery: { ...v.discovery, genreIds } }))} maxSelections={20} disabled={disabled} />
@@ -47,7 +47,7 @@ export function CompletionFields({ value, onChange, disabled }: ProfileFieldsPro
     <label className="block space-y-2"><span>Collaboration availability</span><select aria-label="Collaboration availability" className={controlStyles.field} value={value.collaborationAvailability ?? 'unspecified'} onChange={e => onChange(v => ({ ...v, collaborationAvailability: e.target.value as ArtistProfileInput['collaborationAvailability'] }))}>{collaborationAvailabilityValues.map(id => <option key={id} value={id}>{availabilityLabels[id]}</option>)}</select></label>
     {([['basedIn', 'based in'], ['recordLabel', 'record label']] as const).map(([key, label]) => <label key={key} className="block space-y-2"><span>{label}</span><input aria-label={label} className={controlStyles.field} maxLength={120} value={value[key] ?? ''} onChange={e => onChange(v => ({ ...v, [key]: e.target.value }))} /><span className="block text-xs text-muted">Public when provided. Leave blank to keep it off your profile.</span></label>)}
     <TaxonomyMultiSelect label="Public professional interests" options={interestOptions} selected={value.publicInterests ?? []} onChange={publicInterests => onChange(v => ({ ...v, publicInterests }))} disabled={disabled} />
-    <p className="text-xs text-muted">Only the interests selected above are public. Your private preferences remain separate.</p>
+    <p className="text-xs text-muted">These interests appear on your profile.</p>
     <div className="space-y-4" role="group" aria-label="Public external links">
       <p className="font-medium">External links <span className="text-muted text-sm">· public · up to 6</span></p>
       {links.map((link, index) => <div key={index} className="space-y-3 rounded-field border border-border p-4">
@@ -66,6 +66,6 @@ export function LegacyIdentityValues({ artist }: { artist: Artist }) {
     {!!artist.genres?.length && <p className="break-words">Previous genres: {artist.genres.join(', ')}</p>}
     {!!artist.identityReview?.creativeRoles.length && <p className="break-words">Roles kept for review: {artist.identityReview.creativeRoles.join(', ')}</p>}
     {!!artist.identityReview?.genres.length && <p className="break-words">Genres kept for review: {artist.identityReview.genres.join(', ')}</p>}
-    <p className="text-muted">Previous values are preserved. Unrecognized or combined labels are not assigned automatically.</p>
+    <p className="text-muted">Review your previous selections.</p>
   </details>;
 }

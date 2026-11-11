@@ -15,7 +15,7 @@ export type PublicArtistProfile = { artist: Artist; projects: Project[]; opportu
 
 import { advanceArtistOnboarding, emptyArtistOnboarding, type ArtistOnboarding, type ArtistOnboardingUpdate, artistPreferencesUpdate, emptyArtistPreferences, mergeArtistPreferences, professionalIdentityUpdate, publicArtist, validateArtistProfileKeys, type ArtistPreferences, type ArtistPreferencesUpdate } from './artist-identity.js';
 
-import { parseState, PreviewDataError, type State, type StoredProject, type StoredInvestment } from './state.js';
+import { isPresentationCatalogId, parseState, PreviewDataError, type State, type StoredProject, type StoredInvestment } from './state.js';
 import { CURRENCY, isMoney, sumMoney } from './money.js';
 export { PreviewDataError } from './state.js';
 
@@ -149,21 +149,30 @@ export function createLocalStore(storage: Pick<Storage, 'getItem' | 'setItem'>, 
     return state.projects.filter((item) => !item.archivedAt && (item.status !== 'draft' || viewer?.artistId === item.artistId));
   }
 
-  function validateProject(input: ProjectInput): ProjectInput {
+  function validateProject(input: ProjectInput, existing?: StoredProject): ProjectInput {
     const title = input.title.trim();
     const category = input.category.trim();
     check(title.length > 0 && title.length <= 160, 'Enter a project title of up to 160 characters.');
     check(category.length > 0 && category.length <= 60, 'Choose a project category.');
-    check(isMoney(input.goalAmount, 0.01, 100_000_000),
-      'Enter a USD funding goal from 0.01 to 100,000,000 with at most two decimal places.');
+    if (isPresentationCatalogId(existing?.presentationCatalogId)) {
+      check(input.goalAmount === 0 && input.status === 'published', 'Catalog releases stay published without funding.');
+    } else {
+      check(isMoney(input.goalAmount, 0, 100_000_000),
+        'Enter a USD funding goal from 0 to 100,000,000 with at most two decimal places.');
+    }
     check(['draft', 'published', 'funding', 'funded', 'closed'].includes(input.status ?? 'draft'), 'Choose a valid project status.');
+    check(input.goalAmount > 0 || !['funding', 'funded'].includes(input.status ?? 'draft'),
+      'Set a funding goal before opening funding.');
     check((input.currency ?? CURRENCY) === CURRENCY, 'Only USD is supported.');
     const funds = input.useOfFunds ?? [];
     check(funds.every((item) => item.label.trim().length > 0 && Number.isFinite(item.percentage)
       && item.percentage >= 0 && item.percentage <= 100), 'Check the use of funds.');
     check(!funds.length || Math.abs(funds.reduce((sum, item) => sum + item.percentage, 0) - 100) < 0.01,
       'Use of funds must add up to 100%.');
-    return { ...input, currency: CURRENCY, title, category, coverUrl: localImage(input.coverUrl), status: input.status ?? 'draft' };
+    // Only the additive presentation installer can assign a catalog identity.
+    // A client-supplied marker cannot opt a new or ordinary project into this exception.
+    const { presentationCatalogId: _ignored, ...fields } = input as ProjectInput & { presentationCatalogId?: unknown };
+    return { ...fields, currency: CURRENCY, title, category, coverUrl: localImage(input.coverUrl), status: input.status ?? 'draft' };
   }
 
   function ownedProject(state: State, id: number): StoredProject {
@@ -340,7 +349,9 @@ export function createLocalStore(storage: Pick<Storage, 'getItem' | 'setItem'>, 
     updateProject(id: number, input: ProjectUpdate): Project {
       const state = read();
       const project = ownedProject(state, id);
-      Object.assign(project, validateProject({ ...project, ...input }));
+      check(input.goalAmount !== 0 || !state.investments.some(item => item.projectId === id),
+        'This project has contributions. Close funding to keep its history and goal.');
+      Object.assign(project, validateProject({ ...project, ...input }, project));
       save(state);
       return projectDto(state, project);
     },
@@ -403,7 +414,7 @@ export function createLocalStore(storage: Pick<Storage, 'getItem' | 'setItem'>, 
       const state = read();
       const investor = currentAccount(state, 'investor');
       const project = state.projects.find((item) => item.id === input.projectId);
-      check(project?.status === 'funding' && !project.archivedAt, 'This project is not open for contributions.');
+      check(project?.status === 'funding' && !project.archivedAt && !isPresentationCatalogId(project.presentationCatalogId), 'This project is not open for contributions.');
       check(isMoney(input.amount, 100, 10_000_000),
         'Enter a USD preview amount from 100 to 10,000,000 with at most two decimal places.');
       const artist = state.artists.find((item) => item.id === project.artistId)!;

@@ -13,7 +13,7 @@ import { filterOpportunityProjects, opportunitySuggestions, homeFacetOptions, no
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { DatabaseSync } from 'node:sqlite';
 import { createHash, randomBytes, randomUUID } from 'node:crypto';
-import { createReadStream } from 'node:fs';
+import { createReadStream, existsSync } from 'node:fs';
 import { mkdir, open, readFile, rename, stat, unlink, readdir } from 'node:fs/promises';
 import { resolve, join, extname, sep } from 'node:path';
 import { createLocalStore } from '../lib/local/src/store.js';
@@ -21,6 +21,7 @@ import { parseState } from '../lib/local/src/state.js';
 import type { ProjectInput, SessionUser } from '../lib/local/src/types.js';
 import type { Publication, PublicationInput, UploadedMedia } from '../lib/local/src/publications.js';
 import { waveforms } from './waveforms.js';
+import { finishedAudio } from './finished-audio.js';
 import { remixDrafts } from './remix-drafts.js';
 import { remixes, type StoredPublication } from './remixes.js';
 import { collaborations } from './collaborations.js';
@@ -50,14 +51,25 @@ export async function createNebulaServer(options: { dataDir: string; publicDir: 
     CREATE INDEX IF NOT EXISTS saves_account ON saves(account,created);
     CREATE TABLE IF NOT EXISTS comments (id INTEGER PRIMARY KEY AUTOINCREMENT, post INTEGER NOT NULL, account INTEGER NOT NULL, text TEXT NOT NULL, created TEXT NOT NULL);
     CREATE INDEX IF NOT EXISTS comments_post ON comments(post,id);
+    CREATE TABLE IF NOT EXISTS comment_likes (comment INTEGER NOT NULL, account INTEGER NOT NULL, PRIMARY KEY(comment,account));
+    CREATE TABLE IF NOT EXISTS comment_replies (comment INTEGER PRIMARY KEY, parent INTEGER NOT NULL);
+    CREATE INDEX IF NOT EXISTS comment_replies_parent ON comment_replies(parent,comment);
     CREATE TABLE IF NOT EXISTS feed_snapshots (token TEXT PRIMARY KEY, ids TEXT NOT NULL, expires INTEGER NOT NULL);
     CREATE TABLE IF NOT EXISTS rate_limits (key TEXT PRIMARY KEY, hits INTEGER NOT NULL, reset INTEGER NOT NULL);`);
   if (!(db.prepare('PRAGMA table_info(media)').all() as { name: string }[]).some(column => column.name === 'name')) db.exec('ALTER TABLE media ADD COLUMN name TEXT');
   const stored = db.prepare('SELECT value FROM state WHERE id=1').get() as { value: string } | undefined;
   if (stored) parseState(stored.value); // Never replace a damaged database with an empty one.
+  // Presentation reset can restore a different registered file set. Preserve both snapshots.
+  const baselineMedia = new Set<string>();
+  const baselinePath = join(directory, 'initial.sqlite');
+  if (options.presentation && existsSync(baselinePath)) {
+    const baseline = new DatabaseSync(baselinePath, { readOnly: true });
+    try { for (const row of baseline.prepare('SELECT id FROM media').all() as { id: string }[]) baselineMedia.add(row.id); }
+    finally { baseline.close(); }
+  }
   // Recover uploads interrupted before their metadata committed. Keep referenced files.
   for (const file of await readdir(mediaDirectory)) {
-    if ((file.endsWith('.part') || /^[a-f0-9-]{36}$/.test(file)) && !db.prepare('SELECT id FROM media WHERE id=?').get(file)) await unlink(join(mediaDirectory, file));
+    if ((file.endsWith('.part') || /^[a-f0-9-]{36}$/.test(file)) && !baselineMedia.has(file) && !db.prepare('SELECT id FROM media WHERE id=?').get(file)) await unlink(join(mediaDirectory, file));
   }
   const emptyState = JSON.stringify({ version: 3, nextId: 1, currentAccountId: null, accounts: [], artists: [], projects: [], investments: [], supports: [], visibility: [] });
   let queue: Promise<unknown> = Promise.resolve();
@@ -278,15 +290,16 @@ export async function createNebulaServer(options: { dataDir: string; publicDir: 
   const collaboration = collaborations({ songs:songStore, alerts, messages: messageStore, isArtist: id=>!!publicActor(id), db, current, viewer: accountId, body, json, rate: rateLimit, privateMedia: drafts.isPrivate, remixProposal: drafts.proposal,
     project: (id, viewer) => domain(viewer).getProject(id)?.project ?? null,
     name: id => domain(id).getCurrentUser()?.name ?? 'Artist', media: mediaRow });
-  const messageService = messages({db,store:messageStore,alerts,current,body,json,rate:rateLimit,artist:publicActor,project:id=>domain(null).getProject(id)?.project ?? null,collaboration});
+  const messageService = messages({publication:(id,viewer)=>({title:JSON.parse(readablePost(id,viewer,true).data).title}),db,store:messageStore,alerts,current,body,json,rate:rateLimit,artist:publicActor,project:id=>domain(null).getProject(id)?.project ?? null,collaboration});
   const followStore = follows(db, publicActor);
   const waveformStore = waveforms(directory, mediaDirectory);
-  const presentationService = options.presentation ? presentation({ db, directory, current, user: id => domain(id).getCurrentUser(), publicProject: id => !!domain(null).getProject(id), session, body, json }) : null;
+  const finished = finishedAudio({db,directory,drafts,available:(id,owner)=>{readablePost(id,owner,true);},maxStorageBytes:options.maxStorageBytes});
+  const presentationService = options.presentation ? presentation({ db, directory, current, receiveFinished:finished.receive, user: id => domain(id).getCurrentUser(), publicProject: id => !!domain(null).getProject(id), session, body, json }) : null;
   const uploads = new Set<number>();
   async function upload(req: IncomingMessage, res: ServerResponse) {
     const owner = current(req, true).artistId!;
     const draftId = req.headers['x-remix-draft'];
-    if (draftId !== undefined) { ensure(typeof draftId === 'string', 'Invalid draft.'); drafts.authorizeUpload(draftId, owner); }
+    if (draftId !== undefined) { ensure(typeof draftId === 'string', 'Invalid draft.'); const target=drafts.authorizeUpload(draftId, owner); ensure(JSON.parse(target.data).workflow !== 'finished-audio','This workspace receives finished versions through Forge.'); }
     ensure(!uploads.has(owner), 'Another upload is in progress.', 409);
     rateLimit(req, 'uploads', 60, 3600, String(owner));
     const requested = req.headers['x-media-kind'];
@@ -565,7 +578,7 @@ export async function createNebulaServer(options: { dataDir: string; publicDir: 
         const rows = db.prepare("SELECT posts.* FROM saves JOIN posts ON posts.id=saves.post WHERE saves.account=? AND posts.id<? AND json_extract(posts.data,'$.status')='published' ORDER BY posts.id DESC LIMIT 21").all(viewer, before) as PostRow[];
         json(res, { items: rows.slice(0,20).map(row => postDto(row, viewer)), nextCursor: rows.length > 20 ? rows[19].id : null }); return;
       }
-      const interaction = /^\/api\/publications\/(\d+)\/(star|save|comments)(?:\/(\d+))?$/.exec(url.pathname);
+      const interaction = /^\/api\/publications\/(\d+)\/(star|save|comments)(?:\/(\d+))?(?:\/(like))?$/.exec(url.pathname);
       if (interaction) {
         const post = id(Number(interaction[1])), action = interaction[2], commentId = interaction[3] ? id(Number(interaction[3])) : null;
         const viewer = accountId(req);
@@ -573,15 +586,33 @@ export async function createNebulaServer(options: { dataDir: string; publicDir: 
           readablePost(post, viewer);
           const before = Number(url.searchParams.get('before') ?? Number.MAX_SAFE_INTEGER);
           ensure(Number.isSafeInteger(before) && before > 0, 'Invalid cursor.');
-          const rows = db.prepare('SELECT * FROM comments WHERE post=? AND id<? ORDER BY id DESC LIMIT 31').all(post, before) as { id: number; account: number; text: string; created: string }[];
+          const parent = url.searchParams.has('parent') ? id(Number(url.searchParams.get('parent'))) : null;
+          if(parent) ensure(db.prepare('SELECT 1 FROM comments WHERE id=? AND post=?').get(parent,post),'Comment not found.',404);
+          const filter = parent ? ' AND id IN (SELECT comment FROM comment_replies WHERE parent=?)' : url.searchParams.get('threaded')==='1' ? ' AND id NOT IN (SELECT comment FROM comment_replies)' : '';
+          const rows = db.prepare(`SELECT * FROM comments WHERE post=? AND id<?${filter} ORDER BY id DESC LIMIT 31`).all(...(parent?[post,before,parent]:[post,before])) as { id:number; account:number; text:string; created:string }[];
           const owner = (db.prepare('SELECT owner FROM posts WHERE id=?').get(post) as { owner: number }).owner;
           const items = rows.slice(0,30).map(row => {
             const author = domain(row.account).getCurrentUser();
-            return { id: row.id, text: row.text, createdAt: row.created, author: author?.name ?? 'Member', artistId: author?.artistId ?? null, canDelete: viewer === row.account || viewer === owner };
+            return { id: row.id, text: row.text, createdAt: row.created, author: author?.name ?? 'Member', artistId: author?.artistId ?? null,
+              picture: author?.artist?.picture ?? author?.picture ?? null,
+              likes: (db.prepare('SELECT COUNT(*) AS n FROM comment_likes WHERE comment=?').get(row.id) as {n:number}).n,
+              liked: viewer!==null && !!db.prepare('SELECT 1 FROM comment_likes WHERE comment=? AND account=?').get(row.id,viewer),
+              replyCount: (db.prepare('SELECT COUNT(*) AS n FROM comment_replies WHERE parent=?').get(row.id) as {n:number}).n,
+              canDelete: viewer === row.account || viewer === owner };
           });
           json(res, { items, nextCursor: rows.length > 30 ? rows[29].id : null }); return;
         }
         current(req);
+        if (interaction[4]) {
+          ensure(action==='comments' && commentId && req.method==='PUT','Method not allowed.',405);
+          readablePost(post,viewer,true);
+          ensure(db.prepare('SELECT 1 FROM comments WHERE id=? AND post=?').get(commentId,post),'Comment not found.',404);
+          const input=await body(req), enabled=bool(input.enabled);
+          rateLimit(req,'reactions',180,60,String(viewer));
+          if(enabled) db.prepare('INSERT OR IGNORE INTO comment_likes(comment,account) VALUES(?,?)').run(commentId,viewer!);
+          else db.prepare('DELETE FROM comment_likes WHERE comment=? AND account=?').run(commentId,viewer!);
+          json(res,{ok:true});return;
+        }
         if (req.method === 'PUT' && ['star','save'].includes(action) && !commentId) {
           const input = await body(req), enabled = bool(input.enabled);
           // Removing one's own interaction remains possible after withdrawal.
@@ -598,13 +629,22 @@ export async function createNebulaServer(options: { dataDir: string; publicDir: 
           const input = await body(req); readablePost(post, viewer, true);
           const value = text(input.text, 'Comment', 500, 1);
           rateLimit(req, 'comments', 20, 60, String(viewer));
-          const result = db.prepare('INSERT INTO comments(post,account,text,created) VALUES(?,?,?,?)').run(post, viewer!, value, new Date().toISOString());
+          const result = transaction(db,()=>{
+            let parent=input.parentId==null?null:id(input.parentId);
+            if(parent) {
+              ensure(db.prepare('SELECT 1 FROM comments WHERE id=? AND post=?').get(parent,post),'Comment not found.',404);
+              parent=(db.prepare('SELECT parent FROM comment_replies WHERE comment=?').get(parent) as {parent:number}|undefined)?.parent ?? parent;
+            }
+            const inserted=db.prepare('INSERT INTO comments(post,account,text,created) VALUES(?,?,?,?)').run(post,viewer!,value,new Date().toISOString());
+            if(parent)db.prepare('INSERT INTO comment_replies(comment,parent) VALUES(?,?)').run(inserted.lastInsertRowid,parent);
+            return inserted;
+          });
           json(res, { id: Number(result.lastInsertRowid) }, 201); return;
         }
         if (req.method === 'DELETE' && action === 'comments' && commentId) {
           const row = db.prepare('SELECT comments.account,posts.owner FROM comments JOIN posts ON posts.id=comments.post WHERE comments.id=? AND comments.post=?').get(commentId, post) as { account: number; owner: number } | undefined;
           ensure(row && (row.account === viewer || row.owner === viewer), 'Comment not found.', 404);
-          db.prepare('DELETE FROM comments WHERE id=?').run(commentId); json(res, { ok: true }); return;
+          transaction(db,()=>{db.prepare('DELETE FROM comment_likes WHERE comment=?').run(commentId); db.prepare('DELETE FROM comment_replies WHERE comment=? OR parent=?').run(commentId,commentId); db.prepare('DELETE FROM comments WHERE id=?').run(commentId);}); json(res, { ok: true }); return;
         }
         throw new HttpError(405, 'Method not allowed.');
       }
@@ -660,13 +700,16 @@ export async function createNebulaServer(options: { dataDir: string; publicDir: 
       const root = resolve(options.publicDir), path = resolve(root, '.' + decodeURIComponent(url.pathname));
       ensure(path === root || path.startsWith(root + sep), 'Not found.', 404);
       if (extname(path)) {
-        const types: Record<string, string> = { '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.svg': 'image/svg+xml', '.webm': 'video/webm', '.wav': 'audio/wav', '.txt': 'text/plain', '.ico': 'image/x-icon' };
+        const types: Record<string, string> = { '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.svg': 'image/svg+xml', '.webm': 'video/webm', '.wav': 'audio/wav', '.txt': 'text/plain', '.ico': 'image/x-icon' };
         ensure(types[extname(path)], 'Not found.', 404);
         await sendFile(req, res, path, types[extname(path)]); return;
       }
+      // Presentation preview can frame only this same-origin app; API/media keep DENY.
+      if (options.presentation) res.setHeader('X-Frame-Options', 'SAMEORIGIN');
       const html = (await readFile(join(root, 'index.html'), 'utf8'))
         .replace('<head>', '<head><meta name="nebula-data-mode" content="server">' + (options.presentation ? '<meta name="nebula-presentation" content="enabled">' : ''))
         .replace("connect-src 'none'", "connect-src 'self'")
+        .replace("frame-src 'none'", options.presentation && url.pathname === '/presentation/mobile' ? "frame-src 'self'" : "frame-src 'none'")
         .replace("img-src 'self' data: blob:;", "img-src 'self' data: blob:; media-src 'self' blob:;");
       res.writeHead(200, { 'Content-Type': 'text/html', 'Cache-Control': 'no-store' }); res.end(req.method === 'HEAD' ? undefined : html);
     } catch (error) {

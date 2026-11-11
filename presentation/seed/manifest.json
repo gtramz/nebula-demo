@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "fixture": "Fictional presentation only; no real accounts or active sessions.",
-  "principalId": 19,
+  "fixture": "Presentation scene: fictional accounts, public CHILZ and gramz catalog references, user-authorized gramz clips and supplied LUNA recordings. No real account credentials or sessions.",
+  "principalId": 21,
   "defaultPassword": "Nebula2026!",
   "accounts": [
     {
@@ -57,11 +57,29 @@
       "name": "Sol Rivera",
       "email": "sol.rivera@nebula.local",
       "role": "artist"
+    },
+    {
+      "id": 21,
+      "name": "CHILZ",
+      "email": "chilz@nebula.local",
+      "role": "artist"
+    },
+    {
+      "id": 32,
+      "name": "gramz",
+      "email": "gramz.demo@nebula.local",
+      "role": "artist"
+    },
+    {
+      "id": 33,
+      "name": "SANNFERNNA",
+      "email": "sannfernna.demo@nebula.local",
+      "role": "artist"
     }
   ],
   "scene": {
     "path": "presentation/seed/scene.sqlite",
-    "sha256": "5c4e21939bc81c303ad1db2e2e6b2d0ebad795300192a5a5b5743a9b5efd6e8f"
+    "sha256": "758c6c4c1a405f61637845650f1ca4ef569ea7eb86d29e456c841056acefff5b"
   },
   "media": [
     {
@@ -278,6 +296,187 @@
       "id": "fbe49cc4-9b3d-40a8-bc35-7340070b47f7",
       "path": "presentation/assets/covers/bluehour.jpg",
       "sha256": "eb70151d77a731eac35beaf045d674000b829908ee4173fd6d3be1cfdac5db47"
+    },
+    {
+      "id": "f0d5a801-571a-4c7e-8457-ee0e54130905",
+      "path": "presentation/assets/audio/luna-original.m4a",
+      "kind": "audio",
+      "mime": "audio/mp4",
+      "size": 2409999,
+      "sha256": "abc61138656aab4dcd928faa81177ba0ebae46122f3a0e13d1b615fd0f1b3ee3"
+    },
+    {
+      "id": "18b99174-ba85-41fc-acf6-2e17441f1699",
+      "path": "presentation/assets/audio/luna-chilz-remix.m4a",
+      "kind": "audio",
+      "mime": "audio/mp4",
+      "size": 2425531,
+      "sha256": "0fdcd19e95953850063d4549e57730f88bb9b289725c5dfa7c42d2569c1bf529"
+    },
+    {
+      "id": "3ad6dcec-ba8d-456f-94f2-85ae387d53df",
+      "path": "presentation/assets/covers/luna-original.png",
+      "kind": "image",
+      "mime": "image/png",
+      "size": 17548,
+      "sha256": "f2b81a26ce1f6f5ae8f6f382eec06854c1322346afe2603f03741d3de61e3470"
+    },
+    {
+      "id": "161deee5-8a9f-4021-bb2b-677f433ee51d",
+      "path": "presentation/assets/covers/luna-chilz-remix.png",
+      "kind": "image",
+      "mime": "image/png",
+      "size": 16429,
+      "sha256": "fb7823a284a1eb3b466e3fc431477426b5d89ca69459bcbfc0a45baaef359f2c"
+    },
+    {
+      "id": "2d8b5122-d8b9-5068-8183-d50f9b60ddc0",
+      "path": "presentation/assets/video/marea-vocal-split-v1.mp4",
+      "sha256": "9d4e0af523d2c5d895628de57bc784905236e50e5a2e09a52b10732c769d58de"
+    },
+    {
+      "id": "efbd62f7-0e0d-4989-aae7-ce5598a68d31",
+      "path": "presentation/assets/gramz/RMyx3zjScCU.mp4",
+      "sha256": "c12fd2831dcada3c08bad90109bfa0ce1ce696b8b232fd140e80848818e6ac31",
+      "size": 5346939,
+      "kind": "video",
+      "mime": "video/mp4",
+      "source": "https://www.youtube.com/shorts/RMyx3zjScCU"
+    },
+    {
+      "id": "e353de09-78d7-44ce-aa9c-dabd6336fd34",
+      "path": "presentation/assets/gramz/RMyx3zjScCU.jpg",
+      "sha256": "7da6fa215950bd6c10d4cce34c05244d1967ff8544e6be8f7e8cfcfff1d0c38e",
+      "size": 17437,
+      "kind": "image",
+      "mime": "image/jpeg",
+      "source": "https://www.youtube.com/shorts/RMyx3zjScCU"
+    },
+    {
+      "id": "3aaa0164-1275-4133-a8d0-8a0925d3b42c",
+      "path": "presentation/assets/gramz/C1Gdn_BhPd8.mp4",
+      "sha256": "83d48639cc11626a8daafb162b834e83a17b6174af47ccc95b39af16722e3003",
+      "size": 2018876,
+      "kind": "video",
+      "mime": "video/mp4",
+      "source": "https://www.youtube.com/shorts/C1Gdn_BhPd8"
+    },
+    {
+      "id": "eab6d005-5dcf-4316-a030-c4d521b51b78",
+      "path": "presentation/assets/gramz/C1Gdn_BhPd8.jpg",
+      "sha256": "b50496673cb6015a6513a2e147ad5adef91ec5b75a1511f5281581581ac0b78b",
+      "size": 49156,
+      "kind": "image",
+      "mime": "image/jpeg",
+      "source": "https://www.youtube.com/shorts/C1Gdn_BhPd8"
+    },
+    {
+      "id": "82899ca8-df5a-42b5-aa35-3bec398c3fc2",
+      "path": "presentation/assets/gramz/7475245924621487415.mp4",
+      "sha256": "ae8d15faa4a92f2750d37e15b2667f62ff5707be5493fa9607d6cb536e397e0c",
+      "size": 11999095,
+      "kind": "video",
+      "mime": "video/mp4",
+      "source": "https://www.tiktok.com/@dongramzz/video/7475245924621487415"
+    },
+    {
+      "id": "466c172a-5295-4653-a4ad-0c784934e0cd",
+      "path": "presentation/assets/gramz/7475245924621487415.jpg",
+      "sha256": "07c6b28c711967a218f7eae6360363cebd7fca18ac9350918a1ed38d9d08ba0a",
+      "size": 55880,
+      "kind": "image",
+      "mime": "image/jpeg",
+      "source": "https://www.tiktok.com/@dongramzz/video/7475245924621487415"
+    },
+    {
+      "id": "feb0c2b1-3cbd-45ff-a063-716b214e0577",
+      "path": "presentation/assets/gramz/7470649012845088005.mp4",
+      "sha256": "0173c63c37efa4b09c7177987c12025c610de80f089180502f402b327e9233f0",
+      "size": 10240840,
+      "kind": "video",
+      "mime": "video/mp4",
+      "source": "https://www.tiktok.com/@dongramzz/video/7470649012845088005"
+    },
+    {
+      "id": "9948a3b0-ed47-44c4-a617-822ae2e13796",
+      "path": "presentation/assets/gramz/7470649012845088005.jpg",
+      "sha256": "c021ffe3215df8fdbc5172bbd9d3290344f414b3f3eca0afa634fd395b419650",
+      "size": 50466,
+      "kind": "image",
+      "mime": "image/jpeg",
+      "source": "https://www.tiktok.com/@dongramzz/video/7470649012845088005"
+    },
+    {
+      "id": "df820c87-73c1-45d2-ab4d-13bf1d52c981",
+      "path": "presentation/assets/gramz/7470346930036493574.mp4",
+      "sha256": "eab3e5283723747205c0a9182e83ba47adbc3b2b5362bef751abc9a874aa71fe",
+      "size": 37308236,
+      "kind": "video",
+      "mime": "video/mp4",
+      "source": "https://www.tiktok.com/@dongramzz/video/7470346930036493574"
+    },
+    {
+      "id": "47accdb8-a5e7-4076-a273-b475f6c840db",
+      "path": "presentation/assets/gramz/7470346930036493574.jpg",
+      "sha256": "02997c3d7d927bed898b70498ba2eb4123b9a9d86ec7fbb2d06b4d79f153d718",
+      "size": 69957,
+      "kind": "image",
+      "mime": "image/jpeg",
+      "source": "https://www.tiktok.com/@dongramzz/video/7470346930036493574"
+    },
+    {
+      "id": "c83168fe-065d-461e-af97-4cfbac4bf683",
+      "path": "presentation/assets/gramz/7442005875776163127.mp4",
+      "sha256": "7dee5bd404fdb5d4078cece9fdc7890aba6a8d3320da22102e6c411d32acb995",
+      "size": 3562926,
+      "kind": "video",
+      "mime": "video/mp4",
+      "source": "https://www.tiktok.com/@dongramzz/video/7442005875776163127"
+    },
+    {
+      "id": "6b34c6b1-56b7-4b5d-afb7-399ed352f686",
+      "path": "presentation/assets/gramz/7442005875776163127.jpg",
+      "sha256": "52e23930acf36636a2948ae8fcb69f85b4fd4b1493efa28710e1f09dd7fb2d6e",
+      "size": 61402,
+      "kind": "image",
+      "mime": "image/jpeg",
+      "source": "https://www.tiktok.com/@dongramzz/video/7442005875776163127"
+    },
+    {
+      "id": "db3e7dd1-6c3b-48e2-a1a4-00cb5059dd38",
+      "path": "presentation/assets/gramz/7429759582672588038.mp4",
+      "sha256": "07a3ae43b05960517f85724e7ba7c3cf4f2aab053a776ad177b4bf8eed3b83f6",
+      "size": 17643767,
+      "kind": "video",
+      "mime": "video/mp4",
+      "source": "https://www.tiktok.com/@dongramzz/video/7429759582672588038"
+    },
+    {
+      "id": "1f69b656-0b19-47db-ab32-e289f990c83c",
+      "path": "presentation/assets/gramz/7429759582672588038.jpg",
+      "sha256": "ade5ddd4d238627139d71775a15983fefc59da9f3e4b01e2d04fdfe41b85a930",
+      "size": 29314,
+      "kind": "image",
+      "mime": "image/jpeg",
+      "source": "https://www.tiktok.com/@dongramzz/video/7429759582672588038"
+    },
+    {
+      "id": "4b46efae-efb1-43b6-a8e6-0c3527042fee",
+      "path": "presentation/assets/gramz/7428445230388776197.mp4",
+      "sha256": "55f157ba74a7279cc5f4b75c96c2b6f010b370aa0717b283fe9677cda6e4efef",
+      "size": 2278134,
+      "kind": "video",
+      "mime": "video/mp4",
+      "source": "https://www.tiktok.com/@dongramzz/video/7428445230388776197"
+    },
+    {
+      "id": "469d7a79-93e3-4a20-a5a2-9ba800172221",
+      "path": "presentation/assets/gramz/7428445230388776197.jpg",
+      "sha256": "74576fedb9e4f5f72cd987eef5eca70f056f575a8ca24c4c9ddf0d95a3b8fd6d",
+      "size": 12258,
+      "kind": "image",
+      "mime": "image/jpeg",
+      "source": "https://www.tiktok.com/@dongramzz/video/7428445230388776197"
     }
   ],
   "prepared": [
@@ -300,38 +499,62 @@
       "name": "afterglow-percussion-take.mp4",
       "path": "presentation/assets/video/afterglow-percussion-take.mp4",
       "sha256": "5e7334f6e48914db7b707a8fc68fdac86fe00abd9b8f4e56e444cc79afa9c462"
+    },
+    {
+      "name": "luna-chilz-remix.m4a",
+      "path": "presentation/assets/audio/luna-chilz-remix.m4a",
+      "sha256": "0fdcd19e95953850063d4549e57730f88bb9b289725c5dfa7c42d2569c1bf529"
+    },
+    {
+      "name": "marea-remix.mp3",
+      "path": "presentation/assets/audio/marea-remix.mp3",
+      "sha256": "a41b050e4a5afe12d139feebfda8aa719545238bcbf1a0a2fd99b4628d0746d0"
+    },
+    {
+      "name": "afterglow-remix.mp3",
+      "path": "presentation/assets/audio/afterglow-remix.mp3",
+      "sha256": "a707b82eba9a3839b7c17e7cda48e4a56667ed2acef4566bfbf923bdb0a88d57"
+    },
+    {
+      "name": "afterglow-percussion-final.m4a",
+      "path": "presentation/assets/audio/afterglow-percussion-final.m4a",
+      "sha256": "6c7682652045724232c4246bd7268e266451af9e6122eb0d9c6adbb03b84a7a0"
     }
   ],
   "counts": {
     "state": 1,
     "sessions": 0,
-    "media": 43,
-    "posts": 16,
+    "media": 64,
+    "posts": 26,
     "stars": 36,
     "saves": 1,
     "comments": 26,
     "feed_snapshots": 0,
     "rate_limits": 0,
-    "works": 10,
-    "project_tracklists": 9,
-    "project_works": 10,
+    "works": 37,
+    "project_tracklists": 34,
+    "project_works": 41,
     "work_operations": 9,
     "remix_drafts": 0,
     "remix_private_media": 0,
-    "artist_conversations": 3,
+    "artist_conversations": 4,
     "artist_messages": 9,
     "conversation_activity": 43,
     "conversation_reads": 0,
     "message_operations": 43,
-    "artist_notifications": 55,
-    "collaboration_offers": 16,
+    "artist_notifications": 57,
+    "collaboration_offers": 18,
     "collaborations": 10,
     "collaboration_submissions": 15,
     "collaboration_files": 15,
     "collaboration_messages": 18,
-    "artist_follows": 12,
-    "presentation_settings": 3,
+    "artist_follows": 14,
+    "presentation_settings": 7,
     "presentation_events": 0,
-    "proposal_drafts": 1
+    "proposal_drafts": 1,
+    "accounts": 12,
+    "projects": 34,
+    "songs": 37,
+    "artists": 10
   }
 }

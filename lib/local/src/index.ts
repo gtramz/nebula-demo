@@ -156,3 +156,6 @@ export type { Admission, ConversationKind, ConversationMessage, ConversationCard
 export { conversationHref } from './messages';
 
 export * from './works';
+export * from './video-composition';
+
+export type { PresentationCatalog, PresentationRelease, PresentationTrack, PresentationRecording, PresentationRemixExample } from './presentation-catalog';

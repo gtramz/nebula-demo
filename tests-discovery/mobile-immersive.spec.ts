@@ -60,7 +60,9 @@ test('mobile project artworks navigate and return, fall back safely, and never l
   for (const post of [videoPost, audioPost]) {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto(`/discovery?post=post-${post.id}`);
+    const isVideo = post.id === videoPost.id;
     const projectLink = active(page).getByRole('link', { name: 'View project: Immersive project', exact: true });
+    const artwork = isVideo ? projectLink : active(page).locator('.discovery-cover');
     for (const viewport of [{ width: 390, height: 900 }, { width: 578, height: 900 }, { width: 767, height: 900 }, { width: 568, height: 320 }, { width: 768, height: 900 }, { width: 1440, height: 900 }]) {
       const { width, height } = viewport;
       await page.setViewportSize(viewport);
@@ -69,9 +71,9 @@ test('mobile project artworks navigate and return, fall back safely, and never l
         await expect(active(page).getByRole('button', { name: /view project/i })).toBeVisible();
         continue;
       }
-      await expect(projectLink).toBeVisible();
+      await expect(artwork).toBeVisible();
       await mobileNavigationGeometry(page, width, height);
-      const box = (await projectLink.boundingBox())!;
+      const box = (await artwork.boundingBox())!;
       expect(box.width).toBeGreaterThanOrEqual(44); expect(box.height).toBeGreaterThanOrEqual(44);
       expect(box.width).toBeCloseTo(box.height, 0);
       expect(box.y).toBeGreaterThanOrEqual(0); expect(box.y + box.height).toBeLessThanOrEqual(height - 64);
@@ -89,13 +91,14 @@ test('mobile project artworks navigate and return, fall back safely, and never l
       } else {
         if (height > 360) expect(box.width).toBeGreaterThan(100);
         await expect(active(page).locator('.discovery-project-artwork')).toHaveCount(0);
-        expect(await projectLink.locator('img').getAttribute('src')).toBe(projectCover);
-        await expect(active(page).locator('audio')).toHaveJSProperty('paused', true);
+        expect(await artwork.locator('img').getAttribute('src')).toBe(projectCover);
+        await expect(active(page).locator('audio')).toHaveJSProperty('muted', false);
+        await expect(artwork.getByRole('button',{name:/^(Play|Pause) Linked audio$/})).toBeVisible();
       }
       await page.screenshot({ path: info.outputPath(`linked-${post.id === videoPost.id ? 'video' : 'audio'}-${width}.png`) });
     }
     await page.setViewportSize({ width: 390, height: 844 });
-    await projectLink.focus(); await projectLink.press('Enter');
+    if(isVideo){await projectLink.focus(); await projectLink.press('Enter');}else{await active(page).getByRole('button',{name:/view project/i}).click();await page.getByRole('link',{name:'Open full project',exact:true}).click();}
     await expect(page).toHaveURL(new RegExp(`/project/${project.id}$`));
     await expect(page.getByRole('heading', { name: 'Immersive project', exact: true })).toBeVisible();
     await page.getByRole('link', { name: 'Back to Discovery', exact: true }).click();
@@ -113,7 +116,8 @@ test('mobile project artworks navigate and return, fall back safely, and never l
   const feed = page.getByRole('region', { name: 'Discovery feed', exact: true });
   await feed.focus(); await feed.press('ArrowDown');
   await expect(active(page)).toHaveAttribute('aria-label', 'Linked audio by Immersive artist');
-  await active(page).getByRole('link', { name: 'View project: Immersive project', exact: true }).click();
+  await active(page).getByRole('button',{name:/view project/i}).click();
+  await page.getByRole('link',{name:'Open full project',exact:true}).click();
   await page.getByRole('link', { name: 'Back to Discovery', exact: true }).click();
   await expect(active(page)).toHaveAttribute('aria-label', 'Linked audio by Immersive artist');
   await expect.poll(() => feed.evaluate(element => Math.abs(element.scrollTop - (element.querySelector('[data-active=true]') as HTMLElement).offsetTop))).toBeLessThan(1);
@@ -126,7 +130,7 @@ test('mobile project artworks navigate and return, fall back safely, and never l
   const noCoverProject = await rpc(page, 'createProject', { title: 'No cover project', category: 'Single', goalAmount: 500, status: 'published' });
   const noCoverPost = await publish(page, 'No cover audio', audioId, noCoverProject.id);
   await page.goto(`/discovery?post=post-${noCoverPost.id}`);
-  await expect(active(page).getByRole('link', { name: 'View project: No cover project', exact: true }).getByLabel('No cover artwork')).toBeVisible();
+  await expect(active(page).locator('.discovery-cover').getByLabel('No cover artwork')).toBeVisible();
   const independent = await publish(page, 'Independent video', videoId, null);
   await page.goto(`/discovery?post=post-${independent.id}`);
   await expect(active(page).getByRole('link', { name: /^View project:/ })).toHaveCount(0);
@@ -179,12 +183,14 @@ test('mobile pagination loads once, keeps the active post on failure and retries
   expect(new Set(labels).size).toBe(5);
   await feed.focus(); await feed.press('ArrowDown'); await feed.press('ArrowDown');
   await expect(active(page)).toHaveAttribute('data-index', '4');
-  await expect(page.getByRole('link', { name: 'Refresh feed', exact: true })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Refresh feed', exact: true })).toHaveCount(0);
+  await expect(page.locator('#primary-navigation a[href="/discovery"]')).toBeVisible();
   expect((await feed.boundingBox())!.height).toBe(780);
   await page.setViewportSize({ width: 767, height: 900 });
   await expect(active(page)).toHaveAttribute('data-index', '4');
   expect((await feed.boundingBox())!.height).toBe(836);
   await page.setViewportSize({ width: 768, height: 900 });
   await expect(active(page)).toHaveAttribute('data-index', '4');
-  await expect(page.locator('.discovery-heading')).toBeVisible();
+  await expect(page.getByRole('heading', { name: /discovery/i, level: 1 })).toHaveCount(1);
+  expect((await page.locator('.discovery-heading').boundingBox())!.width).toBe(1);
 });

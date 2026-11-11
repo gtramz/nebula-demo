@@ -1,5 +1,5 @@
 import { isPresentation } from '@/features/presentation';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { ReturnLink } from '@/components/antiq/workspace';
 import { useSearch, Link } from 'wouter';
 import { isServerMode, type Publication } from '@nebula/local';
@@ -19,6 +19,7 @@ function toFeedPost(post: Publication): DemoPost {
     initials: post.artistName.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase(),
     genre: post.project?.category ?? 'independent release', description: post.description,
     media: { kind: post.media.kind as 'audio' | 'video', src: post.media.url, durationSeconds: 0 },
+    composition: post.remix?.composition,
     coverUrl: post.coverUrl, tone: post.media.kind === 'video' ? 'cyan' : 'amber', stars: post.social.stars, social: post.social, remixAllowed: post.allowRemix, comments: [],
     projectId: post.project?.id, workId: post.song?.id, projectCoverUrl: post.project?.coverUrl,
     original: post.remix ? { postId: `post-${post.remix.sourceId}`, title: post.remix.title, author: post.remix.artistName, available: post.remix.available } : undefined,
@@ -39,15 +40,17 @@ export default function DiscoveryPage() {
 function LiveDiscovery({ selected }: { selected?: number }) {
   const { user } = useAuth();
   const query = useDiscoveryFeed(), single = usePublication(selected, true);
+  const [unpinned, setUnpinned] = useState<number>();
   const items = useMemo(() => query.data?.pages.flatMap(page => page.items) ?? [], [query.data]);
-  const selectedPost = single.data?.status === 'published' ? single.data : undefined;
+  const selectedPost = unpinned !== selected && single.data?.status === 'published' ? single.data : undefined;
   const posts = useMemo(() => (selectedPost ? [selectedPost, ...items.filter(post => post.id !== selected)] : items).map(asFeedPost), [selectedPost, items, selected]);
   const error = single.error ?? query.error;
   if (query.isLoading || (selected && single.isLoading)) return <div className="m-auto p-10" role="status">Loading Discovery…</div>;
   if (error && (!posts.length || [401,403,404].includes((error as Error & { status?: number }).status ?? 0))) return <div className="m-auto p-10 space-y-4"><p role="alert">{error.message}</p><button className="underline" onClick={() => { void query.refetch(); if (selected) void single.refetch(); }}>Try again</button><p><a href="/discovery">All publications</a></p></div>;
   if (!posts.length) return <div className="m-auto p-8 max-w-lg space-y-6"><p className="voice text-xs text-muted">discovery</p><h1 className="text-4xl font-bold">The next sound could be yours.</h1><p className="text-muted">No publications yet. Share an audio or video to start the conversation.</p><div className="flex flex-wrap gap-4">{user?.role === 'artist' ? <Link className="bg-cream text-bg px-6 py-3" href="/publish">Create publication</Link> : <Link className="border border-border px-6 py-3" href="/login">Log in</Link>}</div></div>;
-  return <>{error && <div role="alert" className="discovery-desktop-error px-4 py-2 text-sm">{error.message} <button className="underline min-h-11" onClick={() => { void query.refetch(); if (selected) void single.refetch(); }}>Try again</button></div>}<Discovery key={selected ?? 'feed'} posts={posts} live
+  return <Discovery key={selected ?? 'feed'} posts={posts} live
+    onRefresh={async () => { const id = await query.refresh(); setUnpinned(selected); return id ? `post-${id}` : undefined; }}
     onLoadMore={query.hasNextPage ? () => { if (!query.isFetching) void query.fetchNextPage({ cancelRefetch: false }); } : undefined}
     loadingMore={query.isFetchingNextPage} fetching={query.isFetching}
-    loadError={error?.message} onRetry={() => { if (query.isFetching) return; if (query.isFetchNextPageError) void query.fetchNextPage({ cancelRefetch: false }); else { void query.refetch(); if (selected) void single.refetch(); } }} /></>;
+    loadError={error?.message} onRetry={() => { if (query.isFetching) return; if (query.isFetchNextPageError) void query.fetchNextPage({ cancelRefetch: false }); else { void query.refetch(); if (selected) void single.refetch(); } }} />;
 }

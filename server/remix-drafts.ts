@@ -3,11 +3,12 @@ import type { DatabaseSync } from 'node:sqlite';
 import { randomUUID } from 'node:crypto';
 import type { SessionUser } from '../lib/local/src/types.js';
 import type { RemixInput, UploadedMedia } from '../lib/local/src/publications.js';
+import { defaultVideoComposition, parseVideoComposition } from '../lib/local/src/video-composition.js';
 import type { RemixDraft } from '../lib/local/src/remix-drafts.js';
 import { ensure, HttpError, id, object, text } from './validation.js';
 
 type Media = UploadedMedia & { owner: number };
-type Saved = { title: string; description: string; settings: RemixInput; attribution: RemixDraft['attribution']; sourceMediaId: string; contributionId: string | null; contributionDuration: number | null; renderId: string | null; renderRevision: number | null };
+type Saved = { workflow?: 'finished-audio'|'video'; finalAudio?: { version: 1; duration: number; receiptRevision: number };  title: string; description: string; settings: RemixInput; attribution: RemixDraft['attribution']; sourceMediaId: string; contributionId: string | null; contributionDuration: number | null; renderId: string | null; renderRevision: number | null };
 type Row = { id: string; owner: number; revision: number; data: string; created: string; updated: string };
 export function remixDrafts(d: { db: DatabaseSync; current(req: IncomingMessage, artistOnly?: boolean): SessionUser; body(req: IncomingMessage): Promise<Record<string, unknown>>; json(res: ServerResponse, value: unknown, status?: number): void; media(id: string): Media | undefined; name(id: number): string }) {
   const { db } = d;
@@ -30,10 +31,10 @@ export function remixDrafts(d: { db: DatabaseSync; current(req: IncomingMessage,
   function dto(row: Row): RemixDraft {
     const saved: Saved = JSON.parse(row.data);
     const media = (key: string | null) => { if (!key) return null; const value = d.media(key); ensure(value, 'A saved file is unavailable.', 409); const { owner: _, ...result } = value; return result; };
-    return { id: row.id, ownerId: row.owner, revision: row.revision, createdAt: row.created, updatedAt: row.updated,
+    return { ...(saved.workflow === 'finished-audio' ? { workflow: 'finished-audio', finalAudio: saved.finalAudio ?? null } : saved.workflow ? {workflow:saved.workflow} : {}), id: row.id, ownerId: row.owner, revision: row.revision, createdAt: row.created, updatedAt: row.updated,
       title: saved.title, description: saved.description, settings: saved.settings, attribution: saved.attribution,
       contribution: saved.contributionId ? { ...media(saved.contributionId)!, duration: saved.contributionDuration! } : null,
-      render: media(saved.renderId), renderRevision: saved.renderRevision };
+      render: media(saved.renderId), renderRevision: saved.renderRevision } as RemixDraft;
   }
   function isPrivate(media: string) { return !!db.prepare('SELECT 1 FROM remix_private_media WHERE media=?').get(media); }
   function used(media: string) { return !!db.prepare("SELECT 1 FROM remix_drafts WHERE json_extract(data,'$.contributionId')=? OR json_extract(data,'$.renderId')=?").get(media, media); }
@@ -47,7 +48,7 @@ export function remixDrafts(d: { db: DatabaseSync; current(req: IncomingMessage,
   function proposal(draftId: string, owner: number, mediaId: string, projectId: number) {
     const row = owned(draftId, owner), value: Saved = JSON.parse(row.data); permitted(row);
     ensure(value.renderId === mediaId && value.renderRevision !== null && value.attribution.projectId === projectId, 'Save a current preview of your remix for this project.', 409);
-    return { draftId: row.id, draftRevision: row.revision, title: value.title, originalTitle: value.attribution.title, originalArtist: value.attribution.artistName };
+    return { ...(value.settings.composition ? {composition:value.settings.composition} : {}), draftId: row.id, draftRevision: row.revision, title: value.title, originalTitle: value.attribution.title, originalArtist: value.attribution.artistName };
   }
   async function handle(req: IncomingMessage, res: ServerResponse, url: URL) {
     const match = /^\/api\/remix-drafts\/([a-f0-9-]{36})$/.exec(url.pathname);
@@ -61,10 +62,12 @@ export function remixDrafts(d: { db: DatabaseSync; current(req: IncomingMessage,
     if (!match && req.method === 'POST') {
       const requestKey = text(input.requestKey, 'Request key', 80, 16), sourceId = id(input.sourceId), sourceRevision = id(input.sourceRevision);
       const original = source(sourceId, sourceRevision);
+      ensure(input.workflow == null || ['finished-audio','video'].includes(String(input.workflow)), 'Invalid remix workflow.');
+      ensure(input.workflow !== 'finished-audio' || original.media.kind === 'audio', 'A video original requires a video remix.');
       const existing = db.prepare('SELECT * FROM remix_drafts WHERE owner=? AND request_key=?').get(owner, requestKey) as Row | undefined;
-      if (existing) { const settings = JSON.parse(existing.data).settings; ensure(settings.sourceId === sourceId && settings.sourceRevision === sourceRevision, 'Request key already used for a different original.', 409); d.json(res, dto(existing)); return true; }
-      const draftId = randomUUID(), settings: RemixInput = { sourceId, sourceRevision, startSeconds: 0, endSeconds: .1, baseGain: .65, voiceGain: .8, voiceOffset: 0 };
-      const saved: Saved = { title: `${original.value.title} — remix`.slice(0,160), description: '', settings,
+      if (existing) { const settings = JSON.parse(existing.data).settings; ensure(settings.sourceId === sourceId && settings.sourceRevision === sourceRevision && JSON.parse(existing.data).workflow === input.workflow, 'Request key already used for a different original.', 409); d.json(res, dto(existing)); return true; }
+      const draftId = randomUUID(), settings: RemixInput = { sourceId, sourceRevision, startSeconds: 0, endSeconds: .1, baseGain: .65, voiceGain: .8, voiceOffset: 0, ...(input.workflow === 'finished-audio' ? {} : {composition: defaultVideoComposition(original.media.kind as 'audio' | 'video')}) };
+      const saved: Saved = { ...(input.workflow ? {workflow:input.workflow as 'finished-audio'|'video'} : {}), title: `${original.value.title} — remix`.slice(0,160), description: '', settings,
         attribution: { sourceId, sourceRevision, artistId: original.row.owner, artistName: d.name(original.row.owner), title: original.value.title, projectId: original.value.projectId, grantedAt: now },
         sourceMediaId: original.media.id, contributionId: null, contributionDuration: null, renderId: null, renderRevision: null };
       db.prepare('INSERT INTO remix_drafts(id,owner,request_key,data,created,updated) VALUES(?,?,?,?,?,?)').run(draftId, owner, requestKey, JSON.stringify(saved), now, now);
@@ -73,6 +76,12 @@ export function remixDrafts(d: { db: DatabaseSync; current(req: IncomingMessage,
     if (match && req.method === 'PATCH') {
       const row = owned(match[1], owner), saved: Saved = JSON.parse(row.data), original = permitted(row);
       ensure(input.revision === row.revision, 'This draft changed in another tab. Reopen the saved draft before saving again; your current edit has not been overwritten.', 409);
+      if (saved.workflow === 'finished-audio') {
+        ensure(!input.action && input.settings == null && input.contributionId == null && input.renderId == null, 'Finished audio can only be reviewed and named.');
+        const next = {...saved,title:text(input.title,'Title',160,1),description:text(input.description,'Description',2000)};
+        db.prepare('UPDATE remix_drafts SET data=?,revision=revision+1,updated=? WHERE id=? AND revision=?').run(JSON.stringify(next),now,row.id,row.revision);
+        d.json(res,dto(owned(row.id,owner)));return true;
+      }
       if (input.action === 'prepare-render') { d.json(res, dto(row)); return true; }
       const raw = object(input.settings);
       ensure(raw.sourceId === saved.settings.sourceId && raw.sourceRevision === saved.settings.sourceRevision, 'The source and its attribution cannot be changed.');
@@ -80,20 +89,40 @@ export function remixDrafts(d: { db: DatabaseSync; current(req: IncomingMessage,
       const startSeconds = number('startSeconds',0,600), endSeconds = number('endSeconds',.1,600), duration = endSeconds-startSeconds;
       ensure(duration >= .1-1e-9 && duration <= 60+1e-9, 'Choose a fragment between 0.1 and 60 seconds.');
       const contribution = input.contributionId == null ? null : privateFile(input.contributionId, row);
-      ensure(!contribution || ['audio','video'].includes(contribution.kind), 'Choose audio or video.');
+      ensure(!contribution || (saved.workflow === 'video' ? contribution.kind === 'video' : ['audio','video'].includes(contribution.kind)), 'Choose audio or video.');
       ensure(!contribution || original.media.kind !== 'video' || contribution.kind === 'video', 'A video original requires your own video.');
       ensure(!contribution || contribution.kind !== 'audio' || contribution.size <= 25*1024*1024, 'Audio contributions must be up to 25 MB.');
       if (contribution) ensure(typeof input.contributionDuration === 'number' && input.contributionDuration > 0 && input.contributionDuration <= 120, 'Contribution must be up to 120 seconds.');
-      const settings: RemixInput = { sourceId: saved.settings.sourceId, sourceRevision: saved.settings.sourceRevision, startSeconds, endSeconds, baseGain: number('baseGain',.05,1), voiceGain: number('voiceGain',.05,1), voiceOffset: number('voiceOffset',0,duration-.01), ...(contribution ? { contributionKind: contribution.kind as 'audio'|'video' } : {}) };
+      let composition;
+      try { composition = parseVideoComposition(raw.composition); } catch (error) { throw new HttpError(400, (error as Error).message); }
+      ensure(!composition || composition.layout === (original.media.kind === 'video' ? 'vertical-split' : 'vertical-single'), 'Choose framing that matches the original format.');
+      const settings: RemixInput = { ...(composition ? { composition } : {}), sourceId: saved.settings.sourceId, sourceRevision: saved.settings.sourceRevision, startSeconds, endSeconds, baseGain: number('baseGain',.05,1), voiceGain: number('voiceGain',.05,1), voiceOffset: number('voiceOffset',0,duration-.01), ...(contribution ? { contributionKind: contribution.kind as 'audio'|'video' } : {}) };
       const render = input.renderId == null ? null : privateFile(input.renderId, row);
       ensure(!render || (contribution && render.kind === contribution.kind && render.id !== contribution.id), 'The rendered format must match the contribution.');
       const changed = JSON.stringify(settings) !== JSON.stringify(saved.settings) || contribution?.id !== (saved.contributionId ?? undefined);
-      ensure(!render || !changed || render.id !== saved.renderId, 'Rebuild the preview after changing the fragment, gains or contribution.', 409);
+      ensure(!render || !changed || render.id !== saved.renderId, 'Rebuild the preview after changing the fragment, framing, gains or contribution.', 409);
       const next: Saved = { ...saved, title: text(input.title,'Title',160,1), description: text(input.description,'Description',2000), settings, contributionId: contribution?.id ?? null, contributionDuration: contribution ? input.contributionDuration as number : null, renderId: render?.id ?? null, renderRevision: render ? row.revision+1 : null };
       db.prepare('UPDATE remix_drafts SET data=?,revision=revision+1,updated=? WHERE id=? AND revision=?').run(JSON.stringify(next),now,row.id,row.revision);
       d.json(res, dto(owned(row.id,owner))); return true;
     }
     throw new HttpError(405,'Method not allowed.');
   }
-  return { handle, isPrivate, used, authorizeUpload, bind, proposal };
+  function finishedContext(draftId: string, owner: number, revision: number) {
+    const row = owned(draftId,owner), saved: Saved = JSON.parse(row.data); permitted(row);
+    ensure(saved.workflow === 'finished-audio','Choose the Forge workflow.');
+    const replay = !!saved.finalAudio && revision === saved.finalAudio.receiptRevision && row.revision === revision + 1;
+    ensure(row.revision === revision || replay,'This draft changed in another tab. Reopen the saved draft before saving again.',409);
+    return {row,saved,replay, draft:dto(row)};
+  }
+  /** Called inside the receiver's transaction, after rechecking session and media. */
+  function receiveFinished(draftId: string, owner: number, revision: number, mediaId: string, duration: number) {
+    const {row,saved} = finishedContext(draftId,owner,revision);
+    ensure(!saved.renderId,'A version has already been received.',409);
+    const file = privateFile(mediaId,row);
+    ensure(file.kind === 'audio' && file.size <= 100*1024*1024 && Number.isFinite(duration) && duration >= .1 && duration <= 600,'Invalid finished audio.');
+    const next: Saved = {...saved,renderId:mediaId,renderRevision:row.revision+1,finalAudio:{version:1,duration,receiptRevision:revision}};
+    db.prepare('UPDATE remix_drafts SET data=?,revision=revision+1,updated=? WHERE id=? AND revision=?').run(JSON.stringify(next),new Date().toISOString(),row.id,row.revision);
+    return dto(owned(row.id,owner));
+  }
+  return { handle, isPrivate, used, authorizeUpload, bind, proposal, finishedContext, receiveFinished };
 }

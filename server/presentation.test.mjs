@@ -47,3 +47,23 @@ test('incoming scenario proposals target the active new artist and do not repeat
   const rows=db.prepare('SELECT * FROM collaborations').all();assert.equal(rows.length,1);assert.equal(rows[0].owner,newcomer.artistId);assert.equal(rows[0].applicant,seeded.artistId);assert.equal(rows[0].admission,'pending');db.close();
 });
 test('presentation controls are unavailable in the standard server',async t=>{const app=await fixture(t);assert.equal((await app.client().request('/api/presentation')).status,404);});
+
+test('presentation restart retains baseline-only media without serving it before reset', async t => {
+  const { writeFile, access } = await import('node:fs/promises');
+  const app = await fixture(t, { presentation: true }), owner = app.client();
+  const seeded = (await owner.register('BaselineOwner')).user;
+  const media = await result(await owner.upload(), 201);
+  const db = new DatabaseSync(join(app.dataDir, 'nebula.sqlite'));
+  db.prepare("INSERT INTO presentation_settings VALUES('scenario',?)").run(JSON.stringify({ version: 1, principalId: seeded.artistId, actors: [], pairs: [] }));
+  await backup(db, join(app.dataDir, 'initial.sqlite'));
+  db.prepare('DELETE FROM media WHERE id=?').run(media.id);
+  db.close();
+  const orphan = join(app.dataDir, 'media', randomUUID());
+  await writeFile(orphan, 'unfinished upload');
+  await app.restart();
+  await access(join(app.dataDir, 'media', media.id));
+  await assert.rejects(access(orphan), { code: 'ENOENT' });
+  assert.equal((await owner.request(`/media/${media.id}`)).status, 404);
+  await result(await owner.request('/api/presentation/reset', 'POST', { confirm: true }));
+  assert.equal((await owner.request(`/media/${media.id}`)).status, 200);
+});

@@ -353,6 +353,13 @@ test('a private rendered remix shares only its final output through a proposal w
  const original=await(await owner.request('/api/publications','POST',postInput(base,{status:'published',allowRemix:true,projectId:project.id}))).json();
  let draft=await newDraft(artist,original);const own=await privateUpload(artist,draft),mix=await privateUpload(artist,draft);
  draft=await(await artist.request(`/api/remix-drafts/${draft.id}`,'PATCH',draftInput(draft,own,mix,{title:'My private remix'}))).json();
+ const proposalPath=`/api/offers/${offer.id}/conversations`,savedProposal={introduction:'Private introduction',description:'Work in progress',files:[mix],remixDraftId:draft.id};
+ assert.equal((await artist.request(proposalPath,'PATCH',savedProposal)).status,200);
+ assert.equal((await owner.request(mix.url)).status,404);
+ const reopened=(await(await artist.request(proposalPath)).json());assert.equal(reopened.existing,null);assert.equal(reopened.draft.remixDraftId,draft.id);assert.equal(reopened.draft.files[0].id,mix.id);
+ assert.equal((await artist.request(proposalPath,'PATCH',{...savedProposal,remixDraftId:null})).status,400);
+ assert.equal((await artist.request(proposalPath,'PATCH',{...savedProposal,files:[mix,own]})).status,400);
+ assert.equal((await other.request(proposalPath,'PATCH',savedProposal)).status,400);
  const thread=await(await artist.legacyConversation(offer.id)).json(),path=`/api/collaborations/${thread.id}`;
  const input={action:'submit',revision:thread.revision,offerRevision:offer.revision,acceptTerms:true,text:'My interpretation',mediaId:mix.id,mediaIds:[mix.id],remixDraftId:draft.id};
  assert.equal((await owner.request(mix.url)).status,404);
@@ -853,4 +860,23 @@ test('artist genre search integrates canonical identity, legacy compatibility, p
   await viewer.register('NewNeutralViewer');
   assert.deepEqual(ids(await projects('mode=following', viewer)), []);
   assert.deepEqual((await rpc(viewer, 'getMyArtistPreferences')).discovery.genreIds ?? [], []);
+});
+
+test('optional project funding persists across restart without permitting zero-goal funding or erasing receipts', async t => {
+ const app=await fixture(t), artist=app.client(), investor=app.client(), guest=app.client();
+ await artist.register('artist');await investor.register('investor','investor');
+ const create=await artist.rpc('createProject',{title:'Unfunded music',category:'EP',status:'published',goalAmount:0,useOfFunds:[]});
+ assert.equal(create.status,200);const project=(await create.json()).result;
+ assert.equal((await investor.rpc('createInvestment',{projectId:project.id,amount:100})).status,400);
+ assert.equal((await artist.rpc('updateProject',project.id,{status:'funding'})).status,400);
+ const funding={goalAmount:6000,status:'funding',useOfFunds:[{label:'Recording',percentage:75},{label:'Mix',percentage:25}]};
+ assert.equal((await artist.rpc('updateProject',project.id,{...funding,useOfFunds:[{label:'Recording',percentage:75}]})).status,400);
+ assert.equal((await artist.rpc('updateProject',project.id,funding)).status,200);
+ assert.equal((await investor.rpc('createInvestment',{projectId:project.id,amount:250})).status,200);
+ assert.equal((await artist.rpc('updateProject',project.id,{goalAmount:0,status:'published',useOfFunds:[]})).status,400);
+ await app.restart();
+ const stored=(await(await guest.rpc('getProject',project.id)).json()).result.project;
+ assert.equal(stored.goalAmount,6000);assert.equal(stored.raisedAmount,250);assert.deepEqual(stored.useOfFunds,funding.useOfFunds);
+ const history=(await(await artist.rpc('listReceivedInvestments')).json()).result;assert.equal(history.length,1);
+ assert.equal((await investor.rpc('listReceivedInvestments')).status,403);
 });

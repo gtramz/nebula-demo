@@ -4,17 +4,18 @@ import { Disc3 } from 'lucide-react';
 import type { DemoPost } from './demo-posts';
 
 /** Artwork is presentation-only: it never manufactures a project destination. */
-export function DiscoveryArtwork({ post, compact = false, useProjectCover = true }: {
+export function DiscoveryArtwork({ post, compact = false, useProjectCover = true, eager = false }: {
   post: DemoPost;
   compact?: boolean;
   useProjectCover?: boolean;
+  eager?: boolean;
 }) {
   const [failed, setFailed] = useState<Set<string>>(() => new Set());
   const src = [post.coverUrl, useProjectCover ? post.projectCoverUrl : undefined]
     .find((url): url is string => !!url && !failed.has(url));
 
   return src
-    ? <img key={src} src={src} loading="lazy" decoding="async" alt={`${post.title} cover artwork`}
+    ? <img key={src} src={src} loading={eager ? "eager" : "lazy"} decoding="async" alt={`${post.title} cover artwork`}
       onError={() => setFailed(previous => new Set(previous).add(src))} />
     : <div className="discovery-cover-fallback" aria-label="No cover artwork">
       <Disc3 strokeWidth={.6} aria-hidden="true" />

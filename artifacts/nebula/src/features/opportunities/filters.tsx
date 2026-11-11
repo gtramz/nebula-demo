@@ -36,8 +36,8 @@ export function HomeFiltersPanel({ filters, facets, loading, failed, retry, onAp
         <div className="home-filter-options space-y-6">
           {groups.map(({ field, values }) => <fieldset key={field} className="space-y-2">
             <legend className="text-sm font-semibold mb-2">{facetLabels[field]}</legend>
-            {field === 'artistGenres' && <p className="text-xs text-muted">Find projects by the artist’s musical direction.</p>}
-            {field === 'participation' && <p className="text-xs text-muted">Funding has no creative payment or royalty terms. Those filters apply to creative offers.</p>}
+
+            {field === 'participation' && <p className="text-xs text-muted">Compensation filters apply to creative offers.</p>}
             <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-x-3">{[...new Set([...values, ...draft[field]])].map(value => <label key={value} className="flex min-h-11 items-center gap-3 text-sm cursor-pointer min-w-0 py-2">
               <input type="checkbox" className="h-5 w-5 shrink-0 accent-accent" checked={(draft[field] as readonly string[]).includes(value)} onChange={() => toggle(field,value)} />
               <span className="break-words min-w-0">{facetValueLabel(field,value)}</span>

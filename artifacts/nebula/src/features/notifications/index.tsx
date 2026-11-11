@@ -97,7 +97,7 @@ export function NotificationBell({ navigation = false }: { navigation?: boolean 
 
 export function NotificationsPage() {
   const { user } = useAuth();
-  if (!isServerMode()) return <p className="p-8">Notifications require the local server.</p>;
+  if (!isServerMode()) return <p className="p-8">Notifications are unavailable. Please try again later.</p>;
   if (!user) return <div className="p-8 space-y-4"><h1 className="text-3xl font-bold">Notifications</h1><p>Log in as an artist to view your notifications.</p><Link className="underline" href="/login">Log in</Link></div>;
   if (user.role !== 'artist') return <p className="p-8">Notifications are available to artist accounts.</p>;
   return <NotificationList key={user.artistId} artistId={user.artistId!} />;
@@ -129,10 +129,10 @@ function NotificationList({ artistId, panel = false }: { artistId: number; panel
     finally { if (!abort.signal.aborted) { request.current = null; setPending(false); setReading(false); } }
   }
   return <section className={panel ? "space-y-6" : "mx-auto w-full max-w-3xl p-6 pb-24 space-y-6"}>
-    {!panel && <ReturnLink href="/messages" onClick={close}>Your messages</ReturnLink>}
+    {!panel && <ReturnLink contextual={false} href="/messages" onClick={close}>Your messages</ReturnLink>}
     <div className="flex flex-wrap items-center justify-between gap-3">{panel ? <Link href="/messages" onClick={close} className="inline-flex min-h-11 items-center underline text-sm">Your messages</Link> : <div><p className="voice text-xs text-accent">STAY IN THE LOOP</p><h1 className="text-3xl font-bold">Notifications</h1></div>}
       <button className={button} disabled={pending || !first?.unreadCount || !!query.error} onClick={() => first?.latestId && void markRead({ throughId: first.latestId })}>Mark all as read</button></div>
-    {!panel && <p className="text-sm text-muted">Updates from your requests, conversations, collaborations and followers. Reading a notification is private; it does not send a read receipt.</p>}
+
     {first && <p role="status" className="text-sm text-accent">{first.unreadCount} unread</p>}
     {(error || query.error) && <p role="alert" className="text-sm text-danger">{error || (query.error as Error).message}</p>}
     {query.error && <button className={button} onClick={() => void query.refetch()}>Retry notifications</button>}

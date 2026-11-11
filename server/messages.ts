@@ -1,3 +1,4 @@
+import {publicationSharing} from './publication-sharing.js';
 import type { DatabaseSync } from 'node:sqlite';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Project, SessionUser } from '../lib/local/src/types.js';
@@ -10,9 +11,10 @@ import { ensure, id, text, HttpError } from './validation.js';
 type Dependencies={db:DatabaseSync;store:MessageStorage;alerts:NotificationService;collaboration:ReturnType<typeof collaborations>;
  current:(req:IncomingMessage,artistOnly?:boolean)=>SessionUser;body:(req:IncomingMessage)=>Promise<Record<string,unknown>>;
  json:(res:ServerResponse,value:unknown,status?:number)=>void;rate:(req:IncomingMessage,name:string,limit:number,seconds:number,identity?:string)=>void;
- artist:(id:number)=>{id:number;name:string}|undefined;project:(id:number)=>Project|null;};
+ publication:(id:number,viewer:number)=>{title:string};artist:(id:number)=>{id:number;name:string;picture?:string|null}|undefined;project:(id:number)=>Project|null;};
 export function messages(d:Dependencies) {
  const {db,store}=d;
+ const sharing=publicationSharing(d);
  const name=(id:number)=>d.artist(id)?.name ?? 'Artist unavailable';
  function context(viewer:number,recipient:number,projectId:unknown) {
   ensure(d.artist(viewer) && d.artist(recipient),'Artist not found.',404);ensure(viewer!==recipient,'You cannot message yourself.');
@@ -54,6 +56,7 @@ export function messages(d:Dependencies) {
   if(!url.pathname.startsWith('/api/messages'))return false;
   const viewer=d.current(req,true).artistId!;ensure(d.artist(viewer),'Artist account unavailable.',403);
   const thread=/^\/api\/messages\/(general|collaboration)\/(\d+)(?:\/(messages|read))?$/.exec(url.pathname);
+  if(url.pathname==='/api/messages/share-targets'&&req.method==='GET'){d.json(res,sharing.targets(viewer,url));return true;}
   if(url.pathname==='/api/messages'&&req.method==='GET'){d.json(res,inbox(viewer,url));return true;}
   if(url.pathname==='/api/messages/compose'&&req.method==='GET') {
    const recipient=id(Number(url.searchParams.get('artist'))),project=context(viewer,recipient,url.searchParams.has('project')?Number(url.searchParams.get('project')):null),existing=existingPair(viewer,recipient);
@@ -61,6 +64,7 @@ export function messages(d:Dependencies) {
   }
   if(thread && req.method==='GET' && thread[1]==='general' && !thread[3]) {d.json(res,detail(store.general(id(Number(thread[2])),viewer),viewer,id(Number(url.searchParams.get('before')??Number.MAX_SAFE_INTEGER))));return true;}
   const data=await d.body(req);d.rate(req,'collaborations',60,60,String(viewer));const now=new Date().toISOString();
+  if(url.pathname==='/api/messages/share'&&req.method==='POST'){d.json(res,sharing.send(viewer,data),201);return true;}
   if(url.pathname==='/api/messages/requests'&&req.method==='POST') {
    const threadId=store.operation(viewer,data.operationId,'general:request',data,()=>{
     ensure(data.kind===undefined || data.kind==='general','Choose a general message request.');

@@ -13,11 +13,17 @@
 .navigation-tooltip { display: none; }
 @media (max-width: 767px) {
   .primary-link[data-mobile-hidden=true] { display: none; }
+  .app-navigation { padding-left: max(4px, env(safe-area-inset-left)); padding-right: max(4px, env(safe-area-inset-right)); }
+  /* Equal-width groups on either side keep Create at the viewport center.
+     Three destinations on the left, two on the right; all targets remain >=44px. */
+  .primary-navigation[data-artist=true] { display: grid; grid-template-columns: repeat(3, minmax(44px, 1fr)) 44px repeat(2, minmax(44px, 1.5fr)); }
+  .primary-navigation .create-shortcut .nav-icon { height: 44px; width: 44px; margin: 0; }
 }
 @media (min-width: 768px) {
   .app-shell[data-navigation=true] { --sidebar-width: 72px; --bottom-navigation-height: 0px; }
   .app-navigation { display: flex; flex-direction: column; height: 100dvh; width: var(--sidebar-width); padding: max(16px, env(safe-area-inset-top)) 13px max(16px, env(safe-area-inset-bottom)); overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain; }
-  .primary-navigation { height: auto; flex-shrink: 0; }
+  .primary-navigation { height: auto; flex: 1 0 auto; }
+  .navigation-account-spacer { margin-top: auto; padding-top: 24px; }
   .primary-link { flex: none; justify-content: flex-start; }
   .primary-link[aria-current=page] { background: #ffffff0a; }
   .sidebar-link { width: 100%; }

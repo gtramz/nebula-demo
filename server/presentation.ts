@@ -4,17 +4,19 @@ import { createHash, randomBytes, randomUUID } from 'node:crypto';
 import { join } from 'node:path';
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
+import type { PresentationCatalog, PresentationRemixExample } from '../lib/local/src/presentation-catalog.js';
 import type { SessionUser } from '../lib/local/src/types.js';
 import type { CollaborationDetail, CollaborationOffer } from '../lib/local/src/collaborations.js';
 import { ensure } from './validation.js';
 
 type Actor = { id: number; name: string; email: string; role: string; needs: string[]; mediaId: string; picture?: string };
-export type Scenario = { version: number; principalId?: number; actors: Actor[]; pairs: { sourceId: number; resultId?: number; offerId?: number; contributionPath: string; contributionKind?: 'audio'|'video'; title: string; startSeconds?: number; endSeconds?: number; baseGain?: number; contributionGain?: number }[] };
+export type Scenario = { version: number; principalId?: number; personas?: {id:number;name:string;role:string;picture?:string}[]; actors: Actor[]; pairs: { sourceId: number; resultId?: number; offerId?: number; contributionPath: string; contributionKind?: 'audio'|'video'; title: string; startSeconds?: number; endSeconds?: number; baseGain?: number; contributionGain?: number }[] };
 type Thread = { id: number; owner: number; applicant: number; admission: string; status: string; updated: string; revision: number };
 
 /** Presentation orchestration is opt-in, local-only, and calls the same product operations as the UI. */
 export function presentation(d: { db: DatabaseSync; directory: string; current(req: IncomingMessage): SessionUser;
   user(id: number): SessionUser | null; publicProject(id: number): boolean; session(req: IncomingMessage, res: ServerResponse, user: SessionUser | null): void;
+  receiveFinished(input:Record<string,unknown>,owner:number,checkSession:()=>void):Promise<unknown>;
   body(req: IncomingMessage): Promise<Record<string, unknown>>; json(res: ServerResponse, value: unknown): void }) {
   const { db } = d;
   db.exec(`CREATE TABLE IF NOT EXISTS presentation_settings(key TEXT PRIMARY KEY,value TEXT NOT NULL);
@@ -25,7 +27,32 @@ export function presentation(d: { db: DatabaseSync; directory: string; current(r
     const row = db.prepare("SELECT value FROM presentation_settings WHERE key='scenario'").get() as { value: string } | undefined;
     return row ? JSON.parse(row.value) : null;
   };
+  const catalog = (): PresentationCatalog | null => {
+    const row = db.prepare("SELECT value FROM presentation_settings WHERE key='artist-catalog'").get() as {value:string}|undefined;
+    if (!row) return null;
+    const value = JSON.parse(row.value) as PresentationCatalog;
+    return {...value, releases:value.releases.filter(r => d.publicProject(r.projectId))};
+  };
+  const catalogs = (): PresentationCatalog[] => {
+    const legacy = catalog();
+    const rows = db.prepare("SELECT value FROM presentation_settings WHERE key LIKE 'artist-catalog:%' ORDER BY key").all() as {value:string}[];
+    const values = rows.map(row => JSON.parse(row.value) as PresentationCatalog);
+    return [...(legacy ? [legacy] : []), ...values.filter(value => value.artistId !== legacy?.artistId)].map(value => ({...value, releases:value.releases.filter(release => d.publicProject(release.projectId))}));
+  };
   const mode = () => (db.prepare("SELECT value FROM presentation_settings WHERE key='mode'").get() as { value: string }).value;
+  const featuredRemix = (): PresentationRemixExample | null => {
+    const row = db.prepare("SELECT value FROM presentation_settings WHERE key='luna-example'").get() as {value:string}|undefined;
+    if (!row) return null;
+    const example = JSON.parse(row.value) as PresentationRemixExample;
+    // Metadata never grants access. Hide the example when either public recording disappears.
+    for (const item of [example.original, example.remix]) {
+      const post = db.prepare("SELECT data FROM posts WHERE id=? AND json_extract(data,'$.status')='published'").get(item.postId) as {data:string}|undefined;
+      if (!post || !d.publicProject(item.projectId)) return null;
+      const data = JSON.parse(post.data);
+      if (data.projectId !== item.projectId || data.mediaId !== item.mediaId) return null;
+    }
+    return example;
+  };
   async function asActor<T>(origin: string, actor: number, path: string, method = 'GET', input?: unknown): Promise<T> {
     const token = randomBytes(32).toString('hex'), hash = createHash('sha256').update(token).digest('hex');
     db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(hash, actor, Date.now() + 120_000);
@@ -125,12 +152,12 @@ export function presentation(d: { db: DatabaseSync; directory: string; current(r
     if (!url.pathname.startsWith('/api/presentation')) return false;
     ensure(req.socket.remoteAddress === '127.0.0.1' || req.socket.remoteAddress === '::1' || req.socket.remoteAddress === '::ffff:127.0.0.1', 'Presentation controls are local only.', 403);
     if (req.method === 'GET' && url.pathname === '/api/presentation') {
-      d.json(res, { enabled: true, mode: mode(), accounts: (() => { const scene=scenario(), principal=scene?.principalId?d.user(scene.principalId):null; const accounts=scene?.actors.map(({id,name,role,picture})=>({id,name,role,picture}))??[]; return principal&&!accounts.some(a=>a.id===scene!.principalId)?[{id:scene!.principalId!,name:principal.name,role:principal.role,picture:principal.picture??undefined},...accounts]:accounts; })(), pairs: scenario()?.pairs.map(({sourceId,resultId,offerId,title,startSeconds,endSeconds,baseGain,contributionGain})=>({sourceId,resultId,offerId,title,startSeconds,endSeconds,baseGain,contributionGain})) ?? [] }); return true;
+      d.json(res, { enabled: true, mode: mode(), catalog: catalog(), catalogs: catalogs(), featuredRemix: featuredRemix(), principalId: scenario()?.principalId, accounts: (() => { const scene=scenario(), principal=scene?.principalId?d.user(scene.principalId):null; const accounts=[...(scene?.personas??[]),...(scene?.actors.map(({id,name,role,picture})=>({id,name,role,picture}))??[])]; return principal&&!accounts.some(a=>a.id===scene!.principalId)?[{id:scene!.principalId!,name:principal.name,role:principal.role,picture:principal.picture??undefined},...accounts]:accounts; })(), pairs: scenario()?.pairs.map(({sourceId,resultId,offerId,title,startSeconds,endSeconds,baseGain,contributionGain,contributionKind})=>({sourceId,resultId,offerId,title,startSeconds,endSeconds,baseGain,contributionGain,contributionKind})) ?? [] }); return true;
     }
     ensure(req.method === 'POST', 'Method not allowed.',405);
     const input = await d.body(req);
     if(url.pathname==='/api/presentation/switch') {
-      const target=Number(input.accountId); ensure(scenario()?.actors.some(a=>a.id===target) || target===scenario()?.principalId || target===0,'Choose a presentation account.');
+      const target=Number(input.accountId); ensure(scenario()?.actors.some(a=>a.id===target) || scenario()?.personas?.some(a=>a.id===target) || target===scenario()?.principalId || target===0,'Choose a presentation account.');
       d.session(req,res,target ? d.user(target) : null);d.json(res,{ok:true});return true;
     }
     if(url.pathname==='/api/presentation/mode') {ensure(['guided','autonomous'].includes(String(input.mode)),'Choose a mode.');db.prepare("UPDATE presentation_settings SET value=? WHERE key='mode'").run(String(input.mode));d.json(res,{ok:true});return true;}
@@ -143,12 +170,18 @@ export function presentation(d: { db: DatabaseSync; directory: string; current(r
       try {
         const tables=db.prepare("SELECT name FROM initial.sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'").all() as {name:string}[];
         db.exec('BEGIN IMMEDIATE');
-        try { for(const {name} of tables){ensure(/^[a-z_]+$/.test(name),'Invalid snapshot.');db.exec(`DELETE FROM main.${name}; INSERT INTO main.${name} SELECT * FROM initial.${name};`);} if(!tables.some(t=>t.name==='proposal_drafts'))db.exec('DELETE FROM proposal_drafts'); db.exec('DELETE FROM sessions; DELETE FROM rate_limits; DELETE FROM feed_snapshots'); const principalId=scenario()?.principalId; if(principalId&&d.user(principalId))for(const session of openSessions)db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(session.token,principalId,session.expires); db.exec('COMMIT'); }
+        try { for(const {name} of tables){ensure(/^[a-z_]+$/.test(name),'Invalid snapshot.');db.exec(`DELETE FROM main.${name}; INSERT INTO main.${name} SELECT * FROM initial.${name};`);} for(const name of ['comment_likes','comment_replies'])if(!tables.some(t=>t.name===name))db.exec(`DELETE FROM ${name}`); if(!tables.some(t=>t.name==='proposal_drafts'))db.exec('DELETE FROM proposal_drafts'); db.exec('DELETE FROM sessions; DELETE FROM rate_limits; DELETE FROM feed_snapshots'); const principalId=scenario()?.principalId; if(principalId&&d.user(principalId))for(const session of openSessions)db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(session.token,principalId,session.expires); db.exec('COMMIT'); }
         catch(e){db.exec('ROLLBACK');throw e;}
       } finally {db.exec('DETACH DATABASE initial');}
       d.session(req,res,scenario()?.principalId?d.user(scenario()!.principalId!):null);d.json(res,{ok:true});return true;
     }
     if(url.pathname==='/api/presentation/contribution') {
+      if(input.purpose==='finished-audio') {
+        const viewer=d.current(req);ensure(viewer.role==='artist'&&viewer.artistId,'Log in as an artist.',403);
+        const owner=viewer.artistId;
+        const received=await d.receiveFinished(input,owner,()=>ensure(d.current(req).artistId===owner,'Session expired.',401));
+        d.json(res,received);return true;
+      }
       const user=d.current(req), pair=scenario()?.pairs.find(p=>p.sourceId===Number(input.sourceId));ensure(pair&&user.artistId,'No prepared contribution for this original.',404);
       const token=randomBytes(32).toString('hex'),hash=createHash('sha256').update(token).digest('hex');db.prepare('INSERT INTO sessions VALUES(?,?,?)').run(hash,user.artistId,Date.now()+120_000);
       try {

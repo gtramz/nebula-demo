@@ -94,6 +94,8 @@ export interface UseOfFundsItem {
 }
 
 export interface Project {
+  /** Read-only identity assigned to presentation catalog records, never accepted in project input. */
+  readonly presentationCatalogId?: string;
   id: number;
   artistId: number;
   artistName: string;

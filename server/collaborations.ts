@@ -1,7 +1,8 @@
 import type { DatabaseSync } from 'node:sqlite';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { Project, SessionUser } from '../lib/local/src/types.js';
-import type { CollaborationOffer, OfferInput, Collaboration, CollaborationStatus } from '../lib/local/src/collaborations.js';
+import type { CollaborationOffer, OfferInput, Collaboration, CollaborationStatus, ProposalPreparationMetadata } from '../lib/local/src/collaborations.js';
+import { parseVideoComposition } from '../lib/local/src/video-composition.js';
 import { isMoney } from '../lib/local/src/money.js';
 import { ensure, id, object, text, HttpError } from './validation.js';
 import { mayReceiveRequest, type MessageStorage } from './message-storage.js';
@@ -115,9 +116,26 @@ export function collaborations(d: Dependencies) {
     const post = db.prepare('SELECT data FROM posts WHERE id=? AND owner=?').get(publicationId, viewer) as { data: string } | undefined;
     const value = post ? JSON.parse(post.data) : null;
     ensure(value?.remix && value.mediaId === mediaId && value.remix.projectId === offer.projectId, 'Choose your own remix of this project.');
-    remix = JSON.stringify({ publicationId, title: value.title, originalTitle: value.remix.title, originalArtist: value.remix.artistName });
+    remix = JSON.stringify({ ...(value.remix.composition ? {composition:value.remix.composition} : {}), publicationId, title: value.title, originalTitle: value.remix.title, originalArtist: value.remix.artistName });
   }
-  return { files, media: mediaId, text: text(data.text, 'Submission', 4000, 1), kind, remix };
+  const preparation = data.preparation == null || remix !== null ? null : preparationMetadata(object(data.preparation), offer, d.media(mediaId)!.kind);
+  return { files, media: mediaId, text: text(data.text, 'Submission', 4000, 1), kind, remix, preparation };
+  }
+  function preparationMetadata(raw: Record<string, unknown>, offer: CollaborationOffer, outputKind?: string): ProposalPreparationMetadata | null {
+    if (!offer.referenceMediaId) { ensure(raw.fragment == null && raw.composition == null, 'This offer has no reference to prepare.'); return null; }
+    ensure(raw.referenceId == null || raw.referenceId === offer.referenceMediaId, 'The reference changed. Rebuild your proposal against the current reference.', 409);
+    const value: ProposalPreparationMetadata = {version: 1, referenceId: offer.referenceMediaId};
+    if (raw.fragment != null) {
+      const range = object(raw.fragment), start = range.startSeconds, end = range.endSeconds;
+      ensure(typeof start === 'number' && Number.isFinite(start) && typeof end === 'number' && Number.isFinite(end) && start >= 0 && end <= 600 && end-start >= .1-1e-9 && end-start <= (outputKind === 'video' ? 60 : 600)+1e-9, 'Choose a valid reference fragment.');
+      value.fragment = {startSeconds: start as number, endSeconds: end as number};
+    }
+    if (raw.composition != null) {
+      ensure(outputKind === undefined || outputKind === 'video', 'Video framing requires a video contribution.');
+      try { value.composition = parseVideoComposition(raw.composition); } catch { throw new HttpError(400, 'Choose valid video framing.'); }
+      ensure(value.composition?.layout === (offer.reference?.kind === 'video' ? 'vertical-split' : 'vertical-single'), 'Video framing does not match the reference.');
+    }
+    return value;
   }
   function mediaUsed(media: string) { return !!db.prepare("SELECT 1 FROM collaboration_offers WHERE json_extract(data,'$.referenceMediaId')=? UNION ALL SELECT 1 FROM proposal_drafts WHERE EXISTS(SELECT 1 FROM json_each(data,'$.files') WHERE json_extract(value,'$.id')=?) OR json_extract(data,'$.preparation.contribution.id')=? LIMIT 1").get(media,media,media) || !!db.prepare('SELECT 1 FROM collaboration_submissions WHERE media=? UNION ALL SELECT 1 FROM collaboration_files WHERE media=? LIMIT 1').get(media, media); }
   function canReadMedia(media: string, viewer: number | null) {
@@ -160,7 +178,7 @@ export function collaborations(d: Dependencies) {
       d.json(res, { ...threadDto(row,viewer), currentOffer: offerDto(offerRow(row.offer)), messages: messages.slice(0,50).reverse().map(m => ({ id: m.id, authorId: m.author, author: d.name(m.author), text: m.text, kind: m.kind, createdAt: m.created })), nextMessageCursor: messages.length > 50 ? messages[49].id : null,
         submissions: submissions.map(s => { const dto = (media: string) => { const m = d.media(media)!; return { id: m.id, name: m.name ?? `${m.kind}-${m.id}`, kind: m.kind, mime: m.mime, size: m.size, url: `/media/${m.id}` }; };
           const attached = db.prepare('SELECT media FROM collaboration_files WHERE submission=? ORDER BY position').all(s.id) as { media: string }[];
-          const files = (attached.length ? attached : [{ media: s.media }]).map(file => dto(file.media)); return { id: s.id, text: s.text, kind: s.kind, createdAt: s.created, terms: s.terms ? JSON.parse(s.terms) : null, remix: s.remix ? JSON.parse(s.remix) : null, media: dto(s.media), files }; }) }); return true;
+          const files = (attached.length ? attached : [{ media: s.media }]).map(file => dto(file.media)); return { id: s.id, text: s.text, kind: s.kind, createdAt: s.created, terms: s.terms ? JSON.parse(s.terms) : null, preparation: s.terms ? JSON.parse(s.terms).proposalPreparation ?? null : null, remix: s.remix ? JSON.parse(s.remix) : null, media: dto(s.media), files }; }) }); return true;
     }
     if (offer && offer[2] && req.method === 'GET') {
       const row=offerRow(id(Number(offer[1])));ensure(row.owner!==viewer,'You cannot apply to your own offer.');
@@ -186,12 +204,22 @@ export function collaborations(d: Dependencies) {
         ensure(row.owner!==viewer,'You cannot apply to your own offer.');
         ensure(offerDto(row).available,'This offer is not accepting collaborators.',409);
         const files=Array.isArray(data.files)?data.files:[]; ensure(files.length<=10,'Attach up to 10 files.');
-        const owned=(value:unknown) => { const m=object(value), stored=d.media(text(m.id,'Media',36,36)); ensure(stored && stored.owner===viewer && !d.privateMedia(stored.id),'Choose your own uploaded files.'); return mediaDto(stored.id)!; };
-        const attached=files.map(owned);ensure(attached.reduce((n,m)=>n+m.size,0)<=250*1024*1024,'Files exceed 250 MB.');
-        const preparation=data.preparation?object(data.preparation):null;
+        // Reuse the actual submission checks for a saved remix, without creating a thread.
+        const remixDraftId=data.remixDraftId==null?null:text(data.remixDraftId,'Draft',36,36);
+        const publicationId=data.publicationId==null?null:id(data.publicationId);
+        const remixInput=remixDraftId||publicationId?submissionInput({...data,preparation:null,text:'Private draft',mediaIds:files.map(file=>object(file).id),mediaId:files[0]?object(files[0]).id:null},viewer,offerDto(row),'proposal'):null;
+        const owned=(value:unknown,allowFinalRemix=false) => { const m=object(value), stored=d.media(text(m.id,'Media',36,36)); ensure(stored && stored.owner===viewer && (!d.privateMedia(stored.id)||(allowFinalRemix&&remixInput?.media===stored.id)),'Choose your own uploaded files.'); return mediaDto(stored.id)!; };
+        const attached=files.map(file=>owned(file,true));ensure(attached.reduce((n,m)=>n+m.size,0)<=250*1024*1024,'Files exceed 250 MB.');
+        const preparation=data.preparation&&!remixInput?object(data.preparation):null;
+        const contribution=preparation?.contribution?owned(preparation.contribution):null;
+        const prepared=preparation?preparationMetadata(preparation,offerDto(row),contribution?.kind):null;
+        // Explicit null distinguishes an invalidated mix from unrelated audio/video attachments.
+        // Older drafts omit this key and retain their existing compatibility behavior.
+        const resultId=preparation?.resultId;
+        if(resultId!=null)ensure(typeof resultId==='string'&&!!contribution&&attached.some(file=>file.id===resultId&&['audio','video'].includes(file.kind)),'Choose an attached audio or video result.');
         const gain=(v:unknown, fallback:number)=> typeof v==='number' && Number.isFinite(v) && v>=0 && v<=2 ? v : fallback;
-        const value={introduction:text(data.introduction??'','Introduction',4000),description:text(data.description??'','Proposal',4000),files:attached,
-          preparation:preparation?{contribution:preparation.contribution?owned(preparation.contribution):null,baseGain:gain(preparation.baseGain,.76),voiceGain:gain(preparation.voiceGain,.42),referenceId:offerDto(row).referenceMediaId}:null};
+        const value={introduction:text(data.introduction??'','Introduction',4000),description:text(data.description??'','Proposal',4000),files:attached,...(remixDraftId?{remixDraftId}:{}),...(publicationId?{publicationId}:{}),
+          preparation:preparation?{contribution,...(resultId!==undefined?{resultId}:{}),baseGain:gain(preparation.baseGain,.76),voiceGain:gain(preparation.voiceGain,.42),referenceId:offerDto(row).referenceMediaId,...(prepared?.fragment?{fragment:prepared.fragment}:{}),...(prepared?.composition?{composition:prepared.composition}:{})}:null};
         db.prepare('INSERT INTO proposal_drafts VALUES(?,?,?,?) ON CONFLICT(owner,offer) DO UPDATE SET data=excluded.data,updated=excluded.updated').run(viewer,row.id,JSON.stringify(value),now);
         d.json(res,{saved:true,draft:value});return true;
       }
@@ -222,7 +250,7 @@ export function collaborations(d: Dependencies) {
           const intro=text(data.introduction,'Introduction',4000,1), submission=submissionInput(data,viewer,terms,'proposal');
           const result=db.prepare("INSERT INTO collaborations(offer,owner,applicant,terms,status,updated,request_policy,admission) VALUES(?,?,?,?,'submitted',?,1,'pending')").run(row.id,row.owner,viewer,JSON.stringify(terms),now);
           const threadId=Number(result.lastInsertRowid);
-          const saved=db.prepare('INSERT INTO collaboration_submissions(thread,media,text,kind,created,terms,remix) VALUES(?,?,?,?,?,?,?)').run(threadId,submission.media,submission.text,'proposal',now,JSON.stringify(terms),submission.remix);
+          const saved=db.prepare('INSERT INTO collaboration_submissions(thread,media,text,kind,created,terms,remix) VALUES(?,?,?,?,?,?,?)').run(threadId,submission.media,submission.text,'proposal',now,JSON.stringify({...terms,...(submission.preparation?{proposalPreparation:submission.preparation}:{})}),submission.remix);
           submission.files.forEach((file,position)=>db.prepare('INSERT INTO collaboration_files VALUES(?,?,?)').run(saved.lastInsertRowid,file,position));
           db.prepare("INSERT INTO collaboration_messages(thread,author,text,created,kind) VALUES(?,?,?,?,'request')").run(threadId,viewer,intro,now);
           d.messages.activity('collaboration',threadId,viewer,'request',now);
@@ -257,7 +285,7 @@ export function collaborations(d: Dependencies) {
         const row=threadRow(threadId,viewer);
         ensure(row.revision === data.revision, 'Collaboration changed. Reload before continuing.', 409);
         const action = text(data.action, 'Action', 30, 1), owner = row.owner === viewer, currentOffer = offerDto(offerRow(row.offer));
-        let status: CollaborationStatus, terms = row.terms, submission: { files: string[]; media: string; text: string; kind: string; remix: string | null } | null = null;
+        let status: CollaborationStatus, terms = row.terms, submission: { files: string[]; media: string; text: string; kind: string; remix: string | null; preparation: ProposalPreparationMetadata | null } | null = null;
         if (action === 'submit' || action === 'deliver') {
           ensure(!owner, 'Only the applicant can submit work.', 403);
           ensure(action === 'submit' ? ['discussion','changes_requested'].includes(row.status) : row.status === 'accepted', 'Work cannot be submitted at this stage.', 409);
@@ -290,7 +318,7 @@ export function collaborations(d: Dependencies) {
             db.prepare("UPDATE collaborations SET status='rejected',admission=CASE WHEN request_policy=1 THEN 'rejected' ELSE admission END,revision=revision+1,updated=? WHERE offer=? AND id<>? AND status IN ('discussion','submitted','changes_requested')").run(now, row.offer, row.id);
           }
           if (submission) {
-            const saved = db.prepare('INSERT INTO collaboration_submissions(thread,media,text,kind,created,terms,remix) VALUES(?,?,?,?,?,?,?)').run(row.id, submission.media, submission.text, submission.kind, now, terms, submission.remix);
+            const saved = db.prepare('INSERT INTO collaboration_submissions(thread,media,text,kind,created,terms,remix) VALUES(?,?,?,?,?,?,?)').run(row.id, submission.media, submission.text, submission.kind, now, JSON.stringify({...JSON.parse(terms),...(submission.preparation?{proposalPreparation:submission.preparation}:{})}), submission.remix);
             submission.files.forEach((file, position) => db.prepare('INSERT INTO collaboration_files(submission,media,position) VALUES(?,?,?)').run(saved.lastInsertRowid, file, position));
           }
           if (action === 'request_changes') db.prepare("INSERT INTO collaboration_messages(thread,author,text,created,kind) VALUES(?,?,?,?,'revision')").run(row.id, viewer, text(data.feedback, 'Revision feedback', 4000, 1), now);

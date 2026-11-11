@@ -18,9 +18,9 @@ else if(command==='checkpoint') {
   const db=new DatabaseSync(join(directory,'nebula.sqlite'));
   try {
     const state=JSON.parse(db.prepare('SELECT value FROM state WHERE id=1').get().value);
-    const principal=state.accounts.find(a=>a.email==='sol.rivera@nebula.local');
-    if(!principal)throw new Error('The prepared Sol Rivera account is missing. No snapshot was changed.');
-    const scene=JSON.parse(db.prepare("SELECT value FROM presentation_settings WHERE key='scenario'").get().value);scene.principalId=principal.id;
+    const scene=JSON.parse(db.prepare("SELECT value FROM presentation_settings WHERE key='scenario'").get().value);
+    const principal=state.accounts.find(a=>a.id===scene.principalId);
+    if(!principal)throw new Error('The prepared principal account is missing. No snapshot was changed.');
     db.prepare("UPDATE presentation_settings SET value=? WHERE key='scenario'").run(JSON.stringify(scene));
     const destination=join(directory,'prepared-scene.sqlite');await backup(db,destination);
     const snapshot=new DatabaseSync(destination);snapshot.exec('DELETE FROM sessions; DELETE FROM rate_limits; DELETE FROM feed_snapshots;');snapshot.close();

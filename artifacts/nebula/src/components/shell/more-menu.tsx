@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import { LogOut, Menu } from 'lucide-react';
 import { isServerMode, useResetPreview } from '@nebula/local';
+import { isPresentation } from '@/features/presentation';
 import { useAuth } from '@/context/AuthContext';
 import { projectDestination } from './project-destination';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
@@ -20,12 +21,13 @@ export function MoreMenu({ sidebar = false, logout }: { sidebar?: boolean; logou
       <DropdownMenuItem asChild className="min-h-11 focus:text-bg"><Link href="/">{destination === 'Home' ? 'landing page' : 'home'}</Link></DropdownMenuItem>
       <DropdownMenuItem asChild className="min-h-11 focus:text-bg"><Link href="/explore">{destination.toLowerCase()}</Link></DropdownMenuItem>
       {user && <DropdownMenuItem asChild className="min-h-11 focus:text-bg"><Link href="/saved">Saved publications</Link></DropdownMenuItem>}
+      {isPresentation() && window.self === window.top && <DropdownMenuItem asChild className="min-h-11 focus:text-bg"><a href={`/presentation/mobile?path=${encodeURIComponent(window.location.pathname + window.location.search)}`} target="_blank" rel="noopener noreferrer" onClick={() => document.querySelectorAll<HTMLMediaElement>('audio,video').forEach(media => media.pause())}>Mobile view</a></DropdownMenuItem>}
       {!isServerMode() && <DropdownMenuItem disabled={reset.isPending} className="min-h-11 focus:text-bg" onSelect={event => {
         event.preventDefault();
         if (window.confirm('Clear projects, pledges and supports in this browser? Accounts and artist profiles will be kept. This affects all tabs.')) {
           reset.mutate(undefined, { onSuccess: () => { setOpen(false); navigate('/'); } });
         }
-      }}>clear demo data</DropdownMenuItem>}
+      }}>Clear saved activity</DropdownMenuItem>}
       {reset.error && <p role="alert" className="p-2 text-xs text-danger">{reset.error.message}</p>}
       {logout && <DropdownMenuItem disabled={logout.isPending} onSelect={logout.onSelect} className="min-h-11 focus:text-bg"><LogOut aria-hidden />Logout</DropdownMenuItem>}
       <DropdownMenuSeparator />

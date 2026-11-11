@@ -38,7 +38,7 @@ test('responsive navigation has one landmark, persistent desktop preference and 
   await page.getByRole('button',{name:'Expand sidebar',exact:true}).click();await geometry(page,1440,true);
   await more(page).click();await expect(page.getByRole('menu')).toContainText('A space to make music together.');
   await expect(page.getByRole('menu')).toContainText('© 2026 antiq');
-  await expect(page.getByRole('menuitem',{name:'clear demo data',exact:true})).toHaveCount(0);
+  await expect(page.getByRole('menuitem',{name:'Clear saved activity',exact:true})).toHaveCount(0);
   const home = page.getByRole('menuitem',{name:'landing page',exact:true}); await home.focus();
   await expect(home).toHaveCSS('color','rgb(0, 0, 0)');
   await page.screenshot({path:info.outputPath('more-menu.png')});
@@ -56,7 +56,11 @@ test('artist and investor destinations keep the same active states at every brea
     await register(page,role,`nav-${role}-${info.project.name}-${Date.now()}`);
     const label=role==='artist'?'received':'pledges';await page.goto(`/${label}`);
     for(const width of [390,578,767,768,1024,1440]) {
-      await geometry(page,width,true);await expect(nav(page).getByRole('link')).toHaveCount(role==='artist'&&width>=768?6:5);
+      await geometry(page,width,true);
+      const destinations = role === 'artist'
+        ? (width < 768 ? ['home','discovery','search','messages','profile'] : ['discovery','home','search','received','messages','saved','profile'])
+        : (width < 768 ? ['explore','discovery','search','pledges','profile'] : ['discovery','explore','search','pledges','saved','profile']);
+      await expect.poll(() => nav(page).getByRole('link').evaluateAll(links => links.map(link => link.getAttribute('aria-label')))).toEqual(destinations);
       const active=role==='artist'&&width<768?'profile':label;
       await expect(nav(page).getByRole('link',{name:active,exact:true})).toHaveAttribute('href',`/${active}`);
       await expect(nav(page).getByRole('link',{name:active,exact:true})).toHaveAttribute('aria-current','page');
@@ -64,9 +68,9 @@ test('artist and investor destinations keep the same active states at every brea
       if(role==='artist'&&width<768) {
         await expect(nav(page).getByRole('link',{name:'received',exact:true})).toHaveCount(0);
         await expect(nav(page).locator('a[href="/received"]')).toBeHidden();
-        expect(await nav(page).getByRole('link').evaluateAll(links=>links.map(link=>link.getAttribute('aria-label')))).toEqual(['discovery','home','search','messages','profile']);
-        const widths=await nav(page).getByRole('link').evaluateAll(links=>links.map(link=>link.getBoundingClientRect().width));expect(Math.max(...widths)-Math.min(...widths)).toBeLessThanOrEqual(1);
-        await nav(page).getByRole('link',{name:'search',exact:true}).focus();await page.keyboard.press('Tab');await expect(nav(page).getByRole('link',{name:'messages',exact:true})).toBeFocused();await page.keyboard.press('Tab');await expect(nav(page).getByRole('link',{name:'profile',exact:true})).toBeFocused();
+        expect(await nav(page).getByRole('link').evaluateAll(links=>links.map(link=>link.getAttribute('aria-label')))).toEqual(['home','discovery','search','messages','profile']);
+        const widths=await nav(page).getByRole('link').evaluateAll(links=>links.map(link=>link.getBoundingClientRect().width));expect(Math.min(...widths)).toBeGreaterThanOrEqual(44); const create=await nav(page).getByRole('button',{name:'Create',exact:true}).boundingBox();expect(create!.x+create!.width/2).toBeCloseTo(width/2,0);
+        await nav(page).getByRole('link',{name:'search',exact:true}).focus();await page.keyboard.press('Tab');await expect(nav(page).getByRole('button',{name:'Create',exact:true})).toBeFocused();await page.keyboard.press('Tab');await expect(nav(page).getByRole('link',{name:'messages',exact:true})).toBeFocused();await page.keyboard.press('Tab');await expect(nav(page).getByRole('link',{name:'profile',exact:true})).toBeFocused();
       }
       await expect(page.getByRole('button',{name:/^Notifications/})).toHaveCount(role==='artist'?1:0);
       if([578,768].includes(width))await page.screenshot({path:info.outputPath(`${label}-${width}.png`)});
@@ -78,11 +82,11 @@ test('artist and investor destinations keep the same active states at every brea
       await expect(page.locator('.mobile-navigation-header').getByRole('button',{name:'More',exact:true})).toHaveCount(0);
       await expect(more(page)).toHaveCount(1);
       const profileMore=page.locator('.shell-page').getByRole('button',{name:'More',exact:true});
-      if(width<768) await expect(profileMore).toBeVisible();else await expect(profileMore).toHaveCount(0);
+      await expect(profileMore).toBeVisible();
       await expect(page.getByRole('button',{name:'LOGOUT',exact:true})).toHaveCount(width<768?0:1);
       await more(page).click();await expect(page.getByRole('menu')).toContainText('© 2026 antiq');
       const logoutItem=page.getByRole('menuitem',{name:'Logout',exact:true});
-      await expect(logoutItem).toHaveCount(width<768?1:0);
+      await expect(logoutItem).toHaveCount(1);
       if(width<768){await expect.poll(async()=>(await logoutItem.boundingBox())?.height??0).toBeGreaterThanOrEqual(44);expect((await logoutItem.boundingBox())!.width).toBeGreaterThanOrEqual(44);}
       await page.keyboard.press('Escape');await expect(more(page)).toBeFocused();
       if(width===390)await page.screenshot({path:info.outputPath(`profile-${role}-mobile.png`)});

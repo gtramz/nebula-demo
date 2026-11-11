@@ -17,8 +17,8 @@ export function useRemixDraft(id?: string | null) {
   const { user } = useAuth();
   return useQuery({ queryKey: ['remix-draft', user?.artistId, id], queryFn: () => apiRequest<RemixDraft>(`/api/remix-drafts/${id}`), enabled: user?.role === 'artist' && !!id, refetchOnWindowFocus: false, staleTime: 0 });
 }
-export function createDraft(sourceId: number, sourceRevision: number, requestKey: string) {
-  return apiRequest<RemixDraft>('/api/remix-drafts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sourceId, sourceRevision, requestKey }) });
+export function createDraft(sourceId: number, sourceRevision: number, requestKey: string, workflow?: 'finished-audio'|'video') {
+  return apiRequest<RemixDraft>('/api/remix-drafts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sourceId, sourceRevision, requestKey, workflow }) });
 }
 export function saveDraft(id: string, data: RemixDraftUpdate, signal: AbortSignal) {
   return apiRequest<RemixDraft>(`/api/remix-drafts/${id}`, { method: 'PATCH', signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });

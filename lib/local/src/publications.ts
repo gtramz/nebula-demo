@@ -12,7 +12,7 @@ export type PublicationInput = {
   allowRemix: boolean;
   status: 'draft' | 'published' | 'withdrawn';
 };
-export type RemixInput = { contributionKind?: 'audio' | 'video'; sourceId: number; sourceRevision: number; startSeconds: number; endSeconds: number; baseGain: number; voiceGain: number; voiceOffset: number };
+export type RemixInput = { composition?: import('./video-composition.js').VideoComposition; contributionKind?: 'audio' | 'video'; sourceId: number; sourceRevision: number; startSeconds: number; endSeconds: number; baseGain: number; voiceGain: number; voiceOffset: number };
 export type RemixAttribution = RemixInput & { artistId: number; artistName: string; title: string; projectId: number | null; grantedAt: string; available: boolean };
 export type UploadedMedia = { id: string; name?: string; kind: 'audio' | 'video' | 'image' | 'document' | 'archive'; mime: string; size: number; url: string };
 export type Publication = PublicationInput & {

@@ -1,8 +1,8 @@
 import { ReturnLink, ReturnButton } from '@/components/antiq/workspace';
 import { useMemo, useState, type FormEvent } from "react";
 import { Link, useLocation } from "wouter";
-import { useRegisterAccount, isServerMode } from "@nebula/local";
-import { Check, Eye, EyeOff, Loader2, ShieldCheck } from "lucide-react";
+import { useRegisterAccount } from "@nebula/local";
+import { Check, Eye, EyeOff, Loader2 } from "lucide-react";
 import { AntiqLogo } from "@/components/antiq-logo";
 
 type RegistrationStep = 1 | 2 | 3;
@@ -311,12 +311,7 @@ export default function Register() {
             )}
           </div>
 
-          {step === 3 && (
-            <div className="flex items-start gap-3 border-t border-white/10 pt-5 text-xs text-muted">
-              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#18d9ff]" />
-              <p>{isServerMode() ? 'Your profile starts with you. Add your sound and interests next.' : 'your account is saved in this browser for this local preview. use the same browser and address to log in again.'}</p>
-            </div>
-          )}
+
 
           {registerAccount.isError && (
             <p className="text-center text-sm font-medium text-danger">

@@ -1,3 +1,6 @@
+import { useProjectProductCopy } from '@/features/presentation/catalog';
+import { HomeProjectRecording } from './project-recording';
+import { WinkFace } from '@/components/blob-face';
 import { AudioPreview } from '@/components/audio-preview';
 import { useFollowSync } from '@/features/following';
 import { useRef, useState, useSyncExternalStore } from 'react';
@@ -19,6 +22,7 @@ export function OpportunityProjectCard({ item }: { item: OpportunityProject }) {
   const { project, offers, preview } = item, client = useQueryClient(), {user}=useAuth();
   const [coverFailed,setCoverFailed]=useState(false),[pending,setPending]=useState(false),[error,setError]=useState('');
   const funding=project.status==='funding';
+  const copy=useProjectProductCopy(project);
   async function save() {
     if(!preview?.publicationId)return;
     setPending(true);setError('');
@@ -31,7 +35,7 @@ export function OpportunityProjectCard({ item }: { item: OpportunityProject }) {
       <div className="min-w-0 space-y-1"><h2 className="text-xl font-semibold tracking-tight line-clamp-2 break-words">{project.title}</h2><Link href={`/artist/${project.artistId}`} className="text-sm text-muted hover:text-ink inline-flex items-center min-h-8">{project.artistName}<ArrowUpRight size={13} className="ml-1"/></Link><p className="opportunity-meta"><span>{project.category}</span>{item.genres?.slice(0,2).map(g=><span key={g}>{musicalGenreTaxonomy.find(genre=>genre.id===g)?.label??g}</span>)}</p></div>
       {preview?.publicationId&&user&&<button type="button" disabled={pending} aria-label={`${preview.saved?'Unsave':'Save'} ${preview.title}`} aria-pressed={!!preview.saved} className="min-h-11 min-w-11 grid place-items-center text-muted aria-pressed:text-accent" onClick={()=>void save()}><Bookmark size={18} fill={preview.saved?'currentColor':'none'}/></button>}
     </div>
-    {preview?<AudioPreview key={preview.media.id} title={preview.title} src={preview.media.url} waveformUrl={`/api/projects/${project.id}/preview/waveform`}/>:<div className="text-sm text-muted"><p className="line-clamp-2">{project.pitch||project.story}</p><Link href={`/artist/${project.artistId}`} className="inline-flex min-h-11 underline">About Artist</Link></div>}
+    {preview?<AudioPreview key={preview.media.id} title={preview.title} src={preview.media.url} waveformUrl={`/api/projects/${project.id}/preview/waveform`}/>:<HomeProjectRecording project={project}><div className="text-sm text-muted"><p className="line-clamp-2">{copy.pitch||copy.story}</p><Link href={`/artist/${project.artistId}`} className="inline-flex min-h-11 underline">About Artist</Link></div></HomeProjectRecording>}
     <div className="opportunity-offers"><ul>{offers.slice(0,2).map(offer=><li key={offer.id}><div className="flex flex-wrap justify-between gap-x-3 gap-y-1"><strong>{offer.need}</strong><span>{offer.compensation.kind==='split'?`${offer.compensation.percent}% royalties`:`${offer.compensation.currency} ${offer.compensation.amount} fixed`}</span></div>{offer.workTitle&&<p className="text-xs text-muted mt-1">For {offer.workTitle}</p>}</li>)}</ul>{offers.length>2&&<Link className="inline-flex min-h-8 text-xs underline" href={`/project/${project.id}`}>+{offers.length-2} opportunities</Link>}{funding&&<p className="text-xs text-muted mt-2">Funding open · {formatMoney(project.raisedAmount)} of {formatMoney(project.goalAmount)}</p>}</div>
     {error&&<p role="alert" className="text-xs text-danger">{error}</p>}
     <footer className="mt-auto flex items-center gap-2 border-t border-border pt-3"><Link href={`/project/${project.id}`} className="inline-flex items-center justify-between min-h-11 flex-1 text-sm font-semibold">View project<ArrowUpRight size={16}/></Link></footer>
@@ -81,7 +85,7 @@ function OpportunityHomeContent({ identity }: { identity: string }) {
     <ContentWidth className="py-6 sm:py-8 space-y-5">
       <header className="max-w-2xl space-y-2">
         <p className="voice text-xs text-muted">OPEN OPPORTUNITIES</p>
-        <h1 className="text-3xl sm:text-4xl font-display font-bold tracking-tight">Find your next project.</h1>
+        <h1 aria-label="Find your next project." className="text-3xl sm:text-4xl font-display font-bold tracking-tight">Find your next project<WinkFace size={32}/></h1>
 
       </header>
       <div className="space-y-3 border-b border-border pb-4">

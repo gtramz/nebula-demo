@@ -108,7 +108,7 @@ test('public artist sections use real relationships and reuse playback without e
   const post = async (title: string, mediaId: string, projectId: number | null, status = 'published') => { const r = await page.request.post('/api/publications', { headers, data: { title, description: 'Public publication text.', mediaId, projectId, status, allowRemix: false, coverId: null } }); expect(r.ok()).toBeTruthy(); return r.json(); };
   const song = await post('Project sound', audio.id, ep.id); const clip = await post('Independent video', video.id, null); await post('SECRET PUBLICATION', audio.id, null, 'draft');
   await page.goto(`/artist/${user.artistId}`);
-  await expect(page.getByRole('tab', { name: 'Music', exact: true })).toHaveAttribute('aria-selected','true');
+  await expect(page.getByRole('tab', { name: 'Overview', exact: true })).toHaveAttribute('aria-selected','true');
   await expect(page.getByRole('button', { name: 'Play Project sound', exact: true })).toBeVisible();
   await expect(page.getByText('SECRET DRAFT', { exact: true })).toHaveCount(0); await expect(page.getByText('PRIVATE_DISCOVERY')).toHaveCount(0);
   await page.getByRole('button', { name: 'Play Project sound', exact: true }).click();

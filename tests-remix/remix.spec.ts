@@ -120,9 +120,9 @@ test('microphone permission is requested on demand, recording stops, and changed
   await page.getByRole('button',{name:'Build preview',exact:true}).click(); await previewReady(page);
 });
 
-async function cameraClip(page: Page) {
-  return Buffer.from(await page.evaluate(async () => {
-    const canvas = document.createElement('canvas'); canvas.width = 240; canvas.height = 320;
+async function cameraClip(page: Page, dimensions?: { width: number; height: number }) {
+  return Buffer.from(await page.evaluate(async (dimensions) => {
+    const canvas = document.createElement('canvas'); canvas.width = dimensions?.width ?? 240; canvas.height = dimensions?.height ?? 320;
     const painter = canvas.getContext('2d')!, context = new AudioContext(); await context.resume();
     const destination = context.createMediaStreamDestination(), oscillator = context.createOscillator(), gain = context.createGain();
     oscillator.frequency.value = 440; gain.gain.value = .2; oscillator.connect(gain).connect(destination); oscillator.start();
@@ -130,10 +130,10 @@ async function cameraClip(page: Page) {
     const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp8,opus' }), chunks: Blob[] = [];
     recorder.ondataavailable = e => chunks.push(e.data);
     const done = new Promise<number[]>(resolve => { recorder.onstop = async () => resolve(Array.from(new Uint8Array(await new Blob(chunks).arrayBuffer()))); });
-    const draw = () => { painter.fillStyle = '#ed2010'; painter.fillRect(0,0,240,320); }; draw();
+    const draw = () => { if (dimensions) { ['#ed2010','#20ed10','#1020ed'].forEach((color,i) => { painter.fillStyle=color; painter.fillRect(i*canvas.width/3,0,canvas.width/3,canvas.height); }); } else { painter.fillStyle = '#ed2010'; painter.fillRect(0,0,240,320); } }; draw();
     const timer = setInterval(draw, 40); recorder.start(); await new Promise(resolve => setTimeout(resolve, 3200)); recorder.stop();
     const bytes = await done; clearInterval(timer); stream.getTracks().forEach(track => track.stop()); await context.close(); return bytes;
-  }));
+  }, dimensions));
 }
 
 test('video original composes real frames and sound, preserves draft credit and submits the video with extra files', async ({ page, browser }, info) => {
@@ -154,20 +154,36 @@ test('video original composes real frames and sound, preserves draft credit and 
     await expect(artist.getByText(/Original duration:/)).toBeVisible({timeout:20000});
     await artist.getByLabel('Upload video',{exact:true}).setInputFiles({name:'red-performance.webm',mimeType:'video/webm',buffer:contribution});
     await expect(artist.getByText(/Your contribution is ready/)).toBeVisible({timeout:20000});
+    const framing = artist.getByRole('region',{name:'Video framing',exact:true});
+    await expect(framing).toBeVisible();
+    const originalFrame = framing.getByRole('button',{name:'Adjust original framing',exact:true});
+    await originalFrame.press('ArrowRight');
+    await expect(framing).toContainText('Original framing 52 percent horizontal');
+    await framing.getByRole('button',{name:'Reset framing',exact:true}).click();
+    await expect(framing).toContainText('Original framing 50 percent horizontal');
+    await originalFrame.press('ArrowRight');
+    await artist.getByLabel('Remix title',{exact:true}).fill('My video remix');
     await artist.getByRole('button',{name:'Build preview',exact:true}).click();
     await previewReady(artist,{timeout:20000});
     const video = artist.getByRole('region',{name:'Remix preview',exact:true}).locator('video');
     const pixels = await video.evaluate(async (element: HTMLVideoElement) => {
       element.muted = true; await element.play(); await new Promise(resolve => setTimeout(resolve,700)); element.pause();
       const canvas = document.createElement('canvas'); canvas.width=element.videoWidth; canvas.height=element.videoHeight; const painter=canvas.getContext('2d')!; painter.drawImage(element,0,0);
-      return { width:canvas.width,height:canvas.height,top:Array.from(painter.getImageData(360,320,1,1).data),bottom:Array.from(painter.getImageData(360,960,1,1).data) };
+      return { width:canvas.width,height:canvas.height,top:Array.from(painter.getImageData(360,320,1,1).data),bottom:Array.from(painter.getImageData(360,960,1,1).data),lowerLeft:Array.from(painter.getImageData(2,645,1,1).data),lowerRight:Array.from(painter.getImageData(717,1275,1,1).data) };
     });
     expect(pixels.width).toBe(720);expect(pixels.height).toBe(1280);expect(pixels.bottom[0]).toBeGreaterThan(190);expect(pixels.bottom[1]).toBeLessThan(70);expect(pixels.top[1]).toBeGreaterThan(pixels.top[0]);
     await artist.getByRole('heading',{name:'3. Preview your mix',exact:true}).scrollIntoViewIfNeeded(); await artist.screenshot({path:info.outputPath('video-studio.png')});
     expect(await artist.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
-    await artist.getByLabel('Remix title',{exact:true}).fill('My video remix');
+    expect(pixels.lowerLeft[0]).toBeGreaterThan(190); expect(pixels.lowerRight[0]).toBeGreaterThan(190);
+    await framing.getByRole('button',{name:'Adjust contribution framing',exact:true}).press('ArrowDown');
+    await noPreview(artist);
+    await expect(artist.getByLabel('Remix title',{exact:true})).toHaveValue('My video remix');
+    await expect(artist.getByText(/Your contribution is ready/)).toBeVisible();
+    await artist.getByRole('button',{name:'Build preview',exact:true}).click(); await previewReady(artist,{timeout:20000});
     await artist.getByRole('button',{name:'Save remix draft',exact:true}).click(); await expect(artist.getByText('Remix draft saved',{exact:true})).toBeVisible();
     await artist.reload(); await previewReady(artist);
+    await expect(artist.getByRole('region',{name:'Video framing',exact:true})).toContainText('Original framing 52 percent horizontal');
+    await expect(artist.getByRole('region',{name:'Video framing',exact:true})).toContainText('52 percent vertical');
     const sound = await artist.getByRole('region',{name:'Remix preview',exact:true}).locator('video').evaluate(async (element: HTMLVideoElement) => {
       const context = new AudioContext(); try { const buffer=await context.decodeAudioData(await(await fetch(element.src)).arrayBuffer()), data=buffer.getChannelData(0);
         const strength=(frequency:number)=>{let real=0,imaginary=0;const from=Math.round(.4*buffer.sampleRate),count=Math.min(Math.round(buffer.sampleRate),data.length-from);for(let i=0;i<count;i++){const phase=2*Math.PI*frequency*i/buffer.sampleRate;real+=data[from+i]*Math.cos(phase);imaginary+=data[from+i]*Math.sin(phase);}return Math.hypot(real,imaginary)/count;};
@@ -230,4 +246,40 @@ test('a video original rejects audio contributions and revoked permission blocks
   await page.getByRole('button',{name:'Save remix draft',exact:true}).click();await expect(page.getByRole('alert')).toContainText('no longer available for remixing');
   await expect(page.getByText('Remix draft saved',{exact:true})).toHaveCount(0);
   const posts=await(await page.request.get('/api/publications?mine=1')).json();expect(posts.items).toHaveLength(1);
+});
+
+
+for (const dimensions of [{width:320,height:320},{width:960,height:540}]) test(`framing ${dimensions.width}x${dimensions.height} video supports drag, keyboard and exact cover export`, async ({page}, info) => {
+  test.setTimeout(90_000);
+  const original = await source(page, `framing-${dimensions.width}-${info.project.name}-${Date.now()}`, 2);
+  await page.goto('/explore');
+  const contribution = await cameraClip(page, dimensions);
+  await openLegacy(page, `/remix/${original.id}`);
+  await expect(page.getByText(/Original duration:/)).toBeVisible();
+  await page.getByLabel('Upload file',{exact:true}).setInputFiles({name:'framing-bands.webm',mimeType:'video/webm',buffer:contribution});
+  await expect(page.getByText(/Your contribution is ready/)).toBeVisible();
+  const framing = page.getByRole('region',{name:'Video framing',exact:true}), handle = framing.getByRole('button',{name:'Adjust contribution framing',exact:true});
+  const pixels = () => framing.locator('canvas').evaluate((canvas:HTMLCanvasElement) => Array.from(canvas.getContext('2d')!.getImageData(360,640,1,1).data));
+  await expect.poll(async()=>(await pixels())[1]).toBeGreaterThan(190);
+  await handle.scrollIntoViewIfNeeded(); const bounds=(await handle.boundingBox())!;
+  const from={x:bounds.x+bounds.width*.22,y:bounds.y+bounds.height*.5}, to={x:bounds.x+bounds.width*.9,y:from.y};
+  if(info.project.name==='mobile') {
+    const cdp=await page.context().newCDPSession(page);
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[from]});
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[to]});
+    await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]}); await cdp.detach();
+  } else { await page.mouse.move(from.x,from.y); await page.mouse.down(); await page.mouse.move(to.x,to.y,{steps:8}); await page.mouse.up(); }
+  await expect.poll(async()=>(await pixels())[0]).toBeGreaterThan(190);
+  await framing.getByRole('button',{name:'Reset framing',exact:true}).click();
+  await expect.poll(async()=>(await pixels())[1]).toBeGreaterThan(190);
+  for(let i=0;i<5;i++) await handle.press('Shift+ArrowRight');
+  await expect.poll(async()=>(await pixels())[2]).toBeGreaterThan(190);
+  await page.getByRole('button',{name:'Build preview',exact:true}).click(); await previewReady(page,{timeout:15000});
+  const rendered=await page.getByRole('region',{name:'Remix preview',exact:true}).locator('video').evaluate(async(video:HTMLVideoElement)=>{
+    video.muted=true; await video.play(); await new Promise(resolve=>setTimeout(resolve,500)); video.pause();
+    const canvas=document.createElement('canvas'); canvas.width=video.videoWidth;canvas.height=video.videoHeight;const ctx=canvas.getContext('2d')!;ctx.drawImage(video,0,0);
+    return {width:canvas.width,height:canvas.height,center:Array.from(ctx.getImageData(360,640,1,1).data),edge:Array.from(ctx.getImageData(718,1278,1,1).data)};
+  });
+  expect(rendered.width).toBe(720);expect(rendered.height).toBe(1280);expect(rendered.center[2]).toBeGreaterThan(190);expect(rendered.edge[2]).toBeGreaterThan(190);
+  await handle.press('Home'); await noPreview(page); await expect.poll(async()=>(await pixels())[1]).toBeGreaterThan(190);
 });

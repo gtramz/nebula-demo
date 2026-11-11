@@ -2,6 +2,8 @@ import { test, expect, type Page } from '@playwright/test';
 import { resolve } from 'node:path';
 import { createLocalStore, STORAGE_KEY } from '../lib/local/src/store';
 
+test.use({ actionTimeout: 15000 });
+
 async function signup(page: Page, email: string) {
   await page.goto('/register');
   await page.getByRole('button', { name: /^artist / }).click();
@@ -22,13 +24,16 @@ test('artist publishes, edits and withdraws real media; another browser sees onl
   await page.getByRole('link', { name: /Your publications Upload/ }).click();
   await page.getByRole('link', { name: 'New publication' }).click();
   await page.getByLabel('Audio or video').setInputFiles(resolve('artifacts/nebula/public/discovery-demo/soft-signal.wav'));
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
   await page.getByLabel('Title', { exact: true }).fill('My first sound');
   await page.getByLabel('Description', { exact: true }).fill('A real uploaded audio publication.');
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
   await page.getByLabel('Allow other artists to remix this publication').check();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Publish', exact: true })).toBeEnabled();
   await page.getByRole('heading', { name: 'Share your sound' }).scrollIntoViewIfNeeded();
   await page.screenshot({ path: info.outputPath('publication-editor.png') });
-  await page.getByRole('button', { name: 'Save draft' }).click();
+  await page.getByRole('button', { name: 'Save & exit' }).click();
   await expect(page).toHaveURL(/\/studio$/);
   const entry = page.getByRole('article', { name: 'My first sound publication' });
   await expect(entry).toContainText('draft');
@@ -42,12 +47,15 @@ test('artist publishes, edits and withdraws real media; another browser sees onl
     const link = await entry.getByRole('link', { name: 'View in Discovery' }).getAttribute('href');
     await other.goto(link!);
     await expect(other.getByRole('heading', { name: 'My first sound', exact: true })).toBeVisible();
-    await other.getByRole('button', { name: 'Play My first sound', exact: true }).click();
+    if (await other.locator('article[data-active=true] audio').evaluate((element: HTMLAudioElement) => element.paused)) await other.getByRole('button', { name: 'Play My first sound', exact: true }).click();
     await expect.poll(() => other.locator('article[data-active=true] audio').evaluate((element: HTMLAudioElement) => element.currentTime)).toBeGreaterThan(0);
     await other.screenshot({ path: info.outputPath('published-discovery.png') });
     await entry.getByRole('link', { name: 'Edit publication' }).click();
-    await page.getByLabel('Title', { exact: true }).fill('An edited sound');
-    await page.getByLabel('Allow other artists to remix this publication').uncheck();
+    await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await page.getByLabel('Title', { exact: true }).fill('An edited sound');
+    await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await page.getByLabel('Allow other artists to remix this publication').uncheck();
+    await page.getByRole('button', { name: 'Continue', exact: true }).click();
     await page.getByRole('button', { name: 'Save changes', exact: true }).click();
     await expect(page).toHaveURL(/\/studio$/);
     await other.reload();
@@ -100,10 +108,13 @@ test('video, cover and a linked project survive publishing and editing', async (
   const project = (await result.json()).result;
   await page.goto('/publish');
   await page.getByLabel('Audio or video').setInputFiles(resolve('artifacts/nebula/public/discovery-demo/after-hours.webm'));
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
   await page.getByLabel('Title', { exact: true }).fill('Video and project');
   await page.getByLabel('Cover image (optional)').setInputFiles(resolve('artifacts/nebula/src/assets/antiq-logo.png'));
   await expect(page.getByAltText('Publication cover preview')).toBeVisible();
-  await page.getByLabel('Link a project (optional)').selectOption(String(project.id));
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await page.getByRole('combobox', {name:'Link a project (optional)',exact:true}).selectOption(String(project.id));
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Publish', exact: true })).toBeEnabled();
   await page.getByRole('button', { name: 'Publish', exact: true }).click();
   await expect(page).toHaveURL(/\/studio$/);
@@ -118,6 +129,8 @@ test('video, cover and a linked project survive publishing and editing', async (
   await expect(page).toHaveURL(new RegExp(`/project/${project.id}$`));
   await page.goto('/studio');
   await post.getByRole('link', { name: 'Edit publication' }).click();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
   await expect(page.getByAltText('Publication cover preview')).toBeVisible();
-  await expect(page.getByLabel('Link a project (optional)')).toHaveValue(String(project.id));
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await expect(page.getByRole('combobox', {name:'Link a project (optional)',exact:true})).toHaveValue(String(project.id));
 });

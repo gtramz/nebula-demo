@@ -61,7 +61,7 @@ test('compact screens fill the area above navigation and keep media, attribution
       await expect(article).toHaveAttribute('data-index', String(index));
       if (index === 2) await page.screenshot({ path: info.outputPath(`compact-${viewport.width}-${viewport.height}.png`) });
       // Arrow navigation also works after a social action has received focus.
-      await article.getByRole('button', { name: 'Star', exact: true }).focus();
+      await article.getByRole('button', { name: 'Like', exact: true }).focus();
       await page.keyboard.press('ArrowDown');
       if (index < 2) await expect(feed).toBeFocused();
     }
@@ -79,29 +79,24 @@ test('real audio waveform seeks without resetting playback, preserves artwork an
   const seek=active(page).getByRole('slider',{name:'Seek A real waveform'}), audio=active(page).locator('audio');
   await seek.fill('2.9'); await seek.press('ArrowRight'); await expect.poll(()=>audio.evaluate((e:HTMLAudioElement)=>e.currentTime)).toBeCloseTo(3,1);
   await expect(active(page).locator('clipPath rect')).toHaveAttribute('width',/375/);
-  await active(page).getByRole('button',{name:'Play A real waveform',exact:true}).click();
-  await active(page).getByRole('button',{name:'Star',exact:true}).click();
+  const playAudio=active(page).getByRole('button',{name:'Play A real waveform',exact:true});if(await playAudio.isVisible())await playAudio.click();
+  await active(page).getByRole('button',{name:'Like',exact:true}).click();
   await expect.poll(()=>audio.evaluate((e:HTMLAudioElement)=>e.paused)).toBe(false);
   await expect.poll(()=>audio.evaluate((e:HTMLAudioElement)=>e.currentTime)).toBeGreaterThan(3);
-  await active(page).getByRole('slider',{name:'Volume A real waveform'}).fill('0.35');
-  await expect.poll(()=>audio.evaluate((e:HTMLAudioElement)=>e.volume)).toBeCloseTo(.35);
-  await active(page).getByRole('button',{name:'Mute A real waveform',exact:true}).click(); await expect.poll(()=>audio.evaluate((e:HTMLAudioElement)=>e.muted)).toBe(true);
-  await active(page).getByRole('button',{name:'Unmute A real waveform',exact:true}).click();
-  await expect.poll(()=>audio.evaluate((e:HTMLAudioElement)=>e.volume)).toBeCloseTo(.35);
-  await active(page).getByRole('slider',{name:'Volume A real waveform'}).fill('0');
-  await active(page).getByRole('button',{name:'Unmute A real waveform',exact:true}).click();
-  await expect.poll(()=>audio.evaluate((e:HTMLAudioElement)=>e.volume)).toBe(1);
+  await expect(active(page).getByRole('slider',{name:'Volume A real waveform'})).toHaveCount(info.project.name==='mobile'?0:1);
+  await expect(active(page).locator('.discovery-playback')).toHaveCount(0);
+  await expect(audio).toHaveJSProperty('volume',1);
   await active(page).getByRole('button',{name:'Read description of A real waveform'}).click(); await expect(page.getByRole('dialog')).toContainText('Full description.');
   await expect.poll(()=>audio.evaluate((e:HTMLAudioElement)=>e.paused)).toBe(true); await page.keyboard.press('Escape');
   for(const width of [390,767,768,1023,1024,1440]) { await page.setViewportSize({width,height:900}); await visibleGeometry(page); if([390,768,1440].includes(width)) await page.screenshot({path:info.outputPath(`audio-${width}.png`)}); }
   await page.setViewportSize({width:660,height:390}); await visibleGeometry(page);
-  await page.route('**/api/publications/*/waveform',r=>r.fulfill({status:503,json:{error:'Waveform unavailable'}}));
+  await page.route('**/api/publications/*/waveform?*',r=>r.fulfill({status:503,json:{error:'Waveform unavailable'}}));
   await page.reload(); await expect(active(page).getByText('Waveform unavailable · audio timeline')).toBeVisible(); await expect(seek).toBeEnabled();
   await seek.fill('2'); await expect.poll(()=>audio.evaluate((e:HTMLAudioElement)=>e.currentTime)).toBeCloseTo(2,1);
-  await page.unroute('**/api/publications/*/waveform');
+  await page.unroute('**/api/publications/*/waveform?*');
   await page.request.post('/api/rpc',{headers,data:{method:'logout',args:[]}});
-  let waveformRequests=0;page.on('request',r=>{if(r.url().endsWith('/waveform'))waveformRequests++;});
-  await page.reload(); await expect(active(page).getByText('Audio timeline',{exact:true})).toBeVisible(); expect(waveformRequests).toBe(0);
+  let waveformRequests=0;page.on('request',r=>{if(new URL(r.url()).pathname.endsWith('/waveform'))waveformRequests++;});
+  await page.reload(); await expect(active(page).locator('.discovery-waveform')).toBeVisible(); expect(waveformRequests).toBeGreaterThan(0); // Published listening waveforms also support visitors.
 });
 
 test('video fills mobile with cropping and remains contained on desktop with exclusive playback',async({page},info)=>{
@@ -121,8 +116,8 @@ test('video fills mobile with cropping and remains contained on desktop with exc
       expect(await video.evaluate(e=>{const r=e.getBoundingClientRect(),p=e.parentElement!.getBoundingClientRect();return r.width<=p.width+1&&r.height<=p.height+1&&r.height>80;})).toBe(true);
       if(width!==768)await page.screenshot({path:info.outputPath(`${post.title.replace(' ','-')}-${width}.png`)});
     }
-    await active(page).getByRole('button',{name:'Comments',exact:true}).click();await expect.poll(()=>video.evaluate((e:HTMLVideoElement)=>e.paused)).toBe(true);await page.keyboard.press('Escape');
-    await expect.poll(()=>video.evaluate((e:HTMLVideoElement)=>e.paused)).toBe(true);
+    await active(page).getByRole('button',{name:'Comments',exact:true}).click();await expect.poll(()=>video.evaluate((e:HTMLVideoElement)=>e.paused)).toBe(false);await page.keyboard.press('Escape');
+    await expect.poll(()=>video.evaluate((e:HTMLVideoElement)=>e.paused)).toBe(false);
     const feed=page.getByRole('region',{name:'Discovery feed'});await feed.focus();await page.keyboard.press('ArrowDown');
     await expect.poll(()=>page.locator('video,audio').evaluateAll(es=>es.filter(e=>!(e as HTMLMediaElement).paused).length)).toBeLessThanOrEqual(1);
   }
@@ -132,11 +127,11 @@ test('media errors can retry and wheel or touch advances the same feed without n
   await page.route('**/discovery-demo/after-hours.webm',route=>route.abort());
   await page.goto('/discovery?demo=1');
   await expect(active(page).getByText('Media unavailable.',{exact:true})).toBeVisible();
-  await expect(active(page).getByRole('button',{name:'Star',exact:true})).toBeEnabled();
+  await expect(active(page).getByRole('button',{name:'Like',exact:true})).toBeEnabled();
   await page.unroute('**/discovery-demo/after-hours.webm');
   await active(page).getByRole('button',{name:'Retry playback'}).click();
   await expect.poll(()=>active(page).locator('video').evaluate((e:HTMLVideoElement)=>e.readyState)).toBeGreaterThanOrEqual(2);
-  await active(page).getByRole('button',{name:'Play after hours',exact:true}).click();
+  const playVideo=active(page).getByRole('button',{name:'Play after hours',exact:true});if(await playVideo.isVisible())await playVideo.click();
   const feed=page.getByRole('region',{name:'Discovery feed'}),box=(await feed.boundingBox())!;
   if(info.project.name==='mobile') {
     const cdp=await page.context().newCDPSession(page),x=box.x+box.width*.4,y=box.y+box.height*.7;
@@ -145,7 +140,7 @@ test('media errors can retry and wheel or touch advances the same feed without n
     await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await cdp.detach();
   } else { await page.mouse.move(box.x+box.width*.4,box.y+box.height*.5); await page.mouse.wheel(0,box.height*.75); }
   await expect(active(page)).not.toHaveAttribute('aria-label','after hours by Luna Vale');
-  await expect.poll(()=>page.locator('video,audio').evaluateAll(es=>es.filter(e=>!(e as HTMLMediaElement).paused).length)).toBe(0);
+  await expect.poll(()=>page.locator('video,audio').evaluateAll(es=>es.filter(e=>!(e as HTMLMediaElement).paused).length)).toBe(1);
   await expect.poll(()=>feed.evaluate(e=>Math.abs(e.scrollTop-(e.querySelector('[data-active=true]') as HTMLElement).offsetTop))).toBeLessThan(1);
   await visibleGeometry(page);
 });

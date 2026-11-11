@@ -14,12 +14,12 @@ test('Home category, position and focus return from a project; direct entry has 
   await page.goto('/explore'); await page.getByRole('button', { name: /^Filters/ }).click(); await page.getByRole('checkbox', { name: 'EP', exact: true }).check(); await page.getByRole('button', { name: /^Apply filters/ }).click();
   const link = page.locator('a[href^="/project/"]').last();
   await link.scrollIntoViewIfNeeded(); await link.focus();
-  const position = () => page.evaluate(() => ({ window: scrollY, shell: document.querySelector('.shell-page')!.scrollTop, page: document.querySelector('[data-page-scroll]')!.scrollTop }));
+  const position = () => page.evaluate(() => ({ body: document.body.scrollTop, window: scrollY, shell: document.querySelector('.shell-page')!.scrollTop, page: document.querySelector('[data-page-scroll]')!.scrollTop }));
   const before = await position(), href = await link.getAttribute('href');
   await link.click(); await page.getByRole('link', { name: 'Back to Home', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Remove Project type: EP', exact: true })).toBeVisible();
   await expect.poll(position).toEqual(before); await expect(link).toBeFocused();
-  await page.goto(href!); const back = page.getByRole('link', { name: 'Back to Home', exact: true });
+  await page.goto(href!); const back = page.getByRole('link', { name: 'Go to Home', exact: true });
   await expect(back).toHaveAttribute('href', '/explore'); await back.focus();
   expect((await back.boundingBox())!.height).toBeGreaterThanOrEqual(44);
   await page.screenshot({ path: info.outputPath('project-return.png') });
@@ -63,7 +63,7 @@ test('Discovery resumes the active post after leaving; refresh failure does not 
   await expect(page.getByRole('alert')).toContainText('Temporary feed error');
   await expect(page.locator('article[data-active=true]')).toHaveAttribute('data-index', '5');
   expect(await page.locator('.discovery-feed audio, .discovery-feed video').count()).toBeLessThanOrEqual(3);
-  fail = false; await page.getByRole('button', { name: page.viewportSize()!.width < 768 ? 'Retry loading' : 'Try again', exact: true }).click();
+  fail = false; await page.getByRole('button', { name: 'Retry loading', exact: true }).click();
   await expect(page.getByRole('alert')).toHaveCount(0); await expect(page.locator('article[data-active=true]')).toHaveAttribute('data-index', '5');
 });
 
@@ -84,4 +84,40 @@ test('browser Back restores the swiped Discovery post even when its entry URL na
   // A fresh shared-link visit still opens its named publication rather than old view memory.
   await page.goto('/discovery?post=post-1');
   await expect(page.locator('article[data-active=true]')).toHaveAttribute('aria-label', 'Shared entry 0 by Shared return fixture');
+});
+
+test('Back traverses real history, survives reload and preserves browser Forward', async ({page}) => {
+  await artist(page);
+  await rpc(page,'createProject',{title:'History chain',category:'Single',goalAmount:100,status:'funding'});
+  await page.goto('/search');await page.getByRole('searchbox').fill('History chain');
+  await page.locator('a[href^="/project/"]').first().click();
+  const projectUrl=page.url();
+  await page.locator('header a[href^="/artist/"]').click();
+  const artistUrl=page.url(), length=await page.evaluate(()=>history.length);
+  await page.reload();await page.getByRole('link',{name:'Back to project',exact:true}).click();
+  await expect(page).toHaveURL(projectUrl);expect(await page.evaluate(()=>history.length)).toBe(length);
+  await page.getByRole('link',{name:'Back to Search',exact:true}).click();await expect(page).toHaveURL(/\/search$/);
+  expect(await page.evaluate(()=>history.length)).toBe(length);
+  await page.goForward();await expect(page).toHaveURL(projectUrl);
+  await page.goForward();await expect(page).toHaveURL(artistUrl);
+  await page.getByRole('link',{name:'Back to project',exact:true}).click();await expect(page).toHaveURL(projectUrl);
+});
+
+test('standalone entries use Go to; saved returns to Search and explicit destinations stay fixed', async({page,context})=>{
+ await artist(page);await page.setViewportSize({width:1024,height:900});await page.goto('/search');
+ await nav(page,'saved').click();await page.getByRole('link',{name:'Back to Search',exact:true}).click();await expect(page).toHaveURL(/\/search$/);
+ const separate=await context.newPage();await separate.goto('/saved');await expect(separate.getByRole('link',{name:'Go to profile',exact:true})).toBeVisible();await separate.close();
+ await page.goto('/publish');await expect(page.getByRole('link',{name:'Go to studio',exact:true})).toBeVisible();
+ await page.goto('/messages/general/999999');await expect(page.getByRole('link',{name:'All messages',exact:true})).toHaveAttribute('href','/messages');
+});
+
+test('guest login and registration go back to the actual entry, without redirecting Home',async({page})=>{
+ await page.goto('/search?from=return-test');
+ // The desktop sidebar is available at either test project's initial device width.
+ await page.setViewportSize({width:1024,height:900});
+ await page.getByRole('link',{name:'log in',exact:true}).click();
+ await page.getByRole('link',{name:'Back to Search',exact:true}).click();await expect(page).toHaveURL(/\/search\?from=return-test$/);
+ await page.getByRole('link',{name:'sign up',exact:true}).click();
+ await page.getByRole('link',{name:'Back to Search',exact:true}).click();await expect(page).toHaveURL(/\/search\?from=return-test$/);
+ await page.goto('/login');await expect(page.getByRole('link',{name:'Go to landing page',exact:true})).toBeVisible();
 });

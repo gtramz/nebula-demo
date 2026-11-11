@@ -1,14 +1,13 @@
-import { ProjectSongs } from '@/features/songs';
-import { ProjectCommunity } from '@/features/discovery/project-community';
+import { useProjectProductCopy, useProjectPresentationCatalog } from '@/features/presentation/catalog';
+import { ProjectMusic } from '@/features/project/music';
 import { ReturnLink } from '@/components/antiq/workspace';
-import { ProjectOffers } from '@/features/collaborations';
 import { useState } from "react";
 import { useParams, Link, useLocation } from "wouter";
 import { useGetProject, getGetProjectQueryKey, useCreateInvestment, useToggleProjectSupport, type PublicVisibility } from "@nebula/local";
 import { useQueryClient } from "@tanstack/react-query";
 import { ContentWidth } from "@/components/shell/app-shell";
 import { formatMoney } from "@/lib/utils";
-import { Loader2, Heart, ArrowRight } from "lucide-react";
+import { Loader2, Heart, Disc3 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { PublicVisibilityFields } from "@/components/public-visibility";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -16,6 +15,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>();
   const projectId = Number(id);
+  const catalog = useProjectPresentationCatalog(projectId);
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { user, isAuthenticated } = useAuth();
@@ -24,6 +24,7 @@ export default function ProjectDetail() {
     query: { enabled: !!projectId, queryKey: getGetProjectQueryKey(projectId) }
   });
 
+  const copy = useProjectProductCopy(detail?.project);
   const createInvestment = useCreateInvestment();
   const toggleSupport = useToggleProjectSupport();
 
@@ -36,7 +37,7 @@ export default function ProjectDetail() {
   if (!detail) return <div className="flex-1 p-8 text-center text-muted voice">PROJECT NOT FOUND<ReturnLink contextual href="/explore" className="mx-auto mt-4" /></div>;
 
   const { project, artist, backers, supporters, viewerHasSupported } = detail;
-  const percent = Math.min(100, Math.round((project.raisedAmount / project.goalAmount) * 100));
+  const percent = project.goalAmount > 0 ? Math.min(100, Math.round((project.raisedAmount / project.goalAmount) * 100)) : 0;
 
   const visibility = visibilityDraft ?? detail.viewerVisibility ?? { showName: false, showAmount: false };
   const isArtist = user?.role === 'artist';
@@ -60,61 +61,29 @@ export default function ProjectDetail() {
     });
   };
 
+  const release = catalog?.releases.find(r => r.projectId === projectId);
+  const hasFunding = project.goalAmount > 0;
+
   return (
     <div data-page-scroll className="flex-1 overflow-y-auto">
-      <div className="relative h-60 lg:h-[280px] w-full bg-surfaceAlt overflow-hidden">
-        {project.coverUrl ? (
-          <img src={project.coverUrl} alt={project.title} className="object-cover w-full h-full opacity-50 mix-blend-luminosity" />
-        ) : (
-          <div className="absolute inset-0 bg-surfaceAlt" />
-        )}
-        <div className="absolute inset-0 bg-black/60" />
-
-        <ReturnLink contextual href="/explore" className="absolute top-6 left-6 z-20 text-cream" />
-      </div>
-
-      <ContentWidth className="-mt-32 relative z-10 space-y-12 pb-32">
-        <div className="flex flex-col gap-6 px-4 lg:px-0">
-          <div className="inline-flex self-start rounded-full px-4 py-1.5 text-[10px] voice text-cream border border-white/20">
-            {project.status.toUpperCase()} • {project.category.toUpperCase()}
+      <ContentWidth className="py-6 md:py-10 space-y-8 pb-20">
+        <ReturnLink contextual href={release ? `/artist/${artist.id}` : "/explore"} />
+        <header className="grid sm:grid-cols-[220px_1fr] lg:grid-cols-[260px_1fr] gap-6 md:gap-8 items-end">
+          <ProjectArtwork key={`${project.id}:${project.coverUrl}`} src={project.coverUrl} title={project.title} />
+          <div className="min-w-0 space-y-4">
+            <p className="voice text-xs text-accent">{release ? `${release.type} / ${release.dateKind === 'upload' ? 'YouTube ' : ''}${release.year}` : `${project.category} / ${project.status}`}</p>
+            <h1 className="text-3xl md:text-5xl font-display font-bold tracking-tight break-words">{project.title}</h1>
+            <Link href={`/artist/${artist.id}`} className="inline-flex min-h-11 items-center gap-3 hover:text-accent">
+              {artist.picture && <img src={artist.picture} alt="" className="h-10 w-10 rounded-full object-cover" />}<span className="font-semibold text-lg">{artist.name}</span>
+            </Link>
+            {copy.pitch && <p className="text-muted leading-relaxed break-words">{copy.pitch}</p>}
           </div>
-          <h1 className="text-3xl lg:text-5xl font-display font-bold text-ink tracking-tight text-veil leading-tight">
-            {project.title}
-          </h1>
-
-          <Link href={`/artist/${artist.id}`} className="flex items-center gap-4 group inline-flex self-start">
-            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/10 group-hover:border-accent transition">
-              {artist.picture ? (
-                <img src={artist.picture} alt={artist.name} className="object-cover w-full h-full" />
-              ) : (
-                <div className="w-full h-full bg-accent/20 flex items-center justify-center text-accent font-bold">{artist.name.charAt(0)}</div>
-              )}
-            </div>
-            <span className="font-bold text-lg text-cream group-hover:text-accent transition">{artist.name}</span>
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12 px-4 lg:px-0">
-          <div className="lg:col-span-2 space-y-12">
-            <ProjectCommunity projectId={projectId}/>
-            {project.pitch && (
-              <section className="text-xl lg:text-2xl font-display text-ink/90 leading-relaxed text-veil">
-                {project.pitch}
-              </section>
-            )}
-
-            {project.story && (
-              <section className="space-y-6">
-                <h2 className="voice text-[10px] text-muted">THE STORY</h2>
-                <div className="max-w-none text-ink/80 leading-relaxed space-y-4">
-                  {project.story.split('\n').map((p, i) => p ? <p key={i}>{p}</p> : <br key={i} />)}
-                </div>
-              </section>
-            )}
-
+        </header>
+        <div className={hasFunding ? "grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12" : "grid grid-cols-1 gap-8"}>
+          <div className={hasFunding ? "lg:col-span-2 min-w-0 space-y-8" : "min-w-0 space-y-8"}>
+            <ProjectMusic project={project}/>
+            {copy.story && <details className="border-t border-border pt-4"><summary className="min-h-11 flex items-center cursor-pointer text-sm font-semibold">About this project</summary><div className="pt-3 text-sm text-muted whitespace-pre-wrap break-words">{copy.story}</div></details>}
             {user?.role === 'artist' && user.artistId !== project.artistId && <Link className="inline-flex min-h-11 items-center underline text-sm" href={`/messages/new/${project.artistId}?project=${project.id}`}>Message artist about this project</Link>}
-            <ProjectSongs projectId={project.id} category={project.category} status={project.status} renderOffers={workId=><ProjectOffers projectId={project.id} ownerId={project.artistId} scopeWorkId={workId}/>}/>
-            <ProjectOffers projectId={project.id} ownerId={project.artistId} scopeWorkId={null} />
 
             {(backers.length > 0 || supporters.length > 0) && (
               <section aria-label="Project community" className="space-y-6 pt-8 border-t border-white/10">
@@ -128,7 +97,7 @@ export default function ProjectDetail() {
                     </Link>
                   ))}
                 </div>
-                <p className="text-xs text-muted">One entry per supporter. Repeat contributions are combined; names and amounts follow each supporter’s preferences.</p>
+
                 <div className="space-y-3">
                   {backers.slice(0, backerLimit).map((b) => (
                     <div key={b.publicId} className="flex justify-between items-center gap-4 py-3 border-b border-white/5 last:border-0">
@@ -142,8 +111,8 @@ export default function ProjectDetail() {
             )}
           </div>
 
-          <div className="space-y-6">
-             <div className="p-6 border border-border space-y-8 sticky top-24">
+          {hasFunding && <aside aria-label="Project funding" className="space-y-6">
+             <div className="p-6 rounded-2xl border border-border bg-surface space-y-8 lg:sticky lg:top-6">
               <div className="space-y-4">
                 <div className="flex flex-wrap justify-between items-end gap-3">
                   <span className="font-display font-semibold text-2xl text-cream leading-none">{formatMoney(project.raisedAmount)}</span>
@@ -258,9 +227,14 @@ export default function ProjectDetail() {
                 </div>
               </div>
             )}
-          </div>
+          </aside>}
         </div>
       </ContentWidth>
     </div>
   );
+}
+
+function ProjectArtwork({ src, title }: { src?: string | null; title: string }) {
+  const [failed, setFailed] = useState(false);
+  return <div className="aspect-square w-full max-w-64 sm:max-w-none rounded-2xl overflow-hidden bg-surfaceAlt grid place-items-center shadow-xl">{src && !failed ? <img src={src} alt={`${title} artwork`} onError={() => setFailed(true)} className="w-full h-full object-cover" /> : <Disc3 className="h-16 w-16 text-muted" aria-hidden />}</div>;
 }

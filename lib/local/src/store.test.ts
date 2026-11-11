@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createLocalStore, PreviewDataError, STORAGE_KEY } from './store';
+import { parseState } from './state';
 
 function fixture() {
   const values = new Map<string, string>();
@@ -94,6 +95,70 @@ describe('browser-only preview flows', () => {
     expect(() => store.createProject({ ...projectInput, goalAmount: -50 })).toThrow();
     expect(() => store.createProject({ ...projectInput, useOfFunds: [{ label: 'Production', percentage: 50 }] })).toThrow('100%');
     expect(store.listProjects()).toEqual([]);
+  });
+
+  it('keeps zero-goal catalogs editable and archivable without relaxing ordinary funding', async () => {
+    const { store, storage } = fixture();
+    await store.register({ ...credentials, role: 'artist' });
+    const funding = store.createProject(projectInput);
+    const original = parseState(storage.getItem(STORAGE_KEY)!);
+    const catalog = { ...original.projects[0], id: original.nextId, goalAmount: 0, status: 'published' as const };
+    const rawWithCatalog = (overrides: Record<string, unknown>) => JSON.stringify({
+      ...original, nextId: original.nextId + 1,
+      projects: [...original.projects, { ...catalog, ...overrides }],
+    });
+    expect(parseState(rawWithCatalog({})).projects[1]).toMatchObject({ goalAmount: 0, status: 'published' });
+    expect(() => parseState(rawWithCatalog({ presentationCatalogId: 'unverified-catalog' }))).toThrow(PreviewDataError);
+    for (const presentationCatalogId of ['spotify:0123456789ABCDEFGHIJKL', 'local:luna-original', 'local:luna-chilz-remix']) {
+      const restored = parseState(rawWithCatalog({ presentationCatalogId }));
+      expect(restored.projects[0]).toEqual(original.projects[0]);
+      expect(restored.projects[1]).toMatchObject({ presentationCatalogId, goalAmount: 0, status: 'published' });
+      for (const status of ['draft', 'funding', 'funded', 'closed']) {
+        expect(() => parseState(rawWithCatalog({ presentationCatalogId, status }))).toThrow(PreviewDataError);
+      }
+    }
+    expect(() => store.createProject({ ...projectInput, goalAmount: 0, status: 'funding' })).toThrow('Set a funding goal');
+    storage.setItem(STORAGE_KEY, rawWithCatalog({ presentationCatalogId: 'spotify:0123456789ABCDEFGHIJKL' }));
+    await store.register({ ...credentials, email: 'investor@example.invalid', role: 'investor' });
+    expect(() => store.createInvestment({ projectId: catalog.id, amount: 100 })).toThrow('not open for contributions');
+    expect(store.createInvestment({ projectId: funding.id, amount: 100 })).toMatchObject({ projectId: funding.id, amount: 100, currency: 'USD' });
+    expect(store.getProject(funding.id)?.project).toMatchObject({ goalAmount: 10_000, status: 'funding', raisedAmount: 100 });
+    await store.login(credentials);
+    expect(store.updateProject(catalog.id, { title: 'Updated catalog title', story: 'Presentation edit' }))
+      .toMatchObject({ title: 'Updated catalog title', story: 'Presentation edit', goalAmount: 0, presentationCatalogId: 'spotify:0123456789ABCDEFGHIJKL' });
+    expect(() => store.updateProject(catalog.id, { status: 'funding', goalAmount: 500 })).toThrow('without funding');
+    const forged = { ...projectInput, presentationCatalogId: 'spotify:0123456789ABCDEFGHIJKL' };
+    expect(store.createProject({ ...forged, status: 'published', goalAmount: 0 })).not.toHaveProperty('presentationCatalogId');
+    expect(store.createProject(forged)).not.toHaveProperty('presentationCatalogId');
+    expect(store.updateProject(funding.id, { ...forged, title: 'Ordinary funding' })).not.toHaveProperty('presentationCatalogId');
+    store.deleteProject(catalog.id);
+    const archived = parseState(storage.getItem(STORAGE_KEY)!);
+    expect(archived.projects.find(p => p.id === catalog.id)).toMatchObject({ goalAmount: 0, status: 'closed', archivedAt: expect.any(String) });
+    const reloaded = createLocalStore(storage);
+    expect(reloaded.getProject(catalog.id)).toBeNull();
+    expect(reloaded.getProject(funding.id)?.project).toMatchObject({ goalAmount: 10_000, status: 'funding', raisedAmount: 100 });
+  });
+
+  it('persists optional funding, validates allocation and protects received contributions', async () => {
+    const { store, storage } = fixture();
+    await store.register({ ...credentials, role: 'artist' });
+    const release = store.createProject({ ...projectInput, goalAmount: 0, useOfFunds: [], status: 'published' });
+    expect(createLocalStore(storage).getProject(release.id)?.project.goalAmount).toBe(0);
+    expect(() => store.updateProject(release.id, { status: 'funding' })).toThrow('Set a funding goal');
+    expect(() => store.updateProject(release.id, { status: 'funded' })).toThrow('Set a funding goal');
+    expect(() => store.updateProject(release.id, { goalAmount: 5000, useOfFunds: [{ label: 'Recording', percentage: 60 }] })).toThrow('100%');
+    const allocation = [{ label: 'Recording', percentage: 60 }, { label: 'Mix', percentage: 40 }];
+    store.updateProject(release.id, { status: 'funding', goalAmount: 5000, useOfFunds: allocation });
+    await store.register({ ...credentials, email: 'backer@example.invalid', role: 'investor' });
+    store.createInvestment({ projectId: release.id, amount: 250 });
+    await store.login(credentials);
+    expect(() => store.updateProject(release.id, { status: 'published', goalAmount: 0, useOfFunds: [] })).toThrow('has contributions');
+    const saved = store.updateProject(release.id, { status: 'closed' });
+    expect(saved).toMatchObject({ raisedAmount: 250, goalAmount: 5000, useOfFunds: allocation });
+    expect(store.listReceivedInvestments()).toHaveLength(1);
+    const unfunded = store.createProject({ ...projectInput, status: 'draft', goalAmount: 0, useOfFunds: [] });
+    store.updateProject(unfunded.id, { status: 'closed' });
+    expect(createLocalStore(storage).getProject(unfunded.id)?.project.goalAmount).toBe(0);
   });
 
   it('clears every profile and record when resetting the preview', async () => {

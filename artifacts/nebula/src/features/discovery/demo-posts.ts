@@ -18,6 +18,7 @@ export type DemoProject = {
 };
 
 export type DemoPost = {
+  composition?: import("@nebula/local").VideoComposition;
   social?: { stars: number; comments: number; starred: boolean; saved: boolean };
   id: string;
   title: string;

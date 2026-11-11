@@ -1,8 +1,21 @@
 # Antiq Nebula · Presentation Demo
 
-Repositorio independiente de la demo. **No reemplaza ni actualiza `gtramz/nebula_v1`.** Contiene el código actual, medios locales y un escenario ficticio reproducible con Sol Rivera, Artist/Investor, proyectos, canciones, colaboraciones y ejemplos de voz y percusión.
+Repositorio independiente de la demo. **No reemplaza ni actualiza `gtramz/nebula_v1`.** CHILZ es el personaje principal de la nueva presentación, con su catálogo visual dentro de Nebula. Sol Rivera, los personajes Artist/Investor y sus proyectos, canciones, conversaciones y ejemplos audiovisuales se conservan.
 
-**Manuel: empieza por [el handoff de desarrollo](docs/manuel-demo-handoff.md).** Para presentar: [cuentas, controles y guion](docs/presentation-runbook.md). Para evidencias: [cierre funcional y audiovisual](docs/demo-close.md).
+**Manuel: empieza por [la actualización acumulada de esta entrega](docs/manuel-update-2026-11-10.md) y [el handoff detallado](docs/manuel-demo-handoff.md).** Describe los contratos, los archivos que hay que editar, las funciones reales y las simulaciones. El [guion original de Sol](docs/presentation-runbook.md) y el [cierre audiovisual anterior](docs/demo-close.md) siguen sirviendo para esos ejemplos; no describen por sí solos la ampliación CHILZ.
+
+## Qué incluye esta versión
+
+- **Proyectos Music / Versions:** canciones desplegables, ofertas compactas y remixes separados con comparación bajo demanda.
+- **Forge:** recorrido de audio final preparado y guardado privado; apertura/retorno del DAW representados, sin conexión externa real. El video se crea en Nebula.
+- **Discovery y creación:** experiencia móvil inmersiva y escritorio con comentarios laterales, Share interno/externo, reproducción exclusiva y creación guiada. Financiación opcional y tarjetas de Contributions.
+
+- **Remix vertical 9:16:** 720 × 1280; dos videos en mitades iguales de 720 × 640, o el video propio a pantalla completa sobre un original de audio. Encuadre con arrastre, teclado y Reset framing; preview y exportación comparten geometría. Los resultados antiguos no se regeneran automáticamente.
+- **Colaboración:** The opportunity → Your contribution → Preview your work → Review & send. Descarga autorizada de la referencia disponible, grabación real de audio/video, carga de archivos y tomas preparadas. Comparación, borrador y propuesta privados; Mix/Master permiten entregar el archivo completo.
+- **CHILZ:** 10 lanzamientos y 14 canciones verificados en el perfil público indicado, con foto, portadas, duración y colaboradores. El catálogo de referencia usa un preview visual silencioso: transporte visual sin audio, descarga ni oportunidades económicas inventadas.
+- **gramz:** el propietario existente de LUNA incorpora 11 proyectos de catálogo con previews silenciosos y 8 videos reales de YouTube/TikTok. No Pop y No Regrets tienen ofertas explícitas de demostración; gramz y CHILZ se siguen y comparten un chat aceptado inicialmente vacío. [Inventario y límites](docs/gramz-import-verification.md).
+- **LUNA, ejemplo principal de remix:** original de gramz & SANNFERNNA y versión CHILZ con las grabaciones completas aportadas para esta demo (175.287438 s). Es un ejemplo de archivos terminados, no un render nuevo del estudio; el límite de 60 s del render interactivo se conserva. Es la excepción audible dentro del catálogo de presentación de CHILZ; los lanzamientos de referencia siguen siendo silenciosos.
+- **Identidad visual:** blobs compartidos, avance de onboarding después del guardado real, estados de error, guiño en Home y avatar alternativo. Se respetan movimiento reducido, teclado y pasos opcionales.
 
 ## Arranque desde un clon nuevo
 
@@ -17,10 +30,10 @@ corepack prepare pnpm@11.21.0 --activate
 # Instala FFmpeg según tu sistema: macOS `brew install ffmpeg`; Debian/Ubuntu `sudo apt-get install ffmpeg`.
 pnpm install --frozen-lockfile
 pnpm demo:prepare
-pnpm start
+PORT=4186 pnpm start
 ```
 
-Abrir **http://127.0.0.1:4174**. Un solo servidor local sirve UI, API y medios. La demo inicia con **Sol Rivera**, sin completar onboarding de nuevo. Las instalaciones ya preparadas solo necesitan `pnpm start`.
+Abrir **http://127.0.0.1:4186**. Un solo servidor local sirve UI, API y medios. El fixture nuevo tiene a **CHILZ** como personaje principal, sin repetir onboarding. Sol y los demás personajes están en `/presentation`. Las instalaciones ya preparadas solo necesitan el comando de arranque. Sin `PORT`, el puerto predeterminado sigue siendo 4174.
 
 No hacen falta claves, servicios cloud ni generación de medios. La primera instalación descarga dependencias; después de compilar y preparar, la presentación funciona sin internet, manteniendo el servidor local activo.
 
@@ -29,10 +42,11 @@ No hacen falta claves, servicios cloud ni generación de medios. La primera inst
 - UI: `artifacts/nebula/src`; estado/contratos: `lib/local/src`; servidor: `server`.
 - Editar código → `pnpm build`; recargar el navegador. Reiniciar `pnpm start` si cambió el servidor.
 - `pnpm dev` y `pnpm preview` conservan el prototipo aislado de navegador: **no son el entorno conectado de esta demo**.
-- Otro puerto: `PORT=4186 pnpm start`. Usar el mismo `PORT` en los comandos de restauración.
+- Usar el mismo `PORT` en los comandos de arranque y restauración: por ejemplo, `PORT=4186 pnpm demo:reset`.
 - Los cambios del usuario viven en `.data/presentation`, excluido de Git. Preparar o reiniciar **no los sobrescribe**.
 - Restaurar deliberadamente: `pnpm demo:reset`, con el servidor activo. Descarta las ediciones del ensayo y recupera el escenario preparado.
-- `presentation/seed` contiene exclusivamente el fixture ficticio revisado. No incluye sesiones ni hashes de contraseñas. Al preparar se crean credenciales locales para las cuentas ficticias; su contraseña de demostración es `Nebula2026!`.
+- `presentation/seed` contiene el fixture de presentación revisado, no una copia de cuentas reales. No incluye sesiones ni hashes de contraseñas. Al preparar se crean credenciales locales para los personajes; su contraseña de demostración es `Nebula2026!`.
+- Los importadores de CHILZ, LUNA y gramz son aditivos y explícitos; no ejecutarlos contra una base activa sin respaldo. Preparar o reiniciar no aplica silenciosamente un catálogo nuevo sobre un ensayo existente. Ver el [handoff](docs/manuel-demo-handoff.md#6-datos-qué-es-canónico-y-cómo-conservarlo).
 
 ## Ejemplos audiovisuales
 
@@ -41,7 +55,7 @@ No hacen falta claves, servicios cloud ni generación de medios. La primera inst
 | Marea Alta + voz de Dante | `/discovery?post=post-13` | `/discovery?post=post-14` | `/messages/offer/13` |
 | Afterglow + percusión de Inés | `/discovery?post=post-15` | `/discovery?post=post-16` | `/messages/offer/15` |
 
-`/presentation` o **Cmd/Ctrl + Shift + P** abre las personas y controles internos. Los resultados públicos son colaboraciones ficticias aprobadas; los remixes nuevos siguen privados y enviar una propuesta no los publica.
+`/presentation` o **Cmd/Ctrl + Shift + P** abre las personas y controles internos. Cambia a Sol para recorrer sus propuestas e historial preparados. Los resultados públicos precargados son ejemplos; los remixes nuevos siguen privados y enviar una propuesta no los publica. El enlace entre LUNA original y remix se obtiene de su mapa de presentación, sin depender de IDs de la cuenta real.
 
 ## Verificación
 
@@ -56,12 +70,14 @@ pnpm exec playwright install chromium
 pnpm test:presentation
 ```
 
-Las pruebas de presentación crean copias desechables y usan el puerto 4177. Las suites integradas adicionales usan 4175; ejecutarlas secuencialmente. Ver [handoff](docs/manuel-demo-handoff.md) para el alcance y resultados de esta publicación.
+Las pruebas de presentación crean copias desechables y usan el puerto 4177. Las suites integradas adicionales usan 4175; ejecutarlas secuencialmente. El [handoff](docs/manuel-demo-handoff.md#8-checks-y-evidencia-de-esta-iteración) separa los resultados focalizados de esta iteración de las comprobaciones históricas y de la activación final.
 
 ## Límites
 
 Esta es una simulación local: pagos, regalías y respuestas de otros personajes no representan dinero, contratos ni usuarios reales. Los controles de presentación permiten cambiar de persona sin contraseña y solo deben usarse en loopback. Publicar este código en GitHub no es desplegar la aplicación como servicio público. El `Dockerfile` histórico arranca el servidor estándar vacío, no esta presentación.
 
-Los videos son generados, conservan su audio nativo y se mezclan localmente. Se verificaron señal, movimiento y recorridos; la valoración auditiva artística corresponde al presentador. Procedencia de los medios: `presentation/assets/manifest.json` y `presentation/media-provenance.json`.
+Los ejemplos Marea/Afterglow usan videos generados con audio propio y mezcla local. LUNA usa grabaciones aportadas por el usuario. La referencia visual de CHILZ se conserva en `presentation/chilz-catalog.json`, con fuentes y hashes de imágenes; `scripts/import-chilz-reference.py` es una herramienta de preparación, no una integración de Spotify en ejecución. No descarga música de Spotify. La valoración auditiva artística corresponde al presentador. Procedencia de los ejemplos originales: `presentation/assets/manifest.json` y `presentation/media-provenance.json`.
 
-El código conserva la licencia MIT existente; los medios CC0 conservan las atribuciones de su manifiesto. Este repo no contiene la cuenta real, archivos privados ni bases activas de la instalación de trabajo.
+El código conserva la licencia MIT existente. Los medios mantienen sus condiciones de origen: la licencia del código no concede derechos sobre las imágenes del catálogo ni sobre las grabaciones aportadas. Los recursos CC0 conservan las atribuciones de su manifiesto. Este repo no contiene la cuenta real, sus sesiones ni bases activas de la instalación de trabajo; los archivos de presentación incluidos están identificados como tales.
+
+Verificación de esta entrega: [Artist / CHILZ / LUNA](docs/artist-demo-verification.md).

@@ -1,3 +1,4 @@
+import { StaticFace } from '@/components/blob-face';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import './following.css';
@@ -12,7 +13,7 @@ import { Dialog, DialogPortal, DialogOverlay, DialogClose, DialogTitle, DialogDe
 
 type Summary = { followers:number; following:number; isFollowing:boolean };
 type FollowPage = { items:{id:number;name:string;picture:string|null;isFollowing:boolean}[]; nextCursor:number|null };
-const prefixes = ['artist-social','artist-follow-list','opportunity-projects','home-suggestions'];
+const prefixes = ['artist-social','artist-follow-list','opportunity-projects','home-suggestions','share-targets'];
 export function useFollowSync() {
   const client = useQueryClient();
   useEffect(() => {
@@ -26,7 +27,7 @@ function useViewer() {
   const { user } = useAuth();
   return { user, identity:user ? `${user.role}:${user.artistId ?? user.investorId}` : 'guest' };
 }
-function FollowButton({artistId,following}:{artistId:number;following:boolean}) {
+function FollowButton({artistId,following,compact=false}:{artistId:number;following:boolean;compact?:boolean}) {
   const {user}=useViewer(), client=useQueryClient();
   const change=useMutation({mutationFn:()=>apiRequest<Summary>(`/api/artists/${artistId}/follow`,{method:following?'DELETE':'PUT'}),onSuccess:async()=>{
     if (typeof BroadcastChannel !== 'undefined') { const channel=new BroadcastChannel('nebula-follow-changes'); channel.postMessage('changed');channel.close(); }
@@ -34,11 +35,11 @@ function FollowButton({artistId,following}:{artistId:number;following:boolean}) 
   }});
   if (!user) return <Link href="/login" className={controlStyles.button}>Sign in to follow</Link>;
   if (user.role !== 'artist' || user.artistId === artistId) return null;
-  return <div className="space-y-1"><button className={controlStyles.button} aria-pressed={following} title={following?'Unfollow artist':'Follow artist'} disabled={change.isPending} onClick={()=>change.mutate()}>{change.isPending?'Updating…':following?'Following':'Follow'}</button>{change.error && <p role="alert" className="text-xs text-danger max-w-64">{change.error.message} Try again.</p>}</div>;
+  return <div className="space-y-1"><button className={compact?'discovery-follow-button':controlStyles.button} aria-pressed={following} title={following?'Unfollow artist':'Follow artist'} disabled={change.isPending} onClick={()=>change.mutate()}>{change.isPending?'Updating…':following?'Following':'Follow'}</button>{change.error && <p role="alert" className="text-xs text-danger max-w-64">{change.error.message} Try again.</p>}</div>;
 }
 export function ArtistFollowControls({artistId}:{artistId:number}) {
   const {identity}=useViewer();
-  return isServerMode() ? <SocialControls key={`${identity}:${artistId}`} artistId={artistId} identity={identity} /> : <p className="text-xs text-muted">Following is available in the connected environment.</p>;
+  return isServerMode() ? <SocialControls key={`${identity}:${artistId}`} artistId={artistId} identity={identity} /> : <p className="text-xs text-muted">Following is unavailable. Please try again later.</p>;
 }
 function SocialControls({artistId,identity}:{artistId:number;identity:string}) {
   useFollowSync();
@@ -58,13 +59,27 @@ function SocialControls({artistId,identity}:{artistId:number;identity:string}) {
       <DialogPortal><DialogOverlay className="z-[80]" /><DialogPrimitive.Content className="follow-panel" onCloseAutoFocus={event=>{event.preventDefault();if(trigger.current?.isConnected)trigger.current.focus();}}>
         <header className="space-y-2 pr-12 shrink-0"><DialogClose className="absolute top-3 right-3 min-h-11 min-w-11 flex items-center justify-center" aria-label="Close artist connections"><X size={20} aria-hidden /></DialogClose>
         <DialogTitle>{direction==='followers'?'Followers':'Following'}</DialogTitle>
-        <DialogDescription>Artist connections. Following does not grant access to private work.</DialogDescription></header>
+        <DialogDescription>Artist connections.</DialogDescription></header>
         <div className="min-h-0 overflow-y-auto space-y-4">{list.isPending?<p role="status">Loading artists…</p>:list.isError?<div><p role="alert">{list.error.message}</p><button className={controlStyles.button} onClick={()=>void list.refetch()}>Retry artists</button></div>:<>
           {!items.length && <p className="text-muted">{direction==='followers'?'No followers yet.':'Not following any artists yet.'}</p>}
-          <ul className="space-y-4 min-w-0">{items.map(a=><li key={a.id} className="flex flex-wrap gap-3 items-center border-b border-border pb-3"><Link href={`/artist/${a.id}`} onClick={()=>setDirection(null)} className="flex min-h-11 gap-3 items-center flex-1 min-w-0"><Avatar aria-hidden="true"><AvatarImage src={a.picture??undefined} alt=""/><AvatarFallback>{a.name.slice(0,1)}</AvatarFallback></Avatar><span className="break-words min-w-0">{a.name}</span></Link><FollowButton artistId={a.id} following={a.isFollowing}/></li>)}</ul>
+          <ul className="space-y-4 min-w-0">{items.map(a=><li key={a.id} className="flex flex-wrap gap-3 items-center border-b border-border pb-3"><Link href={`/artist/${a.id}`} onClick={()=>setDirection(null)} className="flex min-h-11 gap-3 items-center flex-1 min-w-0"><Avatar aria-hidden="true"><AvatarImage src={a.picture??undefined} alt=""/><AvatarFallback><StaticFace seed={a.id} size={40}/></AvatarFallback></Avatar><span className="break-words min-w-0">{a.name}</span></Link><FollowButton artistId={a.id} following={a.isFollowing}/></li>)}</ul>
           {list.hasNextPage && <button className={controlStyles.button} disabled={list.isFetchingNextPage} onClick={()=>void list.fetchNextPage()}>{list.isFetchingNextPage?'Loading…':'Load more artists'}</button>}
         </>}</div>
       </DialogPrimitive.Content></DialogPortal>
     </Dialog>
   </div>;
+}
+
+// Same identity-scoped social cache and mutation as public artist profiles.
+export function ArtistFollowShortcut({artistId,nearby}:{artistId:number;nearby:boolean}) {
+  const {user,identity}=useViewer();
+  if (!isServerMode() || user?.role==='investor' || user?.artistId===artistId) return null;
+  if (!user) return <Link href="/login" className="discovery-follow-button">Sign in to follow</Link>;
+  return <FollowShortcut key={`${identity}:${artistId}`} artistId={artistId} identity={identity} nearby={nearby}/>;
+}
+function FollowShortcut({artistId,identity,nearby}:{artistId:number;identity:string;nearby:boolean}) {
+  const query=useQuery({queryKey:['artist-social',identity,artistId],queryFn:({signal})=>apiRequest<Summary>(`/api/artists/${artistId}/social`,{signal}),enabled:nearby,refetchInterval:nearby?15000:false,staleTime:15000});
+  if(query.isError) return <button className="discovery-follow-button" title="Follow information unavailable" onClick={()=>void query.refetch()}>Retry Follow</button>;
+  if(!query.data) return <button className="discovery-follow-button" disabled aria-label="Loading follow status">Follow</button>;
+  return <FollowButton artistId={artistId} following={query.data.isFollowing} compact/>;
 }

@@ -33,11 +33,12 @@ test('real registration survives closed tabs, browser-session restoration, logou
   await expect(reopened.getByText('saved@example.invalid', { exact: true })).toBeVisible();
   reopened.once('dialog', d => d.accept());
   await reopened.getByRole('button', { name: 'More', exact: true }).filter({visible:true}).click();
-  await reopened.getByRole('menuitem', { name: 'clear demo data', exact: true }).click();
-  await expect(reopened).toHaveURL(/\/$/);
+  await reopened.getByRole('menuitem', { name: 'Clear saved activity', exact: true }).click();
+  await expect(reopened).toHaveURL(/\/explore$/);
   await reopened.goto('/profile');
   await clickProfileLogout(reopened);
   await login(reopened, 'saved@example.invalid', 'artist');
+  await reopened.locator('summary').filter({hasText:'Account activity'}).click();
   await expect(reopened.getByRole('region', { name: 'Account activity' })).toContainText('Account created');
   await reopened.screenshot({ path: info.outputPath('saved-account.png'), fullPage: true });
   const restored = await browser.newContext({ storageState: await context.storageState(), baseURL: 'http://127.0.0.1:4173' });
@@ -61,6 +62,7 @@ test('concurrent registrations preserve both accounts and activity synchronizes 
   await page.reload();
   await expect(page.getByText('artist@example.invalid', { exact: true })).toBeVisible();
   await login(other, 'artist@example.invalid', 'artist');
+  await page.locator('summary').filter({hasText:'Account activity'}).click();
   await expect(page.getByRole('region', { name: 'Account activity' })).toContainText('Successful login');
 });
 

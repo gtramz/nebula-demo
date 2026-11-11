@@ -9,7 +9,7 @@ test('Marea performance video plays locally with sound and keeps its position be
  await expect.poll(()=>video.evaluate((v:HTMLVideoElement)=>v.readyState)).toBeGreaterThanOrEqual(2);
  const meta=await video.evaluate((v:HTMLVideoElement)=>({duration:v.duration,width:v.videoWidth,height:v.videoHeight,fit:getComputedStyle(v).objectFit}));
  expect(meta.duration).toBeGreaterThanOrEqual(9);expect(meta.duration).toBeLessThan(11);expect(meta.height).toBeGreaterThan(meta.width);expect(meta.fit).toBe('contain');
- await post.getByRole('button',{name:'Unmute Marea Alta — rooftop session',exact:true}).click();
+ await expect(video).toHaveJSProperty('muted',false);
  const play=post.getByRole('button',{name:'Play Marea Alta — rooftop session',exact:true});if(await play.isVisible())await play.click();
  await expect.poll(()=>video.evaluate((v:HTMLVideoElement)=>v.currentTime)).toBeGreaterThan(.1);
  expect(await video.evaluate((v:HTMLVideoElement)=>v.muted)).toBe(false);
@@ -17,7 +17,7 @@ test('Marea performance video plays locally with sound and keeps its position be
  await post.getByRole('button',{name:'Comments',exact:true}).click();await expect(page.locator('.discovery-comments-panel')).toBeVisible();
  expect(await video.evaluate((v:HTMLVideoElement)=>v.currentTime)).toBeGreaterThanOrEqual(3);
  await page.getByRole('button',{name:'Close comments',exact:true}).click();
- await page.goto('/discovery?post=post-4');await page.locator('article[data-active=true]').getByRole('button',{name:'Play Marea Alta',exact:true}).click();
+ await page.goto('/discovery?post=post-4');const audioPlay=page.locator('article[data-active=true]').getByRole('button',{name:'Play Marea Alta',exact:true});if(await audioPlay.isVisible())await audioPlay.click();
  await expect.poll(()=>page.locator('audio').evaluateAll((media:HTMLAudioElement[])=>media.filter(m=>!m.paused).length)).toBe(1);
  expect(external).toEqual([]);
 });

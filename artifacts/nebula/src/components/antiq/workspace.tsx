@@ -1,7 +1,7 @@
 import type { ComponentProps, ReactNode } from 'react';
 import { Link } from 'wouter';
 import { ArrowLeft } from 'lucide-react';
-import { useReturnDestination, returnLabel } from '@/components/shell/return-context';
+import { useReturnTarget, returnLabel } from '@/components/shell/return-context';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 import { projectDestination } from '@/components/shell/project-destination';
@@ -21,9 +21,14 @@ const returnStyle = 'inline-flex min-h-11 min-w-11 items-center gap-2 text-sm te
 export function ReturnButton({ children, className, ...props }: ComponentProps<'button'>) {
   return <button type="button" {...props} className={cn(returnStyle, className)}><ArrowLeft size={16} aria-hidden="true" />{children}</button>;
 }
-export function ReturnLink({ href, children, onClick, contextual = false, className }: { href: string; children?: ReactNode; onClick?: () => void; contextual?: boolean; className?: string }) {
+export function ReturnLink({ href, children, onClick, contextual = true, className }: { href: string; children?: ReactNode; onClick?: () => void; contextual?: boolean; className?: string }) {
   const { user } = useAuth();
-  const parent = useReturnDestination(href), destination = contextual ? parent : href;
+  const target = useReturnTarget(href), destination = contextual ? target.href : href;
   const label = destination.split('?')[0] === '/explore' ? `Back to ${projectDestination(user?.role)}` : returnLabel(destination);
-  return <Link href={destination} state={{ __nebulaReturn: true }} onClick={onClick} className={cn(returnStyle, className)}><ArrowLeft size={16} aria-hidden="true" />{contextual ? label : children ?? label}</Link>;
+  const text = contextual ? (target.delta === null ? label.replace(/^Back to /, 'Go to ') : label) : children ?? label;
+  return <Link href={destination} data-contextual-return={contextual || undefined} onClick={event => {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    onClick?.();
+    if (contextual && target.delta !== null) { event.preventDefault(); history.go(target.delta); }
+  }} className={cn(returnStyle, className)}><ArrowLeft size={16} aria-hidden="true" />{text}</Link>;
 }

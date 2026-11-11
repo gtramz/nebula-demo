@@ -17,7 +17,7 @@ export function ArtistCompletionPrompt() {
   const query = useMyArtistOnboarding();
   if (query.isError) return <p role="alert" className="text-sm">Profile setup status is unavailable. <button className={controlStyles.button} onClick={() => void query.refetch()}>Retry setup status</button></p>;
   if (!query.data || query.data.completedAt) return null;
-  return <Panel><h2 className="text-xl font-bold">Make your profile yours.</h2><p className="text-sm text-muted">Add your creative identity at your own pace. Your account is ready to use; every setup step is optional.</p><Link href="/onboarding" className={controlStyles.button}>{query.data.completedSteps.length || query.data.step > 1 ? 'Resume artist setup' : 'Complete your artist profile'}</Link></Panel>;
+  return <Panel><h2 className="text-xl font-bold">Make your profile yours.</h2><p className="text-sm text-muted">Complete your profile at your own pace.</p><Link href="/onboarding" className={controlStyles.button}>{query.data.completedSteps.length || query.data.step > 1 ? 'Resume artist setup' : 'Complete your artist profile'}</Link></Panel>;
 }
 export function ArtistIdentityEditor({ onClose }: { onClose: () => void }) {
   const { user } = useAuth();

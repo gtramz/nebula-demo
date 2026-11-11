@@ -1,3 +1,5 @@
+import { CreationFrame, useCreationSteps } from '@/components/guided/creation';
+import { JourneyBack, JourneyNext, JourneyContext, pauseJourneyMedia } from '@/components/guided/journey';
 import { SongSelector } from '@/features/songs';
 import { useLeaveGuard } from '@/components/shell/navigation-guard';
 import { ReturnLink } from '@/components/antiq/workspace';
@@ -14,7 +16,7 @@ const field = 'w-full border border-border bg-surfaceAlt p-3 text-sm';
 
 function ArtistGate({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
-  if (!isServerMode()) return <ContentWidth className="py-12 space-y-4"><h1 className="text-3xl">Publishing needs the server</h1><p>Open the persistent server to publish your work.</p><ReturnLink href="/discovery">Back to Discovery</ReturnLink></ContentWidth>;
+  if (!isServerMode()) return <ContentWidth className="py-12 space-y-4"><h1 className="text-3xl">Publishing unavailable</h1><p>Please try again later.</p><ReturnLink href="/discovery">Back to Discovery</ReturnLink></ContentWidth>;
   if (user?.role !== 'artist') return <ContentWidth className="py-12 space-y-4"><h1 className="text-3xl">An artist space</h1><p>Log in with an artist account to publish and manage your work.</p><Link href="/login">Log in</Link></ContentWidth>;
   return <>{children}</>;
 }
@@ -36,7 +38,7 @@ function PublicationList() {
   return <ContentWidth className="py-10 space-y-8">
     <ReturnLink href="/profile" />
     <header className="flex items-center justify-between gap-4"><div><p className="voice text-xs text-muted">artist studio</p><h1 className="text-3xl font-bold mt-2">Your publications</h1></div><Link href="/publish" className="bg-cream text-bg px-5 py-3 text-xs">New publication</Link></header>
-    {!!proposalDrafts.data?.drafts.length&&<section aria-label="Private proposal drafts" className="space-y-3"><h2 className="text-xl font-semibold">Private proposal drafts</h2><p className="text-sm text-muted">Your work in progress. These have not been sent to the artist.</p>{proposalDrafts.data.drafts.map(({offer})=><Link key={offer.id} href={`/messages/offer/${offer.id}`} className="block border border-border rounded-xl p-4 hover:border-accent"><strong>{offer.projectTitle} · {offer.need}</strong><p className="text-sm text-muted">{offer.workTitle??'Project-wide'} · {offer.ownerName} · {offer.available?'Continue proposal →':'Opportunity closed · view saved work'}</p></Link>)}</section>}
+    {!!proposalDrafts.data?.drafts.length&&<section aria-label="Private proposal drafts" className="space-y-3"><h2 className="text-xl font-semibold">Private proposal drafts</h2>{proposalDrafts.data.drafts.map(({offer})=><Link key={offer.id} href={`/messages/offer/${offer.id}`} className="block border border-border rounded-xl p-4 hover:border-accent"><strong>{offer.projectTitle} · {offer.need}</strong><p className="text-sm text-muted">{offer.workTitle??'Project-wide'} · {offer.ownerName} · {offer.available?'Continue proposal →':'Opportunity closed · view saved work'}</p></Link>)}</section>}
     {proposalDrafts.error&&<p role="alert">Private proposal drafts could not load. <button className="underline" onClick={()=>void proposalDrafts.refetch()}>Retry</button></p>}
     <Link href="/collaborations" className="inline-block underline text-sm">Collaborations & messages</Link>
     <Link href="/studio/remix" className={button}>Private remix drafts</Link>
@@ -55,7 +57,7 @@ function PublicationList() {
       <div className="flex flex-wrap gap-3"><Link href={`/publish/${post.id}`} className={button}>Edit publication</Link><button className={button} disabled={change.isPending || (!!post.remix && post.status !== 'published')} onClick={() => change.mutate(post)}>{post.status === 'published' ? 'Withdraw' : 'Publish'}</button>{post.status === 'published' && <Link href={`/discovery?post=post-${post.id}`} className={button}>View in Discovery</Link>}{post.remix?.projectId && <Link className={button} href={`/remix/${post.id}/proposal`}>Propose to original project</Link>}</div>
     </article>)}</div>
     {query.hasNextPage && <button className={button} disabled={query.isFetchingNextPage} onClick={() => query.fetchNextPage()}>Load more publications</button>}
-    {!!uploads.data?.length && <details className="border-t border-border pt-6"><summary>Unused uploads ({uploads.data.length})</summary><p className="text-muted text-sm my-3">Files from cancelled or replaced publications and collaboration uploads. Removing these does not affect any saved publication.</p>{uploads.data.map(file => <div key={file.id} className="flex justify-between items-center gap-4 py-3 border-b border-border"><span className="text-xs">{file.name ?? file.kind} · {(file.size / 1024 / 1024).toFixed(1)} MB</span><button className={button} disabled={remove.isPending} onClick={() => remove.mutate(file.id)}>Remove unused file</button></div>)}</details>}
+    {!!uploads.data?.length && <details className="border-t border-border pt-6"><summary>Unused uploads ({uploads.data.length})</summary><p className="text-muted text-sm my-3">These files are not used in saved publications.</p>{uploads.data.map(file => <div key={file.id} className="flex justify-between items-center gap-4 py-3 border-b border-border"><span className="text-xs">{file.name ?? file.kind} · {(file.size / 1024 / 1024).toFixed(1)} MB</span><button className={button} disabled={remove.isPending} onClick={() => remove.mutate(file.id)}>Remove unused file</button></div>)}</details>}
     {remove.error && <p role="alert">{remove.error.message}</p>}
   </ContentWidth>;
 }
@@ -64,11 +66,12 @@ export function PublicationEditor() {
   const { id } = useParams<{ id?: string }>();
   const query = usePublication(id ? Number(id) : undefined);
   const { user } = useAuth();
-  return <ArtistGate>{id && query.isLoading ? <ContentWidth className="py-10">Loading publication…</ContentWidth> : query.error ? <ContentWidth className="py-10"><p role="alert">{query.error.message}</p><ReturnLink href="/studio">Back to studio</ReturnLink></ContentWidth> : id && query.data?.artistId !== user?.artistId ? <ContentWidth className="py-10">Publication not found.</ContentWidth> : <PublicationForm key={id ?? 'new'} existing={query.data} />}</ArtistGate>;
+  return <ArtistGate>{id && query.isLoading ? <ContentWidth className="py-10">Loading publication…</ContentWidth> : query.error ? <ContentWidth className="py-10"><p role="alert">{query.error.message}</p><ReturnLink href="/studio">Back to studio</ReturnLink></ContentWidth> : id && query.data?.artistId !== user?.artistId ? <ContentWidth className="py-10">Publication not found.</ContentWidth> : <PublicationForm key={`${user?.artistId}:${id ?? 'new'}`} existing={query.data} />}</ArtistGate>;
 }
 
 function PublicationForm({ existing }: { existing?: Publication }) {
   const { user } = useAuth();
+  const flow = useCreationSteps();
   const [, navigate] = useLocation();
   const projects = useListProjects();
   const client = useQueryClient();
@@ -86,9 +89,10 @@ function PublicationForm({ existing }: { existing?: Publication }) {
   const abort = useRef<AbortController | null>(null);
   const alive = useRef(true);
   const [dirty, setDirty] = useState(false);
-  useEffect(() => () => { alive.current = false; abort.current?.abort(); }, []);
+  useEffect(() => { alive.current = true; return () => { alive.current = false; abort.current?.abort(); pauseJourneyMedia(); }; }, []);
   const save = useMutation({ mutationFn: (status: PublicationInput['status']) => {
     if (!media) throw new Error('Upload audio or video first.');
+    if (!title.trim()) throw new Error('Add a title.');
     return savePublication({ title, description, mediaId: media.id, coverId: cover?.id ?? null, allowRemix, projectId: projectId ? Number(projectId) : null, workId, status }, existing);
   }, onSuccess: async () => {
     setDirty(false);
@@ -111,29 +115,48 @@ function PublicationForm({ existing }: { existing?: Publication }) {
   }
   const busy = progress !== null || save.isPending;
   const allowDeparture = useLeaveGuard(dirty || busy ? 'Leave without saving these changes? Completed uploads remain in your unused uploads; unfinished uploads will be cancelled.' : null);
-  return <ContentWidth className="py-10 max-w-3xl space-y-8">
-    <ReturnLink contextual href="/studio" /><header><p className="voice text-xs text-muted">artist studio</p><h1 className="text-3xl font-bold mt-2">{existing ? 'Edit publication' : 'Share your sound'}</h1></header>
-    <form className="space-y-6" onSubmit={event => { event.preventDefault(); save.mutate('published'); }} onChange={() => setDirty(true)}>
+  function saveVersion(status: PublicationInput['status']) {
+    if (busy || !flow.validate()) return;
+    if (status === 'published' && (!playable || (!!existing?.remix && existing.status !== 'published'))) return;
+    save.mutate(status);
+  }
+  const selectedProject = projects.data?.find(project => String(project.id) === projectId);
+  return <ContentWidth className="py-4 md:py-8 max-w-6xl space-y-4 md:space-y-6">
+    <ReturnLink contextual href="/studio" /><header><h1 className="text-2xl md:text-3xl font-bold">{existing ? 'Edit publication' : 'Share your sound'}</h1></header>
+    <form ref={flow.form} noValidate onSubmit={event => { event.preventDefault(); if (busy) return; if (flow.step < 3) { if (flow.step !== 0 || (media && playable)) flow.go(flow.step + 1); } else saveVersion('published'); }} onChange={() => setDirty(true)}>
+      <CreationFrame label="Publication" steps={['Media', 'Details', 'Project', 'Review']} flow={flow} locked={busy}
+        context={<JourneyContext cover={cover?.url} title={title || 'New publication'} artist={media?.kind === 'video' ? 'Video' : media?.kind === 'audio' ? 'Audio' : 'Audio / Video'} />}
+        footer={<>
+          {flow.step > 0 ? <JourneyBack disabled={busy} onClick={() => flow.go(flow.step - 1)} /> : <button type="button" className="guided-back" disabled={save.isPending} onClick={() => { if (!dirty || window.confirm('Leave without saving these changes?')) { allowDeparture(); abort.current?.abort(); navigate('/studio'); } }}>Cancel</button>}
+          <button type="button" className="creation-save" disabled={busy || !media || !title.trim()} onClick={() => saveVersion(existing?.status === 'published' ? 'published' : 'draft')}>{save.isPending ? 'Saving…' : 'Save & exit'}</button>
+          {flow.step < 3 ? <JourneyNext disabled={busy || (flow.step === 0 && (!media || !playable))} onClick={() => flow.go(flow.step + 1)} /> : <button type="submit" className="guided-next" disabled={busy || !media || !playable || !title.trim() || (!!existing?.remix && existing.status !== 'published')}>{save.isPending ? 'Saving…' : existing?.status === 'published' ? 'Save changes' : 'Publish'}</button>}
+        </>}>
       <fieldset disabled={busy} className="space-y-6 disabled:opacity-60">
-        {existing?.remix ? <p className="text-sm text-accent">Remix of {existing.remix.title} · {existing.remix.artistName}. The mix and its credit are fixed; start a new remix to change its media.</p> : <label className="block space-y-2"><span>Audio or video</span><input type="file" accept="video/mp4,video/webm,audio/mpeg,audio/wav,audio/x-wav,audio/ogg" className={field} onChange={event => { void selectFile(event.target.files?.[0], false); event.target.value = ''; }} /><span className="block text-xs text-muted">MP4, WebM, MP3, WAV or OGG · up to 100 MB</span></label>}
-        {media && <div className="border border-border p-4">{media.kind === 'video' ? <video key={media.id} src={media.url} controls playsInline preload="metadata" className="max-h-80 w-full" onLoadedData={() => setPlayable(true)} onError={() => { setPlayable(false); setError('This video cannot be played. Export it as MP4 with H.264/AAC or WebM and try again.'); }} /> : <audio key={media.id} src={media.url} controls preload="auto" className="w-full" onLoadedData={() => setPlayable(true)} onError={() => { setPlayable(false); setError('This audio cannot be played. Try another MP3, WAV or OGG file.'); }} />}</div>}
+      <section data-creation-step="0" hidden={flow.step !== 0} className="space-y-6">
+        {existing?.remix ? <p className="text-sm text-accent">Remix of {existing.remix.title} · {existing.remix.artistName}. The mix and its credit are fixed; start a new remix to change its media.</p> : <label className="block space-y-2"><span>Audio or video</span><input aria-label="Audio or video" type="file" accept="video/mp4,video/webm,audio/mpeg,audio/wav,audio/x-wav,audio/ogg" className={field} onChange={event => { void selectFile(event.target.files?.[0], false); event.target.value = ''; }} /><span className="block text-xs text-muted">MP4, WebM, MP3, WAV or OGG · up to 100 MB</span></label>}
+      </section>
+      <div hidden={flow.step !== 0 && flow.step !== 3}>
+        {media && <div className="creation-preview">{media.kind === 'video' ? <video key={media.id} src={media.url} controls playsInline preload="metadata" className="max-h-80 w-full" onLoadedData={() => setPlayable(true)} onError={() => { setPlayable(false); setError('This video cannot be played. Export it as MP4 with H.264/AAC or WebM and try again.'); }} /> : <audio key={media.id} src={media.url} controls preload="auto" className="w-full" onLoadedData={() => setPlayable(true)} onError={() => { setPlayable(false); setError('This audio cannot be played. Try another MP3, WAV or OGG file.'); }} />}</div>}
+      </div>
+      <section data-creation-step="1" hidden={flow.step !== 1} className="space-y-6">
         <label className="block space-y-2"><span>Title</span><input className={field} value={title} onChange={event => setTitle(event.target.value)} maxLength={160} required /></label>
-        <label className="block space-y-2"><span>Description</span><textarea className={field} value={description} onChange={event => setDescription(event.target.value)} maxLength={2000} rows={4} /></label>
+        <label className="block space-y-2"><span>Description</span><textarea aria-label="Description" className={field} value={description} onChange={event => setDescription(event.target.value)} maxLength={2000} rows={4} /></label>
         <label className="block space-y-2"><span>Cover image (optional)</span><input type="file" className={field} accept="image/png,image/jpeg,image/webp" onChange={event => { void selectFile(event.target.files?.[0], true); event.target.value = ''; }} /><span className="block text-xs text-muted">PNG, JPEG or WebP · up to 5 MB</span></label>
         {cover && <div className="flex gap-4 items-center"><img src={cover.url} alt="Publication cover preview" className="h-32 w-32 object-cover" /><button type="button" className={button} onClick={() => { setCover(null); setDirty(true); }}>Remove cover</button></div>}
+      </section>
+      <section data-creation-step="2" hidden={flow.step !== 2} className="space-y-6">
         <label className="block space-y-2"><span>Link a project (optional)</span><select className={field} value={projectId} onChange={event => {setProjectId(event.target.value);if(workId){setWorkId(null);setSongNotice('Song selection cleared because the project changed. Choose a song from the new project.');}}}><option value="">Independent publication</option>{projects.data?.filter(project => project.artistId === user?.artistId).map(project => <option key={project.id} value={project.id}>{project.title}{project.status === 'draft' ? ' (draft — publish project first)' : ''}</option>)}</select></label>
         {projectId && <SongSelector projectId={Number(projectId)} value={workId} onChange={id=>{setWorkId(id);setSongNotice('');}}/>}{songNotice&&<p role="status">{songNotice}</p>}
         {projects.error && <p role="alert">Could not load your projects. <button type="button" onClick={() => projects.refetch()}>Retry</button></p>}
-        <div className="border border-border p-5 space-y-3"><label className="flex gap-3 items-center"><input type="checkbox" disabled={!!existing?.remix} checked={allowRemix} onChange={event => setAllowRemix(event.target.checked)} />Allow other artists to remix this publication</label><p className="text-xs text-muted">Audio and video originals can be used in the remix studio. Remixes of remixes are not supported. Permission does not grant collaboration approval or royalties. Disabling it blocks new remixes and updates to private remix drafts; existing published remixes remain available.</p></div>
+        <div className="border border-border p-5 space-y-3"><label className="flex gap-3 items-center"><input type="checkbox" disabled={!!existing?.remix} checked={allowRemix} onChange={event => setAllowRemix(event.target.checked)} />Allow other artists to remix this publication</label><p className="text-xs text-muted">Remix permission does not include royalties or collaboration approval.</p></div>
+      </section>
+      <section data-creation-step="3" hidden={flow.step !== 3} className="space-y-5">
+        <div className="creation-summary"><h3 className="text-xl font-semibold">{title}</h3>{description && <p className="text-sm text-muted whitespace-pre-wrap">{description}</p>}<dl><dt>Project</dt><dd>{selectedProject?.title || 'Independent publication'}</dd><dt>Remix</dt><dd>{allowRemix ? 'Allowed' : 'Not allowed'}</dd><dt>Visibility</dt><dd>Public when published</dd></dl></div>
+      </section>
       </fieldset>
       {progress !== null && <div role="status" className="space-y-3"><p>Uploading… {progress}%</p><progress className="w-full" value={progress} max={100} /><button type="button" className={button} onClick={() => abort.current?.abort()}>Cancel upload</button></div>}
       {(error || save.error) && <p role="alert" className="text-danger">{error || save.error?.message}</p>}
-      <div className="flex flex-wrap gap-3">
-        <button type="submit" className="bg-cream text-bg px-6 py-3 text-sm disabled:opacity-40" disabled={busy || !media || !playable || !title.trim() || (!!existing?.remix && existing.status !== 'published')}>{save.isPending ? 'Saving…' : existing?.status === 'published' ? 'Save changes' : 'Publish'}</button>
-        <button type="button" className={button} disabled={busy || !media || !title.trim()} onClick={() => save.mutate('draft')}>Save draft</button>
-        <button type="button" className={button} disabled={save.isPending} onClick={() => { if (!dirty || window.confirm('Leave without saving these changes? Uploaded files will remain in your unused uploads.')) { allowDeparture(); abort.current?.abort(); navigate('/studio'); } }}>Cancel</button>
-      </div>
-      <p className="text-xs text-muted">Drafts are visible only to you. Published audio, video and covers are public. Withdrawing a publication removes public access; copies already downloaded cannot be recalled.</p>
+      </CreationFrame>
     </form>
   </ContentWidth>;
 }

@@ -37,17 +37,17 @@ test('visitor discovers samples, project offers and account prompts without chan
   } else await expect(page.getByRole('heading', { name: /discovery/ })).toBeVisible();
   await expect(page.getByRole('link', { name: 'discovery', exact: true })).toHaveAttribute('aria-current', 'page');
   await expect(activePost(page)).toHaveAttribute('data-index', '0');
-  await activePost(page).getByRole('button', { name: 'Star', exact: true }).click();
+  await activePost(page).getByRole('button', { name: 'Like', exact: true }).click();
   const dialog = page.getByRole('dialog');
   await expect(dialog.getByRole('link', { name: 'log in' })).toBeVisible();
   await expect(dialog.getByRole('link', { name: 'sign up' })).toBeVisible();
   await page.keyboard.press('Escape');
-  await expect(activePost(page).getByRole('button', { name: 'Star', exact: true })).toBeFocused();
+  await expect(activePost(page).getByRole('button', { name: 'Like', exact: true })).toBeFocused();
   await activePost(page).getByRole('button', { name: /view project/ }).click();
   await expect(dialog.getByRole('heading', { name: 'After Hours EP' })).toBeVisible();
   await expect(dialog.getByText('15% royalty split offered')).toBeVisible();
   await expect(dialog.getByText('USD 400.00 fixed fee')).toBeVisible();
-  await expect(dialog.getByRole('button', { name: 'Contact artist · soon' }).first()).toBeDisabled();
+  await expect(dialog.getByRole('button', { name: 'Contact artist' }).first()).toBeDisabled();
   await page.screenshot({ path: info.outputPath('discovery-project.png') });
   await page.keyboard.press('Escape');
   await expect(activePost(page).getByRole('button', { name: /view project/ })).toBeFocused();
@@ -68,7 +68,7 @@ test('visitor discovers samples, project offers and account prompts without chan
 test('artist reactions and comments are temporary; demo remix stays disabled', async ({ page }, info) => {
   await signIn(page, 'artist');
   const before = await storedData(page);
-  const star = activePost(page).getByRole('button', { name: 'Star', exact: true });
+  const star = activePost(page).getByRole('button', { name: 'Like', exact: true });
   await star.click(); await expect(star).toHaveAttribute('aria-pressed', 'true'); await expect(star).toContainText('129');
   await star.click(); await expect(star).toHaveAttribute('aria-pressed', 'false'); await expect(star).toContainText('128');
   await star.click();
@@ -85,7 +85,7 @@ test('artist reactions and comments are temporary; demo remix stays disabled', a
   await expect(dialog.getByText('A new idea for this verse.')).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(activePost(page).getByRole('button', { name: 'Comments', exact: true })).toContainText('2');
-  await expect(activePost(page).getByRole('button', { name: 'Remix is unavailable for demo publications', exact: true })).toBeDisabled();
+  await expect(activePost(page).getByRole('button', { name: 'Remix unavailable', exact: true })).toBeDisabled();
   await expect(dialog).toHaveCount(0);
   await page.screenshot({ path: info.outputPath('discovery-artist.png') });
   expect(await storedData(page)).toEqual(before);
@@ -100,14 +100,14 @@ test('investor can react and share but cannot remix; shared links open the corre
   await context.grantPermissions(['clipboard-read', 'clipboard-write']);
   await signIn(page, 'investor');
   await expect(activePost(page).getByRole('button', { name: 'Remix is for artists' })).toBeDisabled();
-  await activePost(page).getByRole('button', { name: 'Star', exact: true }).click();
-  await expect(activePost(page).getByRole('button', { name: 'Star', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await activePost(page).getByRole('button', { name: 'Like', exact: true }).click();
+  await expect(activePost(page).getByRole('button', { name: 'Like', exact: true })).toHaveAttribute('aria-pressed', 'true');
   await goToPost(page, 2);
   const scrollBefore = await page.locator('.discovery-feed').evaluate(element => element.scrollTop);
-  await activePost(page).getByRole('button', { name: 'Send', exact: true }).click();
-  const link = await page.getByLabel('Publication link').inputValue();
-  expect(link).toContain('/discovery?post=after-hours-rework');
+  await activePost(page).getByRole('button', { name: 'Share', exact: true }).click();
   await page.getByRole('button', { name: 'Copy link' }).click();
+  const link = await page.evaluate(()=>navigator.clipboard.readText());
+  expect(link).toContain('/discovery?post=after-hours-rework');
   await expect(page.getByRole('status').filter({ hasText: 'Link copied.' })).toBeVisible();
   await page.keyboard.press('Escape');
   expect(await page.locator('.discovery-feed').evaluate(element => element.scrollTop)).toBe(scrollBefore);
@@ -117,11 +117,11 @@ test('investor can react and share but cannot remix; shared links open the corre
   await expect(activePost(page)).toHaveAttribute('data-index', '0');
 });
 
-test('playback is exclusive, pauses for panels, and audio waits for user input', async ({ page }) => {
+test('playback is exclusive, pauses for panels, and both formats start with sound', async ({ page }) => {
   await page.goto('/discovery');
   const video = page.locator('video');
   await expect.poll(() => video.evaluate(element => element.readyState)).toBeGreaterThanOrEqual(2);
-  await expect.poll(() => video.evaluate(element => element.muted)).toBe(true);
+  await expect.poll(() => video.evaluate(element => element.muted)).toBe(false);
   if (await video.evaluate(element => element.paused)) await activePost(page).getByRole('button', { name: 'Play after hours', exact: true }).click();
   await expect.poll(() => video.evaluate(element => element.paused)).toBe(false);
   await activePost(page).getByRole('button', { name: /view project/ }).click();
@@ -132,13 +132,12 @@ test('playback is exclusive, pauses for panels, and audio waits for user input',
   const audio = activePost(page).locator('audio');
   await expect(activePost(page).getByRole('button', { name: /Remix not permitted/ })).toBeDisabled();
   await expect(activePost(page).getByRole('button', { name: /view project/ })).toHaveCount(0);
-  expect(await audio.evaluate(element => element.paused)).toBe(true);
-  await activePost(page).getByRole('button', { name: 'Play soft signal', exact: true }).click();
+  await expect.poll(() => audio.evaluate(element => element.paused)).toBe(false);
   await expect.poll(() => audio.evaluate(element => element.currentTime)).toBeGreaterThan(0);
   expect(await video.evaluate(element => element.paused)).toBe(true);
   await goToPost(page, 2);
   expect(await page.locator('audio').first().evaluate(element => element.paused)).toBe(true);
-  await expect(activePost(page).getByRole('button', { name: 'Play a different orbit', exact: true })).toBeVisible();
+  await expect(activePost(page).getByRole('button', { name: 'Pause a different orbit', exact: true })).toBeVisible();
 });
 
 test('keyboard paging, reduced motion, and clipboard failure stay usable', async ({ page }) => {
@@ -151,12 +150,12 @@ test('keyboard paging, reduced motion, and clipboard failure stay usable', async
   await page.keyboard.press('ArrowUp');
   await expect(activePost(page)).toHaveAttribute('data-index', '0');
   await page.evaluate(() => { Object.defineProperty(navigator.clipboard, 'writeText', { value: () => Promise.reject(new Error('Unavailable')) }); });
-  await activePost(page).getByRole('button', { name: 'Send', exact: true }).click();
+  await activePost(page).getByRole('button', { name: 'Share', exact: true }).click();
   await page.getByRole('button', { name: 'Copy link' }).click();
-  await expect(page.getByText('Copy is unavailable here. Select and copy the link above.')).toBeVisible();
+  await expect(page.getByText('Select and copy the link below.')).toBeVisible();
   await page.getByRole('button', { name: 'Close panel' }).focus();
   await page.keyboard.press('Tab');
   expect(await page.getByRole('dialog').evaluate(element => element.contains(document.activeElement))).toBe(true);
   await page.keyboard.press('Escape');
-  await expect(activePost(page).getByRole('button', { name: 'Send', exact: true })).toBeFocused();
+  await expect(activePost(page).getByRole('button', { name: 'Share', exact: true })).toBeFocused();
 });

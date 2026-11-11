@@ -51,7 +51,7 @@ export function SongManager({projectId,status,onStateChange}:{projectId:number;s
     <div className="flex flex-wrap gap-2"><button type="submit" className={primary} disabled={pending||!draft}>{pending?'Saving songs…':'Save songs'}</button><button type="button" className={button} disabled={pending} onClick={()=>{if(!draft||confirm('Discard your song-list draft and reload current songs?')){setDraft(null);setError('');void query.refetch();}}}>Reload songs</button></div>
   </form>;
 }
-export function ProjectSongs({projectId,category,status,renderOffers}:{projectId:number;category:string;status:string;renderOffers:(id:number)=>React.ReactNode}) {
+export function ProjectSongs({projectId,category,status,renderOffers,renderRecording}:{projectId:number;category:string;status:string;renderRecording?:(song:Song)=>React.ReactNode;renderOffers:(id:number)=>React.ReactNode}) {
   const query=useSongs(projectId),search=useSearch();
   const selected=Number(new URLSearchParams(search).get('song'));const selectedRef=useRef<HTMLDivElement>(null);
   useEffect(()=>{if(query.data?.songs.some(s=>s.id===selected))selectedRef.current?.scrollIntoView({block:'start'});},[query.data,selected]);
@@ -59,15 +59,15 @@ export function ProjectSongs({projectId,category,status,renderOffers}:{projectId
   return <section aria-label="Project songs" className="space-y-4"><h2 className="text-2xl font-bold">Songs</h2>{query.isPending&&<p role="status">Loading songs…</p>}{query.error&&<p role="alert">{query.error.message}<button className={button} onClick={()=>void query.refetch()}>Retry songs</button></p>}
     {query.data&&selected>0&&!query.data.songs.some(s=>s.id===selected)&&<p role="status">This song is not available in this project.</p>}
     {query.data&&!query.data.songs.length&&<p className="text-sm text-muted">No structured songs added yet.</p>}
-    {query.data?.songs.map((song,index)=><div key={song.id} id={`song-${song.id}`} role="group" ref={selected===song.id?selectedRef:undefined} aria-label={`Song: ${song.title}`} className={`scroll-mt-4 p-5 border space-y-3 ${selected===song.id?'border-accent':'border-border'}`}>
-      <h3 className="text-xl font-semibold">{index+1}. {song.title}</h3>{selected===song.id&&<p className="text-accent text-sm">Selected song</p>}<p className="whitespace-pre-wrap break-words">{song.description}</p>
+    {query.data?.songs.map((song,index)=>{const recording=status!=='draft'?renderRecording?.(song):null;return <div key={song.id} id={`song-${song.id}`} role="group" ref={selected===song.id?selectedRef:undefined} aria-label={`Song: ${song.title}`} className={`scroll-mt-4 p-5 border space-y-3 ${selected===song.id?'border-accent':'border-border'}`}>
+      <h3 className="text-xl font-semibold">{index+1}. {song.title}</h3>{selected===song.id&&<p className="text-accent text-sm">Selected song</p>}{!recording && <p className="whitespace-pre-wrap break-words">{song.description}</p>}
       <p className="text-sm text-muted">Explore the song and its open opportunities.</p>
       {renderOffers(song.id)}
-      {status==='draft'?<p className="text-sm text-muted">No public recording shared for this private project.</p>:<RelatedPublications projectId={projectId} workId={song.id}/>}
-    </div>)}
+      {recording ?? (status==='draft'?<p className="text-sm text-muted">No public recording shared for this private project.</p>:<RelatedPublications projectId={projectId} workId={song.id}/>)}
+    </div>;})}
   </section>;
 }
-function RelatedPublications({projectId,workId}:{projectId:number;workId:number}) {
+export function RelatedPublications({projectId,workId}:{projectId:number;workId:number}) {
   const query=useInfiniteQuery({queryKey:['song-publications',projectId,workId],initialPageParam:null as number|null,queryFn:({signal,pageParam})=>apiRequest<{items:{id:number;title:string}[];nextCursor:number|null}>(`/api/publications?project=${projectId}&song=${workId}${pageParam?`&before=${pageParam}`:''}`,{signal}),getNextPageParam:page=>page.nextCursor??undefined});
   const items=query.data?.pages.flatMap(page=>page.items)??[];
   return <div>{items.length>0&&<ul>{items.map(post=><li key={post.id}><Link className="underline min-h-11 inline-flex items-center" href={`/discovery?post=post-${post.id}`}>View publication: {post.title}</Link></li>)}</ul>}{query.error?<p role="alert">Publications could not load. <button className={button} onClick={()=>void(query.isFetchNextPageError?query.fetchNextPage():query.refetch())}>Retry publications</button></p>:query.isPending?<p role="status">Loading publications…</p>:!items.length&&<p className="text-sm text-muted">No public recording shared for this song.</p>}{query.hasNextPage&&<button className={button} disabled={query.isFetching} onClick={()=>void query.fetchNextPage()}>More publications</button>}</div>;

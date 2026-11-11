@@ -1,0 +1,15 @@
+.mobile-preview-shell { height:100dvh; width:100%; display:flex; flex-direction:column; background:#101214; color:#fafafa; overflow:hidden; }
+.mobile-preview-toolbar { flex-shrink:0; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; padding:12px 20px; border-bottom:1px solid #303236; }
+.mobile-preview-toolbar h1 { display:flex; gap:8px; align-items:center; font-size:18px; font-weight:650; }
+.mobile-preview-toolbar p { color:#aaa; font-size:12px; margin-top:4px; }
+.mobile-preview-options { display:flex; align-items:end; flex-wrap:wrap; gap:8px; }
+.mobile-preview-options label { font-size:11px; color:#aaa; display:flex; flex-direction:column; gap:4px; }
+.mobile-preview-options select,.mobile-preview-options button { background:#080808; border:1px solid #484848; color:#f2efe6; min-height:44px; padding:8px 12px; font-size:12px; }
+.mobile-preview-options button { display:flex; gap:8px; align-items:center; }
+.mobile-preview-options :focus-visible { outline:2px solid #cdf03f; outline-offset:2px; }
+.mobile-preview-area { flex:1; min-height:0; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+.mobile-preview-device { position:relative; flex-shrink:0; background:black; outline:1px solid #484848; box-shadow:0 14px 60px #0008; }
+.mobile-preview-device iframe { display:block; position:absolute; top:0; left:0; max-width:none; border:0; transform-origin:top left; background:black; }
+.mobile-preview-status { flex-shrink:0; padding:8px 16px; text-align:center; font-size:11px; color:#aaa; }
+.mobile-preview-status span { display:block; margin-top:3px; }
+@media(max-width:600px) { .mobile-preview-toolbar { padding:8px 12px; } .mobile-preview-toolbar p { font-size:11px; } }
