@@ -1,5 +1,7 @@
 # Canciones dentro de proyectos — contrato local para Manuel
 
+> Actualización de noviembre de 2026: [publicaciones, grabaciones y pista principal](project-recordings-2026-11/README.md) reemplaza las limitaciones históricas sobre archivos, formatos y reproducción descritas abajo.
+
 > Historical phase snapshot. For current status, superseding features and consolidated verification, see [Manuel release handoff](manuel-release-handoff.md). Earlier deferred items may now be implemented; the current operation inventory is [integration-contracts.md](integration-contracts.md).
 
 ## Alcance implementado

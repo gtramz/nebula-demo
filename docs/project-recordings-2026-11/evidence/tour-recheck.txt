@@ -1,0 +1,12 @@
+[WebServer] (node:20813) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 1 test using 1 worker
+
+(node:20814) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/1] [desktop] › tests-presentation/project-publication-link.spec.ts:57:62 › Tour: create project then link and publish audio and video
+  1 passed (52.6s)

@@ -1,0 +1,73 @@
+[WebServer] (node:18686) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 21 tests using 1 worker
+
+(node:18687) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/21] [desktop] › tests-presentation/guided-creation.spec.ts:18:49 › guided audio publication preserves inputs, draft and publish
+[2/21] [desktop] › tests-presentation/guided-creation.spec.ts:18:49 › guided video publication preserves inputs, draft and publish
+[3/21] [desktop] › tests-presentation/guided-creation.spec.ts:53:1 › guided project validates stages, preserves songs and publishes a scoped opportunity
+[4/21] [desktop] › tests-presentation/guided-creation.spec.ts:78:1 › Save & exit creates a real private project without publishing
+[5/21] [desktop] › tests-presentation/guided-creation.spec.ts:84:1 › project formats preserve songs while Single and Music video enforce one song
+[6/21] [desktop] › tests-presentation/guided-creation.spec.ts:95:1 › existing Single projects retain their format and songs when editing details
+[7/21] [desktop] › tests-presentation/handoff-forms.spec.ts:13:1 › registration validates, preserves Back, guards departure and creates once after retry
+[8/21] [desktop] › tests-presentation/handoff-forms.spec.ts:39:1 › integrated song editing validates, preserves Back, guards reload and retries the project transaction
+[9/21] [desktop] › tests-presentation/handoff-forms.spec.ts:50:1 › publication audio uses one source, rejects metadata-only readiness and recovers replacement failure
+[10/21] [desktop] › tests-presentation/handoff-forms.spec.ts:85:1 › project save retries a real lost response without losing fields or creating another project
+[11/21] [desktop] › tests-presentation/project-publication-link.spec.ts:55:62 › EP: create project then link and publish audio and video
+[12/21] [desktop] › tests-presentation/project-publication-link.spec.ts:55:62 › Single: create project then link and publish audio and video
+[13/21] [desktop] › tests-presentation/project-publication-link.spec.ts:55:62 › Tour: create project then link and publish audio and video
+  1) [desktop] › tests-presentation/project-publication-link.spec.ts:55:62 › Tour: create project then link and publish audio and video 
+
+    Error: expect(locator).toHaveValue(expected) failed
+
+    Locator: getByRole('combobox', { name: 'Link a project (optional)', exact: true })
+    Expected: "51"
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveValue" getByRole('combobox', { name: 'Link a project (optional)', exact: true }) with timeout 5000ms
+      - waiting for getByRole('combobox', { name: 'Link a project (optional)', exact: true })
+
+
+      43 |   }
+      44 |   await next(page);await expect(page.locator('.creation-summary')).toContainText(project.title);
+    > 45 |   await page.getByRole('button',{name:'Back',exact:true}).click();await expect(selector).toHaveValue(String(project.id));
+         |                                                                                          ^
+      46 |   if(project.songs.length)await expect(page.getByRole('combobox',{name:'Song (optional)',exact:true})).toHaveValue(String((project.songs[1]??project.songs[0]).id));
+      47 |   await next(page);
+      48 | }
+        at fillPost (/Users/luisgramz/Documents/ChatGPT/NEBULA DEMO/antiqnebula_demo2/tests-presentation/project-publication-link.spec.ts:45:90)
+        at /Users/luisgramz/Documents/ChatGPT/NEBULA DEMO/antiqnebula_demo2/tests-presentation/project-publication-link.spec.ts:63:44
+
+    Error Context: test-results-presentation/project-publication-link-T-87e32-and-publish-audio-and-video-desktop/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results-presentation/project-publication-link-T-87e32-and-publish-audio-and-video-desktop/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results-presentation/project-publication-link-T-87e32-and-publish-audio-and-video-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:19808) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[14/21] [desktop] › tests-presentation/project-publication-link.spec.ts:95:1 › a public post keeps its linked draft project private until the project is published
+[15/21] [desktop] › tests-presentation/project-recordings.spec.ts:17:1 › Single uploads one playable audio, preserves Back and saves once after lost response
+[16/21] [desktop] › tests-presentation/project-recordings.spec.ts:29:1 › Album chooses principal independently of order and changes it through the same edit flow
+[17/21] [desktop] › tests-presentation/project-recordings.spec.ts:40:1 › Music video funding needs audio, accepts a demo without video and links the later video post
+[18/21] [desktop] › tests-presentation/project-recordings.spec.ts:47:1 › Posts picker searches, disables other projects, preserves IDs and links selected posts
+[19/21] [desktop] › tests-presentation/project-recordings.spec.ts:53:1 › Publish audio creates an EP song, keeps draft project private and preserves choices on Back
+[20/21] [desktop] › tests-presentation/project-recordings.spec.ts:58:1 › Empty drafts remain valid, publishing empty fails, narrowing format preserves songs and cancellation
+[21/21] [desktop] › tests-presentation/project-recordings.spec.ts:63:1 › post selection paginates search and upload cancellation recovers without losing the song
+  1 failed
+    [desktop] › tests-presentation/project-publication-link.spec.ts:55:62 › Tour: create project then link and publish audio and video 
+  20 passed (7.2m)

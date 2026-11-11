@@ -1,0 +1,22 @@
+{
+  "presentation/assets/covers/luna-original.png": {
+    "before": "1bb5836b0e348d936a3532c48dc300f602104fe01414488305f9517719c34c8c",
+    "after": "1bb5836b0e348d936a3532c48dc300f602104fe01414488305f9517719c34c8c"
+  },
+  "presentation/assets/covers/luna-chilz-remix.png": {
+    "before": "a22fd31bb33bd30a56e2d873cf98ab3d4ef3f0eb84e0cae3e0cd5043378949c3",
+    "after": "a22fd31bb33bd30a56e2d873cf98ab3d4ef3f0eb84e0cae3e0cd5043378949c3"
+  },
+  "presentation/seed/manifest.json": {
+    "before": "e6c3ba991fb43170d0fa5583fe695f232eec48ad49bc4bd383b79e7b0f5f097b",
+    "after": "e6c3ba991fb43170d0fa5583fe695f232eec48ad49bc4bd383b79e7b0f5f097b"
+  },
+  "artifacts/nebula/src/features/discovery/feed-scroll.ts": {
+    "before": "35dca688b1757fb61268cadcaa016b0fad207dac345e3478a698a1c7db074ac9",
+    "after": "35dca688b1757fb61268cadcaa016b0fad207dac345e3478a698a1c7db074ac9"
+  },
+  "artifacts/nebula/src/features/discovery/media-player.tsx": {
+    "before": "8939d10f807b5e552de96647ffaf23164e20e11ccfa16d54c9b7d3358d2ef103",
+    "after": "8939d10f807b5e552de96647ffaf23164e20e11ccfa16d54c9b7d3358d2ef103"
+  }
+}

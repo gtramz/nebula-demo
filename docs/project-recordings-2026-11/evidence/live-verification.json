@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-11-11T19:07:21.465Z",
+  "protectedPostsEqual": true,
+  "urls": [
+    {
+      "url": "http://127.0.0.1:4187/explore",
+      "status": 200
+    },
+    {
+      "url": "http://localhost:4188/presentation/mobile",
+      "status": 200
+    }
+  ],
+  "covers": [
+    {
+      "postId": 17,
+      "projectId": 34,
+      "hash": "1bb5836b0e348d936a3532c48dc300f602104fe01414488305f9517719c34c8c"
+    },
+    {
+      "postId": 18,
+      "projectId": 35,
+      "hash": "a22fd31bb33bd30a56e2d873cf98ab3d4ef3f0eb84e0cae3e0cd5043378949c3"
+    }
+  ],
+  "newRecordingsContract": true
+}

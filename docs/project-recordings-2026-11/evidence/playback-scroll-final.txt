@@ -1,0 +1,28 @@
+[WebServer] (node:20430) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 12 tests using 1 worker
+
+(node:20434) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/12] [desktop] › tests-presentation/discovery-scroll-regression.spec.ts:16:1 › fractional viewport heights keep every successive piece aligned without returning to an older index
+[2/12] [desktop] › tests-presentation/discovery-scroll-regression.spec.ts:32:1 › a delayed decaying trackpad tail cannot skip a piece or bounce backwards
+[3/12] [desktop] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 3 preserves comments and manual pause
+[4/12] [desktop] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 11 preserves comments and manual pause
+[5/12] [desktop] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 14 preserves comments and manual pause
+[6/12] [desktop] › tests-presentation/discovery-tap.spec.ts:69:1 › swiping the playback surface advances the feed without pausing the next post
+(node:20632) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[7/12] [mobile] › tests-presentation/discovery-scroll-regression.spec.ts:16:1 › fractional viewport heights keep every successive piece aligned without returning to an older index
+[8/12] [mobile] › tests-presentation/discovery-scroll-regression.spec.ts:32:1 › a delayed decaying trackpad tail cannot skip a piece or bounce backwards
+[9/12] [mobile] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 3 preserves comments and manual pause
+[10/12] [mobile] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 11 preserves comments and manual pause
+[11/12] [mobile] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 14 preserves comments and manual pause
+[12/12] [mobile] › tests-presentation/discovery-tap.spec.ts:69:1 › swiping the playback surface advances the feed without pausing the next post
+  2 skipped
+  10 passed (1.6m)

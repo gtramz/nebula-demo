@@ -1,0 +1,15 @@
+✔ LUNA adds mapped demo artists, one shared original and an attributed full-song remix without changing existing records (27.735ms)
+✔ LUNA copies only registered immutable assets and generates credentials only for the new accounts (264.444917ms)
+✔ insertion failure rolls back every database record, sequence and newly copied file (12.319625ms)
+✔ conflicting demo identity or missing CHILZ mapping refuses the import without replacing any account (0.754208ms)
+Prepared 12 fictional accounts, 26 publications and 64 media files. Open with pnpm start.
+Presentation already prepared. Existing edits are preserved. Use demo:reset explicitly to restore.
+✔ portable fixture excludes credentials and sessions, installs all media and preserves later edits (1150.034542ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1197.953833

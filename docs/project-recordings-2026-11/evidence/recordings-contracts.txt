@@ -1,0 +1,15 @@
+✔ recordings: Single cardinality, draft-only empty projects, audio funding reference and rollback (263.305958ms)
+✔ recordings: principal survives ordering, media permissions, no automatic posts, and atomic retries (217.384333ms)
+✔ recordings: existing posts link once, keep identities and never move from another project (167.258875ms)
+✔ recordings: Publish creates song atomically, public post keeps draft project private, errors retry without duplicates (173.310458ms)
+✔ recordings: withdrawn principal stays unavailable, never falls back, and draft posts stay private (196.135667ms)
+✔ recordings: category change rolls back, title-only legacy edits remain compatible, and own post search paginates before slicing (221.602875ms)
+✔ recordings: unlinking preserves the post and social history, stale edits cannot overwrite withdrawal (173.252792ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1479.385125

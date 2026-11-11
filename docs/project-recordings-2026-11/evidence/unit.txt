@@ -1,0 +1,10 @@
+$ vitest run
+
+ RUN  v4.1.12 /Users/luisgramz/Documents/ChatGPT/NEBULA DEMO/antiqnebula_demo2
+
+
+ Test Files  13 passed (13)
+      Tests  82 passed (82)
+   Start at  12:49:01
+   Duration  606ms (transform 828ms, setup 0ms, import 1.19s, tests 1.07s, environment 1ms)
+
