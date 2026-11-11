@@ -1,44 +1,8 @@
 import { DatabaseSync } from 'node:sqlite';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
-import { createNebulaServer } from '../dist-server/server/app.js';
 
-const audio = await readFile(new URL('../artifacts/nebula/public/discovery-demo/soft-signal.wav', import.meta.url));
-async function fixture(t, options = {}) {
-  const dataDir = await mkdtemp(join(tmpdir(), 'nebula-server-test-'));
-  let server, origin;
-  async function start() {
-    server = await createNebulaServer({ dataDir, publicDir: resolve('artifacts/nebula/dist/public'), ...options });
-    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
-    origin = `http://127.0.0.1:${server.address().port}`;
-  }
-  async function stop() { await new Promise(resolve => { server.close(resolve); server.closeAllConnections(); }); }
-  await start();
-  t.after(async () => { await stop(); await rm(dataDir, { recursive: true, force: true }); });
-  function client() {
-    let cookie = '';
-    return {
-      async request(path, method = 'GET', body, headers = {}) {
-        const response = await fetch(origin + path, { method, headers: { Origin: origin, 'X-Nebula-Request': '1', ...(cookie ? { Cookie: cookie } : {}), ...(body && !Buffer.isBuffer(body) ? { 'Content-Type': 'application/json' } : {}), ...headers }, body: body === undefined ? undefined : Buffer.isBuffer(body) ? body : JSON.stringify(body) });
-        if (response.headers.get('set-cookie')) cookie = response.headers.get('set-cookie').split(';')[0];
-        return response;
-      },
-      async rpc(method, ...args) { return this.request('/api/rpc', 'POST', { method, args }); },
-      async register(name, role = 'artist') {
-        const response = await this.rpc('register', { name, email: `${name}@example.invalid`, password: 'preview123', role });
-        assert.equal(response.status, 200, await response.clone().text()); return response.json();
-      },
-      async upload(bytes = audio, kind = 'audio') {
-        const response = await this.request('/api/uploads', 'POST', bytes, { 'X-Media-Kind': kind, 'Content-Type': 'application/octet-stream' });
-        return response;
-      },
-    };
-  }
-  return { client, dataDir, restart: async () => { await stop(); await start(); }, get origin() { return origin; } };
-}
+import {fixture} from './test-fixtures.mjs';
 const postInput = (media, extra = {}) => ({ title: 'A real sound', description: 'Original publication', mediaId: media.id, coverId: null, projectId: null, allowRemix: false, status: 'draft', ...extra });
 
 
@@ -68,7 +32,7 @@ test('artist follows enforce permissions and privacy, persist, and scope Home be
  assert.equal((await(await a.request(`/api/artists/${A}/social`)).json()).following,1);
  const list=await(await guest.request(`/api/artists/${B}/followers`)).json();assert.deepEqual(Object.keys(list.items[0]).sort(),['id','isFollowing','name','picture']);assert.equal(list.items[0].id,A);
  assert.equal((await guest.request('/api/opportunities/projects?mode=following')).status,401);assert.equal((await investor.request('/api/opportunities/projects?mode=following')).status,403);
- const create=async(client,title,status='funding')=>(await(await client.rpc('createProject',{title,category:'EP',status,goalAmount:1000})).json()).result;
+ const create=async(client,title,status='funding')=>(await(await client.recordedProject({title,category:'EP',status,goalAmount:1000})).json()).result;
  const older=await create(b,'Unique opportunity','published');
  const offer=await b.request(`/api/projects/${older.id}/offers`,'POST',{need:'Production',deliverable:'Unique stems',requirements:'',deadline:null,status:'open',compensation:{kind:'fee',amount:200,currency:'USD'}});assert.equal(offer.status,201);
  await b.request(`/api/projects/${older.id}/offers`,'POST',{need:'Mix',deliverable:'Mix',requirements:'',deadline:null,status:'open',compensation:{kind:'split',percent:10}});

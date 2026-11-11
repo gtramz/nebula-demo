@@ -4,7 +4,7 @@ import {DatabaseSync,backup} from 'node:sqlite';
 import {join} from 'node:path';
 import {fixture} from './test-fixtures.mjs';
 const read=async r=>{assert.ok(r.ok,await r.clone().text());return r.json();};
-const rpc=async(c,m,...args)=>(await read(await c.rpc(m,...args))).result;
+const rpc=async(c,m,...args)=>(await read(await (m==='createProject'?c.recordedProject(args[0]):c.rpc(m,...args)))).result;
 test('prepared identity opens once, explicit logout stays out, restore returns configured principal',async t=>{
  const app=await fixture(t,{presentation:true}),owner=app.client();const user=(await owner.register('PreparedArtist')).user;
  await rpc(owner,'updateArtist',{name:'PreparedArtist',bio:'Prepared biography',genreIds:['jazz']});
@@ -23,6 +23,8 @@ test('prepared identity opens once, explicit logout stays out, restore returns c
 test('Home previews expose the exact public recording and remove withdrawn audio',async t=>{
  const app=await fixture(t),owner=app.client();await owner.register('PreviewOwner');
  const p=await rpc(owner,'createProject',{title:'Preview project',category:'single',status:'published',goalAmount:1000});
+ // Restore the pre-selection legacy fixture: its Home preview is intentionally inferred.
+ const legacy=new DatabaseSync(join(app.dataDir,'nebula.sqlite'));legacy.prepare('DELETE FROM project_recordings WHERE project=?').run(p.id);legacy.prepare('DELETE FROM project_recording_settings WHERE project=?').run(p.id);legacy.close();
  const media=await read(await owner.upload());
  const post=await read(await owner.request('/api/publications','POST',{title:'Actual recording',description:'',mediaId:media.id,coverId:null,projectId:p.id,allowRemix:true,status:'published'}));
  await read(await owner.request(`/api/projects/${p.id}/offers`,'POST',{need:'Mix',deliverable:'Stereo mix',requirements:'Keep the pulse',deadline:null,status:'open',compensation:{kind:'fee',amount:180,currency:'USD'}}));

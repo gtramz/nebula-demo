@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { DatabaseSync } from 'node:sqlite';
 import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
@@ -19,6 +20,7 @@ export async function fixture(t, options = {}) {
   t.after(async () => { await stop(); await rm(dataDir, { recursive: true, force: true }); });
   function client() {
     let cookie = '';
+    const recordedInputs = new Map();
     return {
       async request(path, method = 'GET', body, headers = {}) {
         const response = await fetch(origin + path, { method, headers: { Origin: origin, 'X-Nebula-Request': '1', ...(cookie ? { Cookie: cookie } : {}), ...(body && !Buffer.isBuffer(body) ? { 'Content-Type': 'application/json' } : {}), ...headers }, body: body === undefined ? undefined : Buffer.isBuffer(body) ? body : JSON.stringify(body) });
@@ -39,6 +41,21 @@ export async function fixture(t, options = {}) {
           }
           return await this.request(`/api/collaborations/${row.id}`);
         } finally {db.close();}
+      },
+      // Explicit fixture builder for tests whose subject is not release validation.
+      // Uses the real upload and project APIs; never bypasses production checks.
+      async recordedProject(input) {
+        if(!['single','ep','album','video'].includes(input.category?.toLowerCase()))return this.rpc('createProject',input);
+        const signature=JSON.stringify(input);
+        if(!recordedInputs.has(signature)) {
+          const songs=input.songs?.length ? structuredClone(input.songs) : [{title:input.title,description:''}];
+          if(!songs.some(song=>song.recordings?.length)) {
+            const uploaded=await this.upload();assert.equal(uploaded.status,201);const media=await uploaded.json();
+            songs[0].recordings=[{id:randomUUID(),mediaId:media.id}];
+          }
+          recordedInputs.set(signature,{...input,songs,operationId:input.operationId??randomUUID()});
+        }
+        return this.rpc('createProject',recordedInputs.get(signature));
       },
       async rpc(method, ...args) { return this.request('/api/rpc', 'POST', { method, args }); },
       async register(name, role = 'artist') {

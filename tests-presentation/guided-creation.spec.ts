@@ -59,7 +59,7 @@ test('guided project validates stages, preserves songs and publishes a scoped op
   for(const width of info.project.name==='desktop'?[768,1024,1440]:[390]) {await page.setViewportSize({width,height:844});await capture(page,info.outputPath(`project-identity-${width}.png`));}
   await next(page);await stage(page,'Songs & story');await page.getByLabel('PITCH (Short description)',{exact:true}).fill('Our next record.');
   await page.getByRole('button',{name:'Add song',exact:true}).click();await next(page);await stage(page,'Songs & story');
-  await page.getByLabel('Song 1 title',{exact:true}).fill('First song');await next(page);await stage(page,'Opportunities');
+  await page.getByLabel('Song 1 title',{exact:true}).fill('First song');await page.getByLabel('Upload song audio',{exact:true}).setInputFiles('presentation/assets/audio/afterglow.mp3');await expect(page.getByRole('button',{name:'Play Project recording preview',exact:true})).toBeEnabled();await next(page);await stage(page,'Opportunities');
   await page.getByLabel('Find collaborators for this project',{exact:true}).check();await page.getByRole('combobox',{name:'Opportunity scope',exact:true}).selectOption('0');
   await page.getByLabel('Expected deliverable',{exact:true}).fill('One vocal verse');await next(page);await stage(page,'Opportunities');
   await expect(page.getByRole('alert').last()).toContainText('Choose a musical reference');
@@ -81,54 +81,15 @@ test('Save & exit creates a real private project without publishing',async({page
   const projects=(await call(page,'/api/rpc',{method:'listProjects',args:[]})).result;expect(projects.filter((p:any)=>p.title==='Private guided draft')).toHaveLength(1);expect(projects.find((p:any)=>p.title==='Private guided draft').status).toBe('draft');
 });
 
-test('new project formats reserve tracklists for Album and EP without losing in-progress songs', async ({page}, info) => {
-  await page.goto('/profile?create=project');
-  const category=page.getByLabel('CATEGORY',{exact:true});
-  await expect(category.locator('option')).toHaveText(['Album','EP','Tour','Music video']);
-  await page.getByLabel('TITLE',{exact:true}).fill('Format switch project');
-  await next(page);
-  for(const title of ['First track','Second track']) {
-    await page.getByRole('button',{name:'Add song',exact:true}).click();
-    await page.getByLabel(`Song ${title==='First track'?1:2} title`,{exact:true}).fill(title);
-  }
-  await next(page);
-  await page.getByLabel('Find collaborators for this project',{exact:true}).check();
-  await page.getByRole('combobox',{name:'Opportunity scope',exact:true}).selectOption('1');
-  await page.getByLabel('Upload reference audio or video',{exact:true}).setInputFiles('presentation/assets/audio/afterglow.mp3');
-  await expect(page.getByRole('region',{name:'Opportunity reference player',exact:true})).toBeVisible();
-  await page.getByRole('button',{name:'Step 1: Identity',exact:true}).click();
-  await category.selectOption('EP');await next(page);
-  await expect(page.getByLabel('Song 2 title',{exact:true})).toHaveValue('Second track');
-  for(const format of ['Tour','Video']) {
-    await page.getByRole('button',{name:'Step 1: Identity',exact:true}).click();
-    await category.selectOption(format);await next(page);await stage(page,'Story');
-    await expect(page.getByRole('button',{name:'Add song',exact:true})).toHaveCount(0);
-    await expect(page.getByLabel('Use an existing song',{exact:true})).toHaveCount(0);
-    await next(page);
-    await expect(page.getByRole('combobox',{name:'Opportunity scope',exact:true})).toHaveValue('');
-    await expect(page.getByLabel('Opportunity reference',{exact:true})).toHaveCount(0);
-    await expect(page.getByRole('combobox',{name:'Opportunity scope',exact:true}).locator('option')).toHaveText(['Entire project']);
-  }
-  await page.getByRole('button',{name:'Step 1: Identity',exact:true}).click();
-  await category.selectOption('Album');await next(page);
-  await expect(page.getByLabel('Song 1 title',{exact:true})).toHaveValue('First track');
-  await expect(page.getByLabel('Song 2 title',{exact:true})).toHaveValue('Second track');
-  // An unfinished hidden track must neither block saving nor be submitted as a video tracklist.
-  await page.getByRole('button',{name:'Add song',exact:true}).click();
-  await page.getByRole('button',{name:'Step 1: Identity',exact:true}).click();
-  await category.selectOption('Video');await next(page);await next(page);
-  await page.getByLabel('Find collaborators for this project',{exact:true}).uncheck();
-  await next(page);await stage(page,'Review');
-  await expect(page.locator('.creation-summary')).toContainText('Music video');
-  await expect(page.locator('.creation-summary dt').filter({hasText:/^Songs$/})).toHaveCount(0);
-  await capture(page,info.outputPath('music-video-review.png'));
-  await page.getByRole('button',{name:'Save project',exact:true}).click();
-  await expect(page).toHaveURL(/\/profile$/);
-  const projects=(await call(page,'/api/rpc',{method:'listProjects',args:[]})).result;
-  const project=projects.find((p:any)=>p.title==='Format switch project');
-  expect(project.category).toBe('Video');expect(project.status).toBe('draft');
-  expect((await call(page,`/api/projects/${project.id}/songs`)).songs).toHaveLength(0);
-  expect(await call(page,`/api/projects/${project.id}/offers`)).toHaveLength(0);
+test('project formats preserve songs while Single and Music video enforce one song', async ({page}) => {
+  await page.goto('/profile?create=project');const category=page.getByLabel('CATEGORY',{exact:true});
+  await expect(category.locator('option')).toHaveText(['Album','EP','Single','Tour','Music video']);
+  await page.getByLabel('TITLE',{exact:true}).fill('Format switch project');await next(page);
+  for(let i=1;i<=2;i++){await page.getByRole('button',{name:'Add song',exact:true}).click();await page.getByLabel(`Song ${i} title`,{exact:true}).fill(`Track ${i}`);}
+  for(const format of ['Single','Video']){await page.getByRole('button',{name:'Step 1: Identity',exact:true}).click();await category.selectOption(format);await next(page);await stage(page,'Songs & story');await expect(page.getByRole('alert')).toContainText('This format allows one song');await expect(page.getByLabel('Song 2 title',{exact:true})).toHaveValue('Track 2');await next(page);await stage(page,'Songs & story');}
+  await page.getByRole('button',{name:'Step 1: Identity',exact:true}).click();await category.selectOption('Tour');await next(page);await stage(page,'Story');await expect(page.getByRole('button',{name:'Add song',exact:true})).toHaveCount(0);
+  await page.getByRole('button',{name:'Step 1: Identity',exact:true}).click();await category.selectOption('Album');await next(page);await expect(page.getByLabel('Song 2 title',{exact:true})).toHaveValue('Track 2');await next(page);await next(page);await page.getByRole('button',{name:'Save project',exact:true}).click();await expect(page).toHaveURL(/\/profile$/);
+  const project=(await call(page,'/api/rpc',{method:'listProjects',args:[]})).result.find((p:any)=>p.title==='Format switch project');expect((await call(page,`/api/projects/${project.id}/songs`)).songs).toHaveLength(2);
 });
 
 test('existing Single projects retain their format and songs when editing details', async ({page}) => {

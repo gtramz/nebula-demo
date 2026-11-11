@@ -8,7 +8,7 @@ const fee = { kind: 'fee', amount: 200, currency: 'USD' };
 const split = { kind: 'split', percent: 12 };
 const ids = page => page.items.map(item => item.project.id);
 async function rpc(client, method, ...args) {
-  const response = await client.rpc(method, ...args);
+  const response = await (method==='createProject'?client.recordedProject(args[0]):client.rpc(method, ...args));
   assert.equal(response.status, 200, await response.clone().text());
   return (await response.json()).result;
 }

@@ -5,7 +5,7 @@ import {join} from 'node:path';
 import {randomUUID} from 'node:crypto';
 import {fixture} from './test-fixtures.mjs';
 async function result(r,status=200){assert.equal(r.status,status,await r.clone().text());return r.json();}
-async function rpc(c,m,...a){return(await result(await c.rpc(m,...a))).result;}
+async function rpc(c,m,...a){return(await result(await (m==='createProject'?c.recordedProject(a[0]):c.rpc(m,...a)))).result;}
 test('reference scope, draft privacy, restart and proposal decisions preserve the same thread',async t=>{
  const app=await fixture(t,{presentation:true}),owner=app.client(),artist=app.client(),other=app.client();
  await owner.register('ReferenceOwner');await artist.register('ProposalArtist');await other.register('UnrelatedArtist');

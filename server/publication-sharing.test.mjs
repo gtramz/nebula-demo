@@ -35,7 +35,7 @@ test('share enforces identity, recipient, conversation membership and request ad
  assert.equal((await json(await a.request('/api/messages/share-targets'))).items[0].reason,'Request closed');assert.equal((await a.request('/api/messages/share','POST',op({publicationId:post.id,recipientId:B.artistId}))).status,409);
 });
 test('accepted collaboration is reused without changing work, attachments or terms',async t=>{
- const {a,b,A,B,post}=await setup(t);const project=(await json(await b.rpc('createProject',{title:'Sessions',category:'single',goalAmount:1000,status:'published'}))).result;
+ const {a,b,A,B,post}=await setup(t);const project=(await json(await b.recordedProject({title:'Sessions',category:'single',goalAmount:1000,status:'published'}))).result;
  const offer=await json(await b.request(`/api/projects/${project.id}/offers`,'POST',{need:'Verse',deliverable:'Dry vocal',requirements:'One verse',deadline:null,status:'open',compensation:{kind:'split',percent:10}}),201);
  const thread=await json(await a.legacyConversation(offer.id));const before=await json(await b.request(`/api/collaborations/${thread.id}`));
  const target=(await json(await a.request('/api/messages/share-targets'))).items[0];assert.equal(target.destination.kind,'collaboration');

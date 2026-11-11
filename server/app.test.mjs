@@ -44,16 +44,16 @@ test('durable accounts, private drafts, publishing, range playback and withdrawa
   assert.equal((await artist.request('/api/publications?mine=1')).status, 401);
 });
 
-test('server rejects forged ownership, foreign assets, unpublished projects, CSRF and stale edits', async t => {
+test('server rejects forged ownership, foreign assets, CSRF and stale edits while allowing private project links', async t => {
   const app = await fixture(t), artist = app.client(), other = app.client(), investor = app.client(), guest = app.client();
   await artist.register('owner'); await other.register('other'); await investor.register('investor', 'investor');
   assert.equal((await investor.upload()).status, 403); assert.equal((await guest.upload()).status, 401);
   const media = await (await artist.upload()).json();
   assert.equal((await other.request('/api/publications', 'POST', postInput(media))).status, 400);
-  const projectResponse = await artist.rpc('createProject', { title: 'Private project', category: 'EP', goalAmount: 1000, status: 'draft', artistId: 999, id: 999 });
+  const projectResponse = await artist.recordedProject({ title: 'Private project', category: 'EP', goalAmount: 1000, status: 'draft', artistId: 999, id: 999 });
   assert.equal(projectResponse.status, 200); const project = (await projectResponse.json()).result;
   assert.notEqual(project.artistId, 999); assert.notEqual(project.id, 999);
-  assert.equal((await artist.request('/api/publications', 'POST', postInput(media, { projectId: project.id, status: 'published' }))).status, 400);
+  assert.equal((await artist.request('/api/publications', 'POST', postInput(media, { projectId: project.id, status: 'published' }))).status, 201);
   await artist.rpc('updateProject', project.id, { status: 'published' });
   const post = await (await artist.request('/api/publications', 'POST', postInput(media, { projectId: project.id, status: 'published', allowRemix: true }))).json();
   assert.equal(post.project.title, 'Private project');
@@ -154,7 +154,7 @@ test('feed snapshots keep order and pagination stable while counts update and wi
 test('server funding history remains USD, grouped publicly, private by account and durable after archive', async t => {
   const app = await fixture(t), owner = app.client(), investor = app.client(), stranger = app.client(), guest = app.client();
   await owner.register('HistoryArtist'); await investor.register('HistoryInvestor', 'investor'); await stranger.register('HistoryStranger', 'investor');
-  const project = (await (await owner.rpc('createProject', { title: 'History EP', category: 'EP', goalAmount: 2000, status: 'funding' })).json()).result;
+  const project = (await (await owner.recordedProject({ title: 'History EP', category: 'EP', goalAmount: 2000, status: 'funding' })).json()).result;
   const receipt = (await (await investor.rpc('createInvestment', { projectId: project.id, amount: 100.10 })).json()).result;
   await investor.rpc('createInvestment', { projectId: project.id, amount: 200.20 });
   const detail = (await (await guest.rpc('getProject', project.id)).json()).result;
@@ -179,7 +179,7 @@ const offerInput = { need: 'Verse', deliverable: '16 bars and dry vocals', requi
 test('historical collaboration lifecycle, immutable proposal terms, private messages/media, revisions and restart', async t => {
   const app = await fixture(t), owner = app.client(), applicant = app.client(), other = app.client(), investor = app.client(), guest = app.client();
   await owner.register('CollabOwner'); await applicant.register('CollabArtist'); await other.register('CollabOther'); await investor.register('CollabInvestor','investor');
-  const project = (await (await owner.rpc('createProject', { title: 'Open EP', category: 'EP', goalAmount: 1000, status: 'published' })).json()).result;
+  const project = (await (await owner.recordedProject({ title: 'Open EP', category: 'EP', goalAmount: 1000, status: 'published' })).json()).result;
   let offer = await (await owner.request(`/api/projects/${project.id}/offers`, 'POST', offerInput)).json();
   assert.equal(offer.available,true);
   assert.equal((await investor.request(`/api/offers/${offer.id}/conversations`, 'POST', {})).status,403);
@@ -236,7 +236,7 @@ test('historical collaboration lifecycle, immutable proposal terms, private mess
 test('offer visibility, USD validation, ownership and stale terms are enforced', async t => {
   const app = await fixture(t), owner = app.client(), applicant = app.client(), guest = app.client();
   await owner.register('TermsOwner'); await applicant.register('TermsApplicant');
-  const project = (await (await owner.rpc('createProject',{title:'Draft collaboration',category:'EP',goalAmount:1000,status:'draft'})).json()).result;
+  const project = (await (await owner.recordedProject({title:'Draft collaboration',category:'EP',goalAmount:1000,status:'draft'})).json()).result;
   let offer = await (await owner.request(`/api/projects/${project.id}/offers`,'POST',offerInput)).json();
   assert.equal(offer.available,false); assert.equal((await guest.request(`/api/projects/${project.id}/offers`)).status,404);
   assert.equal((await applicant.request(`/api/offers/${offer.id}/conversations`)).status,409);
@@ -265,7 +265,7 @@ test('notifications are private, paginated, durable and preserve arrivals after 
   assert.equal((await guest.request('/api/notifications/read','PATCH',{id:1})).status,401);
   assert.equal((await investor.request('/api/notifications/read','PATCH',{id:1})).status,403);
   assert.deepEqual(await (await owner.request('/api/notifications/summary')).json(),{unreadCount:0,latestId:null});
-  const project = (await (await owner.rpc('createProject',{title:'Notice EP',category:'EP',goalAmount:1000,status:'published'})).json()).result;
+  const project = (await (await owner.recordedProject({title:'Notice EP',category:'EP',goalAmount:1000,status:'published'})).json()).result;
   const offer = await (await owner.request(`/api/projects/${project.id}/offers`,'POST',offerInput)).json();
   const thread = await (await applicant.legacyConversation(offer.id)).json(), path=`/api/collaborations/${thread.id}`;
   await applicant.legacyConversation(offer.id);
@@ -348,7 +348,7 @@ test('private editable drafts enforce ownership, source revisions, media privacy
 
 test('a private rendered remix shares only its final output through a proposal with durable credit',async t=>{
  const app=await fixture(t),owner=app.client(),artist=app.client(),other=app.client();await owner.register('ProposalOwner');await artist.register('ProposalArtist');await other.register('ProposalOther');
- const project=(await(await owner.rpc('createProject',{title:'Private remix project',category:'EP',goalAmount:1000,status:'published'})).json()).result;
+ const project=(await(await owner.recordedProject({title:'Private remix project',category:'EP',goalAmount:1000,status:'published'})).json()).result;
  const offer=await(await owner.request(`/api/projects/${project.id}/offers`,'POST',offerInput)).json();const base=await(await owner.upload()).json();
  const original=await(await owner.request('/api/publications','POST',postInput(base,{status:'published',allowRemix:true,projectId:project.id}))).json();
  let draft=await newDraft(artist,original);const own=await privateUpload(artist,draft),mix=await privateUpload(artist,draft);
@@ -376,7 +376,7 @@ test('a private rendered remix shares only its final output through a proposal w
 test('multi-file work preserves every revision, downloads names and keeps all attachments private across restart', async t => {
   const app = await fixture(t), owner = app.client(), artist = app.client(), outsider = app.client(), guest = app.client();
   await owner.register('PackageOwner'); await artist.register('PackageArtist'); await outsider.register('PackageOutsider');
-  const project = (await (await owner.rpc('createProject',{title:'Package project',category:'EP',goalAmount:1000,status:'published'})).json()).result;
+  const project = (await (await owner.recordedProject({title:'Package project',category:'EP',goalAmount:1000,status:'published'})).json()).result;
   const offer = await (await owner.request(`/api/projects/${project.id}/offers`,'POST',offerInput)).json();
   const thread = await (await artist.legacyConversation(offer.id)).json(), path = `/api/collaborations/${thread.id}`;
   const upload = async (bytes, kind, name) => {
@@ -464,7 +464,7 @@ test('waveform API requires artist access and current original permission even a
 test('Home aggregates public opportunities without duplicates, respects lifecycle and preserves the catalog', async t => {
   const app = await fixture(t), owner = app.client(), guest = app.client();
   await owner.register('home-owner');
-  const create = async (title, status = 'published', category = 'EP') => (await (await owner.rpc('createProject', { title, category, goalAmount: 2000, status })).json()).result;
+  const create = async (title, status = 'published', category = 'EP') => (await (await owner.recordedProject({ title, category, goalAmount: 2000, status })).json()).result;
   const creative = await create('Creative EP'), funding = await create('Funding EP', 'funding');
   const plain = await create('Catalog only'), draft = await create('Private draft', 'draft'), closed = await create('Closed project', 'closed');
   const expired = await create('Expired call'), archived = await create('Archived project', 'funding');
@@ -508,7 +508,7 @@ test('Home search and suggestions search before pagination, combine real fields 
   await owner.register('ContextArtist');
   assert.equal((await owner.rpc('updateArtist', { name: 'ContextArtist', genre: 'Hip-hop', bio: '', basedIn: '', recordLabel: '', picture: null })).status, 200);
   const create = async (title, status = 'published', category = 'EP') => {
-    const response = await owner.rpc('createProject', { title, category, pitch: 'Trap sessions', story: 'Analog textures', goalAmount: 3000, status });
+    const response = await owner.recordedProject({ title, category, pitch: 'Trap sessions', story: 'Analog textures', goalAmount: 3000, status });
     assert.equal(response.status,200); return (await response.json()).result;
   };
   const project = await create('Buried Context Project');
@@ -546,7 +546,7 @@ test('Home search and suggestions search before pagination, combine real fields 
 test('Project Browser facets, truthful modes and cursor pagination use existing records without writes', async t => {
   const app=await fixture(t), owner=app.client(), guest=app.client();await owner.register('BrowserArtist');
   await owner.rpc('updateArtist',{name:'BrowserArtist',genre:'Hip-hop',basedIn:'',bio:'',recordLabel:'',picture:null});
-  const create=async(title,category,status='funding')=>(await(await owner.rpc('createProject',{title,category,goalAmount:2000,status,pitch:'Browser fixture'})).json()).result;
+  const create=async(title,category,status='funding')=>(await(await owner.recordedProject({title,category,goalAmount:2000,status,pitch:'Browser fixture'})).json()).result;
   const projects=[];for(let i=0;i<27;i++) projects.push(await create(`Browser ${i}`,i%2?'EP':'Album'));
   const multi=projects[0], fee={kind:'fee',amount:300,currency:'USD'}, split={kind:'split',percent:15};
   for(const [need,compensation] of [['Production',fee],['Mix',split]]) assert.equal((await owner.request(`/api/projects/${multi.id}/offers`,'POST',{...offerInput,need,compensation})).status,201);
@@ -578,7 +578,7 @@ test('artist identity additions preserve legacy accounts, related data and sessi
   const ownerId = (await owner.register('IdentityOwner')).user.artistId;
   await applicant.register('IdentityApplicant'); const investmentAccount = await investor.register('IdentityInvestor', 'investor');
   await owner.rpc('updateArtist', { name: 'IdentityOwner', genre: 'Hip-hop / R&B', bio: 'Original bio', basedIn: 'CDMX' });
-  const project = (await (await owner.rpc('createProject', { title: 'Identity test project', category: 'EP', goalAmount: 1000, status: 'funding' })).json()).result;
+  const project = (await (await owner.recordedProject({ title: 'Identity test project', category: 'EP', goalAmount: 1000, status: 'funding' })).json()).result;
   await investor.rpc('createInvestment', { projectId: project.id, amount: 100 });
   const media = await (await owner.upload()).json();
   const post = await (await owner.request('/api/publications', 'POST', postInput(media, { projectId: project.id, status: 'published', allowRemix: true }))).json();
@@ -670,7 +670,7 @@ test('canonical artist taxonomies validate on the server and preserve unresolved
   const id = (await owner.register('TaxonomyOwner')).user.artistId;
   const otherId = (await other.register('TaxonomyOther')).user.artistId;
   await investor.register('TaxonomyInvestor', 'investor');
-  const project = (await (await owner.rpc('createProject', { title: 'Taxonomy project', category: 'EP', status: 'funding', goalAmount: 1000 })).json()).result;
+  const project = (await (await owner.recordedProject({ title: 'Taxonomy project', category: 'EP', status: 'funding', goalAmount: 1000 })).json()).result;
   const db = new DatabaseSync(join(app.dataDir, 'nebula.sqlite'));
   const raw = JSON.parse(db.prepare('SELECT value FROM state WHERE id=1').get().value);
   Object.assign(raw.artists.find(a => a.id === id), { creativeRoles: ['Music Producer', 'Session Musician', 'Future legacy role'], genre: 'Demo projects', genres: ['Hip hop', 'RnB', 'Jazz / Soul'] });
@@ -750,7 +750,7 @@ test('Artist 1.2 identity saves are atomic, resumable and private across restart
 test('public artist catalog separates project audio, independent posts and private records before pagination', async t => {
   const app = await fixture(t), artist = app.client(), other = app.client(), guest = app.client();
   const id = (await artist.register('CatalogOwner')).user.artistId; await other.register('CatalogOther');
-  const create = async (title, category, status) => (await (await artist.rpc('createProject', { title, category, status, goalAmount: 1000 })).json()).result;
+  const create = async (title, category, status) => (await (await artist.recordedProject({ title, category, status, goalAmount: 1000 })).json()).result;
   const ep = await create('Music EP', 'EP', 'published'), draft = await create('PRIVATE PROJECT', 'Album', 'draft'), tour = await create('Public tour', 'Tour', 'published'), closed = await create('Closed work', 'Single', 'closed');
   const media = await (await artist.upload()).json();
   const publish = async (title, projectId, status = 'published') => { const r = await artist.request('/api/publications', 'POST', postInput(media, { title, projectId, status })); assert.equal(r.status, 201); return r.json(); };
@@ -787,7 +787,7 @@ test('artist genre search integrates canonical identity, legacy compatibility, p
   const app = await fixture(t), owner = app.client(), viewer = app.client(), legacy = app.client(), investor = app.client(), guest = app.client();
   const ownerId = (await owner.register('NeutralMaker')).user.artistId;
   await viewer.register('NeutralViewer'); await legacy.register('LegacyMaker'); await investor.register('GenreInvestor', 'investor');
-  const rpc = async (client, method, ...args) => { const r = await client.rpc(method, ...args); assert.equal(r.status, 200, await r.clone().text()); return (await r.json()).result; };
+  const rpc = async (client, method, ...args) => { const r = await (method==='createProject'?client.recordedProject(args[0]):client.rpc(method, ...args)); assert.equal(r.status, 200, await r.clone().text()); return (await r.json()).result; };
   const create = (client, title, status = 'published') => rpc(client, 'createProject', { title, category: 'EP', goalAmount: 1000, status });
   const eligible = await create(owner, 'Eligible neutral work');
   for (const [need, compensation] of [['Production', { kind: 'fee', amount: 100, currency: 'USD' }], ['Mix', { kind: 'split', percent: 12 }]]) {
@@ -865,7 +865,7 @@ test('artist genre search integrates canonical identity, legacy compatibility, p
 test('optional project funding persists across restart without permitting zero-goal funding or erasing receipts', async t => {
  const app=await fixture(t), artist=app.client(), investor=app.client(), guest=app.client();
  await artist.register('artist');await investor.register('investor','investor');
- const create=await artist.rpc('createProject',{title:'Unfunded music',category:'EP',status:'published',goalAmount:0,useOfFunds:[]});
+ const create=await artist.recordedProject({title:'Unfunded music',category:'EP',status:'published',goalAmount:0,useOfFunds:[]});
  assert.equal(create.status,200);const project=(await create.json()).result;
  assert.equal((await investor.rpc('createInvestment',{projectId:project.id,amount:100})).status,400);
  assert.equal((await artist.rpc('updateProject',project.id,{status:'funding'})).status,400);

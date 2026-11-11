@@ -6,7 +6,7 @@ import { randomUUID } from 'node:crypto';
 import { fixture } from './test-fixtures.mjs';
 
 async function result(response, status=200){assert.equal(response.status,status,await response.clone().text());return response.json();}
-async function rpc(c,method,...args){return (await result(await c.rpc(method,...args))).result;}
+async function rpc(c,method,...args){return (await result(await (method==='createProject'?c.recordedProject(args[0]):c.rpc(method,...args)))).result;}
 test('presentation decisions keep one thread, notifications and reset clear newly-created identities',async t=>{
   const app=await fixture(t,{presentation:true}),owner=app.client(),viewer=app.client();
   const seeded=(await owner.register('ScenarioOwner')).user;

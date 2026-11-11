@@ -36,34 +36,15 @@ test('registration validates, preserves Back, guards departure and creates once 
   await expect(page).toHaveURL(/\/explore$/); expect(writes).toBe(2);
 });
 
-test('song list validates, retains Back and cancelled reload, retries without losing revision', async ({ page }, info) => {
-  const project = await rpc(page, 'createProject', { operationId: crypto.randomUUID(), title: 'Handoff songs', category: 'EP', status: 'draft', goalAmount: 0, songs: [{ title: 'First', description: '' }] });
-  await page.goto('/profile'); await page.getByRole('button', { name: 'edit Handoff songs', exact: true }).click();
-  await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  const form = page.getByRole('form', { name: 'Song list editor', exact: true });
-  await form.getByLabel('Song 1 title', { exact: true }).fill('');
-  await form.getByRole('button', { name: 'Review songs', exact: true }).click();
-  await expect(form.getByLabel('Song 1 title', { exact: true })).toBeVisible();
-  await form.getByLabel('Song 1 title', { exact: true }).fill('Preserved song');
-  page.once('dialog', dialog => dialog.dismiss()); await form.getByRole('button', { name: 'Reload songs', exact: true }).click();
-  await expect(form.getByLabel('Song 1 title', { exact: true })).toHaveValue('Preserved song');
-  await form.getByRole('button', { name: 'Review songs', exact: true }).click();
-  await form.getByRole('button', { name: 'Back', exact: true }).click();
-  await expect(form.getByLabel('Song 1 title', { exact: true })).toHaveValue('Preserved song');
-  await form.getByRole('button', { name: 'Review songs', exact: true }).click();
-  let attempts = 0;
-  await page.route(`**/api/projects/${project.id}/songs`, route => {
-    if (route.request().method() !== 'PUT') return route.continue();
-    attempts++; return attempts === 1 ? route.fulfill({ status: 503, json: { error: 'Song save unavailable' } }) : route.continue();
-  });
-  await form.getByRole('button', { name: 'Save songs', exact: true }).click();
-  await expect(form.getByRole('alert')).toContainText('Song save unavailable');
-  await form.getByRole('button', { name: 'Save songs', exact: true }).dblclick();
-  await expect(form.getByLabel('Song 1 title', { exact: true })).toHaveValue('Preserved song');
-  expect(attempts).toBe(2);
-  const saved = await (await page.request.get(`/api/projects/${project.id}/songs`)).json();
-  expect(saved.songs[0].title).toBe('Preserved song');
-  await page.screenshot({ path: info.outputPath('songs-after.png') });
+test('integrated song editing validates, preserves Back, guards reload and retries the project transaction', async ({page},info) => {
+  const project=await rpc(page,'createProject',{operationId:crypto.randomUUID(),title:'Handoff songs',category:'EP',status:'draft',goalAmount:0,songs:[{title:'First',description:''}]});
+  await page.goto('/profile');await page.getByRole('button',{name:'edit Handoff songs',exact:true}).click();const next=page.getByRole('button',{name:'Continue',exact:true});await next.click();
+  await page.getByLabel('Song 1 title',{exact:true}).fill('');await next.click();await expect(page.getByLabel('Song 1 title',{exact:true})).toBeVisible();await page.getByLabel('Song 1 title',{exact:true}).fill('Preserved song');
+  page.once('dialog',dialog=>dialog.dismiss());await page.getByRole('button',{name:'Reload saved songs',exact:true}).click();await expect(page.getByLabel('Song 1 title',{exact:true})).toHaveValue('Preserved song');
+  await next.click();await page.getByRole('button',{name:'Back',exact:true}).click();await expect(page.getByLabel('Song 1 title',{exact:true})).toHaveValue('Preserved song');await page.screenshot({path:info.outputPath('songs-after.png')});await next.click();await next.click();
+  let attempts=0;await page.route('**/api/rpc',route=>{if(route.request().postDataJSON()?.method!=='updateProject')return route.continue();attempts++;return attempts===1?route.fulfill({status:503,json:{error:'Song save unavailable'}}):route.continue();});
+  await page.getByRole('button',{name:'Save project',exact:true}).click();await expect(page.getByRole('alert')).toContainText('Song save unavailable');await page.getByRole('button',{name:'Save project',exact:true}).dblclick();await expect(page).toHaveURL(/\/profile$/);expect(attempts).toBe(2);
+  const saved=await(await page.request.get(`/api/projects/${project.id}/songs`)).json();expect(saved.songs[0].title).toBe('Preserved song');
 });
 
 test('publication audio uses one source, rejects metadata-only readiness and recovers replacement failure', async ({ page }) => {

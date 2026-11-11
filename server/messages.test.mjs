@@ -8,7 +8,7 @@ const op=data=>({...data,operationId:randomUUID()});
 const offerInput={need:'Verse',deliverable:'Dry vocals',requirements:'One revision',deadline:null,compensation:{kind:'fee',amount:200,currency:'USD'},status:'open'};
 async function json(response,status=200){assert.equal(response.status,status,await response.clone().text());return response.json();}
 async function setup(t){const app=await fixture(t),a=app.client(),b=app.client(),c=app.client(),investor=app.client(),guest=app.client();const A=(await a.register('ArtistA')).user,B=(await b.register('ArtistB')).user;await c.register('ArtistC');await investor.register('Investor','investor');return {app,a,b,c,investor,guest,A,B};}
-async function offer(b){const project=(await json(await b.rpc('createProject',{title:'Test work',category:'EP',goalAmount:1000,status:'published'}))).result;return json(await b.request(`/api/projects/${project.id}/offers`,'POST',offerInput),201);}
+async function offer(b){const project=(await json(await b.recordedProject({title:'Test work',category:'EP',goalAmount:1000,status:'published'}))).result;return json(await b.request(`/api/projects/${project.id}/offers`,'POST',offerInput),201);}
 async function general(a,bid,extra={}){return json(await a.request('/api/messages/requests','POST',op({recipientId:bid,text:'Hello, may we talk?',...extra})),201);}
 
 test('general request stays one thread: read-only composition, exclusive delivery, reads, repeat sends, retry/restart, decisions and legacy isolation',async t=>{
@@ -48,7 +48,7 @@ test('general request stays one thread: read-only composition, exclusive deliver
 test('decline closes only its request; response and notification are atomic; valid project context never fabricates a collaboration',async t=>{
  const {app,a,b,c,A,B}=await setup(t),o=await offer(b);
  const db=new DatabaseSync(join(app.dataDir,'nebula.sqlite'));t.after(()=>db.close());
- const privateProject=(await json(await b.rpc('createProject',{title:'Hidden',category:'EP',goalAmount:1000,status:'draft'}))).result;
+ const privateProject=(await json(await b.recordedProject({title:'Hidden',category:'EP',goalAmount:1000,status:'draft'}))).result;
  assert.equal((await a.request(`/api/messages/compose?artist=${B.artistId}&project=${privateProject.id}`)).status,404);
  assert.equal((await a.request(`/api/messages/compose?artist=${A.artistId}&project=${o.projectId}`)).status,400);
  const thread=await general(a,B.artistId,{projectId:o.projectId}),path=`/api/messages/general/${thread.id}`;
