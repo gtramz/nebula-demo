@@ -79,7 +79,7 @@
   ],
   "scene": {
     "path": "presentation/seed/scene.sqlite",
-    "sha256": "758c6c4c1a405f61637845650f1ca4ef569ea7eb86d29e456c841056acefff5b"
+    "sha256": "975abb459894a5498fdf6acc9e5e0c8b70046a996ec4da58d971cc89ef875016"
   },
   "media": [
     {
@@ -318,16 +318,16 @@
       "path": "presentation/assets/covers/luna-original.png",
       "kind": "image",
       "mime": "image/png",
-      "size": 17548,
-      "sha256": "f2b81a26ce1f6f5ae8f6f382eec06854c1322346afe2603f03741d3de61e3470"
+      "size": 395844,
+      "sha256": "1bb5836b0e348d936a3532c48dc300f602104fe01414488305f9517719c34c8c"
     },
     {
       "id": "161deee5-8a9f-4021-bb2b-677f433ee51d",
       "path": "presentation/assets/covers/luna-chilz-remix.png",
       "kind": "image",
       "mime": "image/png",
-      "size": 16429,
-      "sha256": "fb7823a284a1eb3b466e3fc431477426b5d89ca69459bcbfc0a45baaef359f2c"
+      "size": 498585,
+      "sha256": "a22fd31bb33bd30a56e2d873cf98ab3d4ef3f0eb84e0cae3e0cd5043378949c3"
     },
     {
       "id": "2d8b5122-d8b9-5068-8183-d50f9b60ddc0",

@@ -2,7 +2,7 @@ import { AdaptiveVideo, isSplitVideo } from '@/features/remix/adaptive-video';
 import { memo, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest, type Waveform } from '@nebula/local';
-import { Disc3, Maximize, Volume2, VolumeX } from 'lucide-react';
+import { Disc3, Maximize, Play, Volume2, VolumeX } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNotificationsOpen } from '@/features/notifications';
 import { DiscoveryArtwork } from './cover-artwork';
@@ -14,10 +14,10 @@ const time = (seconds: number) => `${Math.floor(seconds / 60)}:${Math.floor(seco
 export function VideoDiscoveryPlayer({ children }: { children: ReactNode }) {
   return <div className="discovery-video-stage">{children}</div>;
 }
-export function AudioDiscoveryCard({ post, info, controls, playback, eager }: { post: DemoPost; eager?: boolean; info: ReactNode; controls: ReactNode; playback: ReactNode }) {
+export function AudioDiscoveryCard({ post, info, controls, playback, playbackToggle, eager }: { post: DemoPost; eager?: boolean; info: ReactNode; controls: ReactNode; playback: ReactNode; playbackToggle?: ReactNode }) {
   return <>
     <div className="discovery-audio-stage">
-      <div className="discovery-cover"><DiscoveryArtwork post={post} eager={eager} retryable />{playback}</div>
+      <div className="discovery-cover"><DiscoveryArtwork post={post} eager={eager} retryable />{playback}{playbackToggle}</div>
     </div>
     {info}
     {controls}
@@ -186,11 +186,15 @@ export const DiscoveryMedia = memo(function DiscoveryMedia({ post, active, nearb
       </div>
     </div>;
   const loading = nearby && !failed && !playBlocked && (!ready || buffering);
+  // Keep the hit area inside the media stage, separate from comments, metadata and transport controls.
+  const playbackToggle = <button type="button" className="discovery-video-tap" aria-label={`${playing ? 'Pause' : 'Play'} ${post.title}`} disabled={!active || blocked || failed} onClick={toggle}>
+    {manuallyPaused.current && <Play className="discovery-video-play-icon" size={64} fill="currentColor" aria-hidden="true" />}
+  </button>;
   const playback = loading ? <div className={`discovery-media-loading ${ready ? 'is-buffering' : ''}`} role="status" aria-label={buffering ? 'Buffering media' : `Loading ${audio ? 'audio' : 'video'}`}><span className="discovery-media-skeleton" aria-hidden="true"/><span className="sr-only">{buffering ? 'Buffering media' : `Preparing ${audio ? 'audio' : 'video'}`}</span></div> : null;
   return <div ref={surface} className={`discovery-media ${audio ? 'is-audio' : 'is-video'} ${!audio && isSplitVideo(post.composition) ? 'is-split-video' : ''}`} role="group" aria-label={`${post.title} player`} aria-describedby={keyboardHint} tabIndex={active && !blocked ? 0 : -1} data-playing={playing} aria-busy={loading}
     onKeyDown={event => { if (event.target !== event.currentTarget || event.altKey || event.ctrlKey || event.metaKey || event.repeat || ![' ', 'k', 'K'].includes(event.key)) return; event.preventDefault(); event.stopPropagation(); if (!failed) toggle(); }}>
-    <span id={keyboardHint} className="sr-only">{playing ? 'Playing.' : 'Paused.'} Press Space or K to pause or resume. Use the volume control to enable sound.</span>
-    {audio ? <><AudioDiscoveryCard post={post} eager={nearby && !blocked} info={info} controls={controls} playback={playback} />{nearby && <audio {...mediaProps} ref={element => { media.current = element; }} aria-label={`${post.title} audio`} />}</>
-      : <><VideoDiscoveryPlayer>{nearby ? <AdaptiveVideo composition={post.composition} {...mediaProps} ref={element => { media.current = element; }} poster={post.coverUrl ?? undefined} playsInline className="discovery-video" aria-label={`${post.title} video`} /> : post.coverUrl ? <img src={post.coverUrl} alt="" loading="lazy" className="discovery-video" /> : <Disc3 aria-hidden="true" size={48} />}{playback}<button type="button" className="discovery-video-sound" disabled={!active || blocked || failed} aria-label={`${muted ? 'Unmute' : 'Mute'} ${post.title}`} aria-pressed={muted} onClick={() => { if(media.current) { media.current.volume=1; media.current.muted=!muted; } if (playbackState) playbackState.muted = !muted; setMuted(value=>!value); }}>{muted?<VolumeX size={17}/>:<Volume2 size={17}/>}</button></VideoDiscoveryPlayer>{controls}{info}</>}
+    <span id={keyboardHint} className="sr-only">{playing ? 'Playing.' : 'Paused.'} Tap the video or cover, or focus the player and press Space or K to pause or resume. Use the volume control to enable sound.</span>
+    {audio ? <><AudioDiscoveryCard post={post} eager={nearby && !blocked} info={info} controls={controls} playback={playback} playbackToggle={playbackToggle} />{nearby && <audio {...mediaProps} ref={element => { media.current = element; }} aria-label={`${post.title} audio`} />}</>
+      : <><VideoDiscoveryPlayer>{nearby ? <AdaptiveVideo composition={post.composition} {...mediaProps} ref={element => { media.current = element; }} poster={post.coverUrl ?? undefined} playsInline className="discovery-video" aria-label={`${post.title} video`} /> : post.coverUrl ? <img src={post.coverUrl} alt="" loading="lazy" className="discovery-video" /> : <Disc3 aria-hidden="true" size={48} />}{playback}{playbackToggle}<button type="button" className="discovery-video-sound" disabled={!active || blocked || failed} aria-label={`${muted ? 'Unmute' : 'Mute'} ${post.title}`} aria-pressed={muted} onClick={() => { if(media.current) { media.current.volume=1; media.current.muted=!muted; } if (playbackState) playbackState.muted = !muted; setMuted(value=>!value); }}>{muted?<VolumeX size={17}/>:<Volume2 size={17}/>}</button></VideoDiscoveryPlayer>{controls}{info}</>}
   </div>;
 });

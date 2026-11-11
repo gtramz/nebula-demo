@@ -35,10 +35,24 @@ export function useDiscoveryScroll(options: ScrollOptions) {
     const container = latest.current.feed.current;
     if (!container) return;
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
-    let height = container.clientHeight, selected = latest.current.activeIndex, target: number | null = null;
+    const measureHeight = () => parseFloat(getComputedStyle(container).height) || container.clientHeight;
+    let height = measureHeight(), selected = latest.current.activeIndex, target: number | null = null;
     let aligning = false, touching = false, moving = false, frame = 0;
     let settleTimer: ReturnType<typeof setTimeout> | undefined;
     let lastWheel = -Infinity, wheelDelta = 0, wheelConsumed = false;
+    let lastWheelDelta = 0, wheelRestartPending = false, lastNavigation = -Infinity;
+
+    // clientHeight rounds fractional CSS pixels. Multiplying it by the index
+    // drifts away from native snap positions farther down the virtualized feed.
+    const topFor = (index: number) => latest.current.cards.current[index]?.offsetTop ?? index * height;
+    const nearestIndex = () => {
+      let low = 0, high = Math.max(0, latest.current.count - 1);
+      while (low < high) {
+        const middle = Math.floor((low + high) / 2);
+        if (topFor(middle) < container.scrollTop) low = middle + 1; else high = middle;
+      }
+      return low > 0 && Math.abs(topFor(low - 1) - container.scrollTop) < Math.abs(topFor(low) - container.scrollTop) ? low - 1 : low;
+    };
 
     const locked = () => latest.current.blocked || document.body.hasAttribute('data-scroll-locked');
     const clearSettle = () => { clearTimeout(settleTimer); settleTimer = undefined; };
@@ -51,6 +65,7 @@ export function useDiscoveryScroll(options: ScrollOptions) {
       selected = index;
       const current = latest.current;
       if (index === current.activeIndexRef.current) return;
+      lastNavigation = performance.now();
       current.cards.current[current.activeIndexRef.current]?.querySelectorAll<HTMLMediaElement>('audio,video').forEach(media => media.pause());
       current.activeIndexRef.current = index;
       current.onSelect(index);
@@ -61,10 +76,10 @@ export function useDiscoveryScroll(options: ScrollOptions) {
       // A menu can lock body without changing Discovery props. Cancel back to
       // the audible/selected post rather than completing behind that overlay.
       if (locked()) { align(latest.current.activeIndexRef.current); return; }
-      const index = Math.max(0, Math.min(latest.current.count - 1, Math.round(container.scrollTop / height)));
+      const index = nearestIndex();
       // A quiet timer may release an interrupted gesture, but it cannot activate
       // half-visible media. A real snap boundary is required with either API.
-      if (Math.abs(container.scrollTop - index * height) > 2) { target = null; markMoving(false); return; }
+      if (Math.abs(container.scrollTop - topFor(index)) > 2) { target = null; markMoving(false); return; }
       target = null;
       markMoving(false);
       select(index);
@@ -76,7 +91,7 @@ export function useDiscoveryScroll(options: ScrollOptions) {
       const interrupted = target !== null || moving;
       clearSettle(); cancelAnimationFrame(frame);
       target = null; aligning = true; markMoving(false);
-      const top = index * height;
+      const top = topFor(index);
       if (interrupted || Math.abs(container.scrollTop - top) > 1) container.scrollTo({ top, behavior: 'instant' });
       frame = requestAnimationFrame(() => {
         // Chromium can deliver one queued compositor position after cancelling
@@ -88,8 +103,10 @@ export function useDiscoveryScroll(options: ScrollOptions) {
     const moveTo = (index: number, instant = false) => {
       const current = latest.current;
       if (!height || locked() || index < 0 || index >= current.count || index === current.activeIndexRef.current || target !== null || touching) return false;
+      // An alignment scheduled by resize must not undo a new navigation intent.
+      cancelAnimationFrame(frame); aligning = false;
       target = index; markMoving(true);
-      container.scrollTo({ top: index * height, behavior: instant || reducedMotion.matches ? 'instant' : 'smooth' });
+      container.scrollTo({ top: topFor(index), behavior: instant || reducedMotion.matches ? 'instant' : 'smooth' });
       if (instant || reducedMotion.matches) settle(); else scheduleSettle();
       return true;
     };
@@ -105,10 +122,23 @@ export function useDiscoveryScroll(options: ScrollOptions) {
       event.preventDefault();
       if (locked()) return;
       const now = performance.now();
-      if (now - lastWheel > 180 && target === null) { wheelDelta = 0; wheelConsumed = false; }
+      const delta = event.deltaY * (event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 16 : event.deltaMode === WheelEvent.DOM_DELTA_PAGE ? height : 1);
+      const idle = now - lastWheel, magnitude = Math.abs(delta), previousMagnitude = Math.abs(lastWheelDelta);
+      // Trackpad momentum can arrive after a short quiet gap. A smaller tail
+      // is still the consumed gesture, including tiny opposite-direction bounces.
+      // A fresh wheel tick, deliberate reversal or renewed acceleration can start
+      // the next gesture without imposing a fixed delay on all navigation.
+      if (idle > 180) wheelRestartPending = true;
+      const reversed = Math.sign(delta) !== Math.sign(lastWheelDelta);
+      const renewed = wheelRestartPending && magnitude >= 16
+        && (reversed ? magnitude >= previousMagnitude * .5 : magnitude >= previousMagnitude * .9);
+      if (target === null && (idle > 800 && now - lastNavigation > 800 || renewed)) {
+        wheelDelta = 0; wheelConsumed = false; wheelRestartPending = false;
+      }
       lastWheel = now;
+      lastWheelDelta = delta;
       if (wheelConsumed || target !== null) return;
-      wheelDelta += event.deltaY * (event.deltaMode === WheelEvent.DOM_DELTA_LINE ? 16 : event.deltaMode === WheelEvent.DOM_DELTA_PAGE ? height : 1);
+      wheelDelta += delta;
       if (Math.abs(wheelDelta) < 32) return;
       wheelConsumed = true;
       moveTo(latest.current.activeIndexRef.current + Math.sign(wheelDelta));
@@ -120,7 +150,7 @@ export function useDiscoveryScroll(options: ScrollOptions) {
     };
     const onTouchEnd = (event: TouchEvent) => { touching = event.touches.length > 0; if (!touching) scheduleSettle(); };
     const reconcile = () => {
-      const current = latest.current, nextHeight = container.clientHeight;
+      const current = latest.current, nextHeight = measureHeight();
       container.dataset.scrollLocked = String(current.blocked);
       // A width-only comments/card reflow does not write scrollTop. Appended pages
       // likewise keep a gesture in flight; only height or the selected slot moves.

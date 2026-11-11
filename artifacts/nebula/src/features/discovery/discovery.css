@@ -16,7 +16,7 @@
 .discovery-video-stage,.discovery-audio-stage { min-height:0; flex:1; display:flex; justify-content:center; align-items:center; background:#080808; overflow:hidden; border-radius:12px; }
 .discovery-video { width:100%; height:100%; min-height:0; object-fit:contain; }
 .discovery-audio-stage { container-type:size; background:transparent; padding:12px; }
-.discovery-cover { width:min(100cqw,100cqh,380px); aspect-ratio:1; overflow:hidden; border-radius:8px; flex-shrink:0; }
+.discovery-cover { position:relative; width:min(100cqw,100cqh,380px); aspect-ratio:1; overflow:hidden; border-radius:8px; flex-shrink:0; }
 .discovery-cover img { width:100%; height:100%; object-fit:contain; }
 .discovery-artwork { position:relative; display:block; width:100%; height:100%; }
 .discovery-artwork > img { display:block; }
@@ -24,7 +24,7 @@
 .discovery-artwork-skeleton { position:absolute; inset:0; border:1px solid #ffffff0a; border-radius:inherit; }
 .discovery-artwork-skeleton,.discovery-media-skeleton { overflow:hidden; background:#172025; }
 .discovery-artwork-skeleton::after,.discovery-media-skeleton::after { content:''; position:absolute; inset:0; background:linear-gradient(100deg,transparent 20%,#ffffff0a 50%,transparent 80%); transform:translateX(-100%); animation:discovery-media-shimmer 1.6s ease-in-out infinite; }
-.discovery-artwork-retry { position:absolute; bottom:0; min-height:44px; padding:0 12px; color:#ddd; font-size:11px; text-decoration:underline; }
+.discovery-artwork-retry { position:absolute; z-index:2; bottom:0; min-height:44px; padding:0 12px; color:#ddd; font-size:11px; text-decoration:underline; }
 .discovery-cover-fallback:has(.discovery-artwork-retry) small { bottom:52px; }
 .discovery-media-loading { position:absolute; inset:0; z-index:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; background:#0b0f13ed; pointer-events:none; }
 .discovery-media-skeleton { position:relative; width:min(58%,320px); aspect-ratio:16 / 10; border:1px solid #ffffff0a; border-radius:10px; }
@@ -339,7 +339,7 @@
 
 /* Video transports stay visually small; their hit areas and keyboard controls remain accessible. */
 .discovery-video-stage { position:relative; }
-.discovery-video-tap { position:absolute; inset:0; width:100%; height:100%; display:grid; place-items:center; touch-action:pan-y; z-index:1; }
+.discovery-video-tap { position:absolute; inset:0; width:100%; height:100%; display:grid; place-items:center; touch-action:pan-y pinch-zoom; z-index:1; padding:0; border:0; background:transparent; cursor:pointer; }
 .discovery-video-tap:focus-visible { outline:2px solid var(--color-accent,#d5f43f); outline-offset:-3px; }
 .discovery-video-play-icon { padding:16px; border-radius:50%; background:#0007; color:white; }
 .discovery-video-sound { position:absolute; top:4px; right:50px; z-index:3; min-width:44px; min-height:44px; display:grid; place-items:center; color:white; background:#0004; border-radius:50%; }
