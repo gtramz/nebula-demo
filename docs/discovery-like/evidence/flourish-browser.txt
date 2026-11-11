@@ -1,0 +1,27 @@
+[WebServer] (node:23418) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 12 tests using 1 worker
+
+(node:23422) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/12] [desktop] › tests-presentation/discovery-like.spec.ts:25:27 › like morph on publication 3 confirms once and preserves playback and layout
+[2/12] [desktop] › tests-presentation/discovery-like.spec.ts:25:27 › like morph on publication 11 confirms once and preserves playback and layout
+[3/12] [desktop] › tests-presentation/discovery-like.spec.ts:51:1 › slow response holds a static clef, blocks duplicate likes and cancels animation on scroll
+[4/12] [desktop] › tests-presentation/discovery-like.spec.ts:84:1 › failed like returns to its previous state and a retry succeeds without pausing or changing comments
+[5/12] [desktop] › tests-presentation/discovery-like.spec.ts:108:1 › reduced motion keeps both shapes fixed and uses opacity only
+[6/12] [desktop] › tests-presentation/discovery-like.spec.ts:124:1 › guest like opens the existing login flow without a morph or write
+(node:23665) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[7/12] [mobile] › tests-presentation/discovery-like.spec.ts:25:27 › like morph on publication 3 confirms once and preserves playback and layout
+[8/12] [mobile] › tests-presentation/discovery-like.spec.ts:25:27 › like morph on publication 11 confirms once and preserves playback and layout
+[9/12] [mobile] › tests-presentation/discovery-like.spec.ts:51:1 › slow response holds a static clef, blocks duplicate likes and cancels animation on scroll
+[10/12] [mobile] › tests-presentation/discovery-like.spec.ts:84:1 › failed like returns to its previous state and a retry succeeds without pausing or changing comments
+[11/12] [mobile] › tests-presentation/discovery-like.spec.ts:108:1 › reduced motion keeps both shapes fixed and uses opacity only
+[12/12] [mobile] › tests-presentation/discovery-like.spec.ts:124:1 › guest like opens the existing login flow without a morph or write
+  12 passed (2.4m)

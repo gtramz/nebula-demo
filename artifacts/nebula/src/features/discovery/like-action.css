@@ -1,3 +1,33 @@
 .discovery-like svg { flex-shrink:0; pointer-events:none; }
 /* Pending likes remain legible while the request guard prevents repeated writes. */
 .discovery-action.discovery-like[aria-busy=true]:disabled { opacity:1; cursor:progress; }
+.discovery-like-icon { display:block; position:relative; width:21px; height:21px; flex-shrink:0; pointer-events:none; transition:color .18s ease; }
+.discovery-like-icon svg { display:block; overflow:visible; }
+.discovery-like-icon::before { content:""; position:absolute; inset:-4px; border:1px solid currentColor; border-radius:50%; opacity:0; pointer-events:none; }
+.discovery-like[data-like-phase=clef] .discovery-like-icon { color:var(--post-color); animation:discovery-like-flourish .65s both; }
+.discovery-like[data-like-phase=clef] .discovery-like-icon::before { animation:discovery-like-halo .5s .14s both; }
+.discovery-like[data-like-phase=return] .discovery-like-icon { animation:discovery-like-settle .3s both; }
+.discovery-like[data-like-phase=return][aria-pressed=true] .discovery-like-icon { animation-name:discovery-like-heartbeat; }
+@keyframes discovery-like-flourish {
+  0% { transform:scale(1) rotate(0deg); animation-timing-function:ease-in-out; }
+  14% { transform:scale(.86) rotate(-4deg); animation-timing-function:cubic-bezier(.16,1,.3,1); }
+  58% { transform:scale(1.42) rotate(10deg); animation-timing-function:ease-in-out; }
+  80% { transform:scale(1.25) rotate(-3deg); animation-timing-function:ease-out; }
+  100% { transform:scale(1.3) rotate(0deg); }
+}
+@keyframes discovery-like-halo {
+  0% { transform:scale(.55); opacity:0; }
+  25% { opacity:.32; }
+  100% { transform:scale(1.65); opacity:0; }
+}
+@keyframes discovery-like-heartbeat {
+  0% { transform:scale(1.3); animation-timing-function:ease-in-out; }
+  55% { transform:scale(.96); animation-timing-function:ease-out; }
+  78% { transform:scale(1.08); animation-timing-function:ease-in-out; }
+  100% { transform:scale(1); }
+}
+@keyframes discovery-like-settle { from { transform:scale(1.3); } to { transform:scale(1); } }
+@media (prefers-reduced-motion:reduce) {
+  .discovery-like[data-like-phase] .discovery-like-icon { animation:none; transition:none; }
+  .discovery-like[data-like-phase] .discovery-like-icon::before { animation:none; }
+}

@@ -1,5 +1,5 @@
 {
-  "checkedAt": "2026-11-11T19:25:39.390Z",
+  "checkedAt": "2026-11-11T19:38:36.587Z",
   "files": [
     {
       "path": "presentation/assets/covers/luna-original.png",
@@ -31,14 +31,16 @@
     {
       "origin": "http://127.0.0.1:4187",
       "status": 200,
-      "asset": "/assets/index-DUOE3iKt.js",
-      "likeAnimationPresent": true
+      "asset": "/assets/index-C-4o1oXu.js",
+      "likeAnimationPresent": true,
+      "flourishAnimationPresent": true
     },
     {
       "origin": "http://localhost:4188",
       "status": 200,
-      "asset": "/assets/index-DUOE3iKt.js",
-      "likeAnimationPresent": true
+      "asset": "/assets/index-C-4o1oXu.js",
+      "likeAnimationPresent": true,
+      "flourishAnimationPresent": true
     }
   ],
   "lunaAssociationsUnchanged": true

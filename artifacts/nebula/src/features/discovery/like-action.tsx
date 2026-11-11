@@ -36,12 +36,12 @@ export function DiscoveryLike({ pressed, detail, disabled, active, onToggle }: {
     // without looping; neither timer postpones the actual write or data refresh.
     function finish(success: boolean) {
       if (started === undefined) return;
-      const hold = success ? Math.max(0, (reduced ? 100 : 420) - (performance.now() - started)) : 0;
+      const hold = success ? Math.max(0, (reduced ? 100 : 650) - (performance.now() - started)) : 0;
       timers.current.push(setTimeout(() => {
         setPhase('return');
         timers.current.push(setTimeout(() => {
           setPhase('idle'); running.current = false; timers.current = [];
-        }, reduced ? 100 : 230));
+        }, reduced ? 100 : 300));
       }, hold));
     }
     await onToggle(!marked, () => {
@@ -58,12 +58,12 @@ export function DiscoveryLike({ pressed, detail, disabled, active, onToggle }: {
   const showingClef = phase === 'clef';
   return <button type="button" className="discovery-action discovery-like" aria-label="Like" aria-pressed={marked}
     aria-busy={phase !== 'idle'} data-like-phase={phase} disabled={disabled || phase !== 'idle'} onClick={() => void activate()}>
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">
+    <span className="discovery-like-icon" aria-hidden="true"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" focusable="false">
       {reduced ? <>
         <motion.path d={heart} fill={marked ? 'currentColor' : 'none'} initial={false} animate={{ opacity: showingClef ? 0 : 1 }} transition={{ duration: .1 }} />
         <motion.path d={clef} initial={false} animate={{ opacity: showingClef ? 1 : 0 }} transition={{ duration: .1 }} />
-      </> : <motion.path fill="currentColor" initial={false} animate={{ d: showingClef ? clef : heart, fillOpacity: !showingClef && marked ? 1 : 0 }} transition={{ duration: phase === 'idle' ? 0 : .23, ease: [.22, 1, .36, 1] }} />}
-    </svg>
-    <span>{detail}</span>
+      </> : <motion.path fill="currentColor" initial={false} animate={{ d: showingClef ? clef : heart, fillOpacity: !showingClef && marked ? 1 : 0 }} transition={{ duration: phase === 'idle' ? 0 : .3, ease: [.45, 0, .2, 1], d: { duration: phase === 'idle' ? 0 : showingClef ? .4 : .3, delay: showingClef ? .08 : 0 } }} />}
+    </svg></span>
+    <span data-like-count>{detail}</span>
   </button>;
 }

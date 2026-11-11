@@ -1,8 +1,8 @@
 # Animación musical del like
 
-Discovery transforma el corazón en clave de sol al dar like a un post, y vuelve al corazón relleno tras la confirmación del servidor. La secuencia normal dura unos 650 ms: 230 ms de transformación, pausa hasta los 420 ms y 230 ms de regreso. Una respuesta lenta mantiene la clave quieta; un fallo devuelve el estado anterior. Quitar el like no repite la animación.
+Discovery transforma el corazón en clave de sol al dar like a un post, y vuelve al corazón relleno tras la confirmación del servidor. La secuencia normal dura unos 950 ms: una pequeña compresión inicial, transformación gradual, giro de 10° y rebote hasta asentarse a los 650 ms; el regreso con un pulso suave dura 300 ms. Una respuesta lenta mantiene la clave quieta; un fallo devuelve el estado anterior. Quitar el like no repite la animación.
 
-El SVG interpola ocho curvas compatibles con Framer Motion. Conserva el espacio de 21 × 21 px, el contador y el color activo. Con movimiento reducido usa opacidad y formas fijas. La petición se envía al pulsar; su confirmación visual no espera a que termine la recarga del feed.
+El SVG interpola ocho curvas compatibles con Framer Motion. La clave crece visualmente un 30 % y toma el color activo; un halo tenue se expande y desaparece una sola vez. Conserva el espacio de 21 × 21 px y no desplaza el contador. Con movimiento reducido usa opacidad y formas fijas, sin giro, crecimiento ni halo. La petición se envía al pulsar; su confirmación visual no espera a que termine la recarga del feed.
 
 La protección de solicitudes existente y un bloqueo local evitan duplicados. Al cambiar de pieza o salir se cancelan los temporizadores y las respuestas tardías no reactivan la animación. Sin sesión se abre el diálogo de acceso habitual. No se modificaron endpoints, almacenamiento ni likes de comentarios.
 
@@ -20,7 +20,9 @@ La protección de solicitudes existente y un bloqueo local evitan duplicados. Al
 
 ## Validación
 
-Resultado final: **22 pruebas aprobadas y 2 omisiones intencionales** en Chrome escritorio y emulación iPhone 13. Son 12 casos nuevos del like y 10 regresiones originales; swipe solo se ejecuta en móvil y trackpad solo en escritorio. [Log completo](evidence/browser.txt).
+La afinación de tamaño, giro, halo y rebote pasó **12 de 12 pruebas** en escritorio y móvil. Además de los casos funcionales, se verifica una duración de al menos 900 ms, escala final 1.3, desaparición del halo y ausencia de animación geométrica con movimiento reducido. [Log de la afinación](evidence/flourish-browser.txt). Se ejecutó el comando de abajo limitado a `tests-presentation/discovery-like.spec.ts`; el build y los tipos también se repitieron correctamente.
+
+La implementación inicial terminó con **22 pruebas aprobadas y 2 omisiones intencionales** en Chrome escritorio y emulación iPhone 13. Son 12 casos del like y 10 regresiones originales; swipe solo se ejecuta en móvil y trackpad solo en escritorio. [Log de la implementación inicial](evidence/browser.txt).
 
 `pnpm build` completó tipos, cliente y servidor. Permanecen las advertencias de sourcemaps y tamaño de bundle que ya constaban en la entrega anterior. [Log del build](evidence/build.txt).
 
