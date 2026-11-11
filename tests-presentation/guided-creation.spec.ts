@@ -64,7 +64,7 @@ test('guided project validates stages, preserves songs and publishes a scoped op
   await page.getByLabel('Expected deliverable',{exact:true}).fill('One vocal verse');await next(page);await stage(page,'Opportunities');
   await expect(page.getByRole('alert').last()).toContainText('Choose a musical reference');
   await page.getByLabel('Upload reference audio or video',{exact:true}).setInputFiles('presentation/assets/audio/afterglow.mp3');
-  await expect(page.getByLabel('Opportunity reference',{exact:true})).toBeVisible();await next(page);await stage(page,'Review');
+  await expect(page.getByRole('region',{name:'Opportunity reference player',exact:true})).toBeVisible();await next(page);await stage(page,'Review');
   await page.getByLabel('STATUS',{exact:true}).selectOption('published');
   await page.getByRole('button',{name:'Step 2: Songs & story'}).click();await expect(page.getByLabel('Song 1 title',{exact:true})).toHaveValue('First song');
   await page.getByRole('button',{name:'Step 4: Review'}).click();await expect(page.getByLabel('STATUS',{exact:true})).toHaveValue('published');
@@ -95,7 +95,7 @@ test('new project formats reserve tracklists for Album and EP without losing in-
   await page.getByLabel('Find collaborators for this project',{exact:true}).check();
   await page.getByRole('combobox',{name:'Opportunity scope',exact:true}).selectOption('1');
   await page.getByLabel('Upload reference audio or video',{exact:true}).setInputFiles('presentation/assets/audio/afterglow.mp3');
-  await expect(page.getByLabel('Opportunity reference',{exact:true})).toBeVisible();
+  await expect(page.getByRole('region',{name:'Opportunity reference player',exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Step 1: Identity',exact:true}).click();
   await category.selectOption('EP');await next(page);
   await expect(page.getByLabel('Song 2 title',{exact:true})).toHaveValue('Second track');
@@ -140,7 +140,8 @@ test('existing Single projects retain their format and songs when editing detail
   await page.getByRole('button',{name:`edit ${single.title}`,exact:true}).click();
   await expect(page.getByLabel('CATEGORY',{exact:true})).toHaveValue('Single');
   await expect(page.getByLabel('CATEGORY',{exact:true}).locator('option[value="Video"]')).toHaveText('Music video');
-  await page.getByRole('button',{name:'SAVE PROJECT',exact:true}).click();
+  await next(page); await next(page); await next(page);
+  await page.getByRole('button',{name:'Save project',exact:true}).click();
   await expect(page.getByRole('heading',{name:'Edit Project',exact:true})).toHaveCount(0);
   const after=(await call(page,'/api/rpc',{method:'listProjects',args:[]})).result.find((p:any)=>p.id===single.id);
   expect(after.category).toBe('Single');expect(after.title).toBe(single.title);

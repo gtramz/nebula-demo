@@ -83,7 +83,7 @@ test('Forge media pauses for other playback, notifications, steps and version ch
   await expect(audio(page)).toHaveJSProperty('paused', true); await play(page);
   const original = await audio(page).elementHandle();
   await page.getByRole('button', { name: 'Continue', exact: true }).click();
-  expect(await original!.evaluate((element: HTMLAudioElement) => !element.isConnected && element.paused)).toBe(true);
+  await expect.poll(() => original!.evaluate((element: HTMLAudioElement) => !element.isConnected && element.paused)).toBe(true);
   await expect(page.locator('audio')).toHaveCount(0);
   await page.getByRole('button', { name: 'Open Forge', exact: true }).click();
   await page.getByRole('button', { name: 'Review your version', exact: true }).click();

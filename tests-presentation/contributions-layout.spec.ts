@@ -10,6 +10,7 @@ test('received project cards preserve filtering, history, responsive state and a
  await expect(card).toContainText('Elena Costa');await expect(card).toContainText('Noah Bennett');
  await page.getByRole('heading',{name:'Contributions received',exact:true}).scrollIntoViewIfNeeded();await page.screenshot({path:info.outputPath('contributions.png')});
  await page.getByRole('button',{name:'Filters',exact:true}).click();await page.getByRole('combobox',{name:'Project',exact:true}).selectOption(String(entry.projectId));
+ await card.getByText('View 2 contributions',{exact:true}).click();await page.screenshot({path:info.outputPath('received-filtered.png')});
  await page.getByLabel('To date',{exact:true}).fill('2000-01-01');await expect(page.getByText('No contributions match these filters.')).toBeVisible();
  await page.setViewportSize({width:768,height:900});await expect(page.getByLabel('To date',{exact:true})).toHaveValue('2000-01-01');
  await page.getByRole('button',{name:'Clear filters',exact:true}).click();await expect(card).toBeVisible();

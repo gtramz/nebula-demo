@@ -6,6 +6,23 @@ async function rpc(page:Page,method:string,...args:unknown[]){const r=await page
 async function session(page:Page){return (await(await page.request.get('/api/session')).json()).user;}
 async function register(page:Page,name:string,tag:string){await rpc(page,'register',{name,role:'artist',email:`${name}-${tag}@example.invalid`,password:'preview123'});return session(page);}
 
+async function prepareSubmission(page: Page, description: string, compose = false, delivery = false) {
+ const form = page.getByRole('form', { name: delivery ? 'Delivery form' : 'Proposal form', exact: true });
+ await form.getByRole('button', { name: 'Step 1: The opportunity', exact: true }).click();
+ await form.getByRole('button', { name: 'Continue', exact: true }).click();
+ await expect(form.locator('.guided-heading h2')).toHaveText('Your contribution');
+ if (compose) await form.getByRole('button', { name: 'Simple file proposal', exact: true }).click();
+ await form.getByLabel('Work files (audio, video, PDF or ZIP)', { exact: true }).setInputFiles(pdf);
+ await form.getByRole('button', { name: 'Continue', exact: true }).click();
+ await expect(form.locator('.guided-heading h2')).toHaveText('Preview your work');
+ await expect(form.getByRole('link', { name: 'Download Request proposal.pdf', exact: true })).toBeVisible();
+ await form.getByRole('button', { name: 'Continue', exact: true }).click();
+ await expect(form.locator('.guided-heading h2')).toHaveText('Review & send');
+ if (compose) await form.getByLabel('Introduction', { exact: true }).fill('I would love to contribute.');
+ await form.getByLabel(delivery ? 'Delivery notes' : 'Your proposal', { exact: true }).fill(description);
+ if (!delivery) await form.getByRole('checkbox').check();
+}
+
 test('unified messages: separate artists review proposal, revise, accept, converse and deliver in the same thread',async({page,browser},info)=>{
  test.setTimeout(120_000);const tag=`${info.project.name}-${Date.now()}`;const owner=await register(page,'Publisher',tag);
  const context=await browser.newContext({baseURL:'http://127.0.0.1:4175',viewport:page.viewportSize()!,isMobile:info.project.name==='mobile',hasTouch:info.project.name==='mobile'}),outsiderContext=await browser.newContext({baseURL:'http://127.0.0.1:4175'});
@@ -14,7 +31,7 @@ test('unified messages: separate artists review proposal, revise, accept, conver
  const response=await page.request.post(`/api/projects/${project.id}/offers`,{headers,data:{need:'Verse',deliverable:'Vocals and notes',requirements:'One revision',deadline:null,status:'open',compensation:{kind:'split',percent:10}}});expect(response.ok()).toBe(true);const offer=await response.json();
  await a.goto(`/project/${project.id}`);await a.getByRole('button',{name:'Contact artist',exact:true}).click();await expect(a).toHaveURL(new RegExp(`/messages/offer/${offer.id}$`));
  expect((await(await page.request.get('/api/messages?view=requests')).json()).items).toHaveLength(0);
- await a.getByLabel('Introduction',{exact:true}).fill('I would love to contribute.');await a.getByLabel('Your proposal',{exact:true}).fill('Complete first proposal.');await a.getByLabel('Work files (audio, video, PDF or ZIP)',{exact:true}).setInputFiles(pdf);await a.getByRole('checkbox').check();
+ await prepareSubmission(a, 'Complete first proposal.', true);
  await a.getByRole('button',{name:'Send request',exact:true}).click();await expect(a).toHaveURL(/\/messages\/collaboration\/\d+$/);const route=new URL(a.url()).pathname,api=route.replace('/messages/collaboration/','/api/collaborations/');
  await expect(a.getByLabel('Message',{exact:true})).toHaveCount(0);expect((await c.request.get(api)).status()).toBe(404);
  await page.goto('/messages');await page.getByRole('button',{name:'Requests',exact:true}).click();await expect(page.getByRole('link',{name:/Unified project/})).toContainText('1 unread');await page.getByRole('link',{name:/Unified project/}).click();
@@ -22,10 +39,10 @@ test('unified messages: separate artists review proposal, revise, accept, conver
  await expect(page.getByLabel('Message',{exact:true})).toHaveCount(0);const detail=await(await page.request.get(api)).json();expect((await c.request.get(detail.submissions[0].files[0].url)).status()).toBe(404);
  const updated=await page.request.patch(`/api/offers/${offer.id}`,{headers,data:{...offer,requirements:'Updated brief'}});expect(updated.ok()).toBe(true);await page.reload();await expect(page.getByRole('button',{name:'Accept proposal',exact:true})).toBeDisabled();await expect(page.getByText('The offer terms changed. Request a revised proposal before accepting.',{exact:true})).toBeVisible();
  await page.getByLabel('Revision feedback',{exact:true}).fill('Please revise the final line.');await page.getByRole('button',{name:'Request changes',exact:true}).click();
- await a.reload();await a.getByLabel('Your proposal',{exact:true}).fill('Updated proposal.');await a.getByLabel('Work files (audio, video, PDF or ZIP)',{exact:true}).setInputFiles(pdf);await a.getByRole('checkbox').check();await a.getByRole('button',{name:'Send proposal',exact:true}).click();
+ await a.reload();await prepareSubmission(a, 'Updated proposal.');await a.getByRole('button',{name:'Send proposal',exact:true}).click();
  await expect(a.getByRole('form',{name:'Proposal form'})).toHaveCount(0);await page.reload();await page.getByRole('button',{name:'Accept proposal',exact:true}).click();await expect(page.getByLabel('Message',{exact:true})).toBeVisible();await expect(page).toHaveURL(new RegExp(`${route}$`));
  await a.reload();await a.getByLabel('Message',{exact:true}).fill('Thanks for accepting.');await a.getByRole('button',{name:'Send message',exact:true}).click();await expect(a.getByText('Thanks for accepting.',{exact:true})).toBeVisible();
- await a.getByLabel('Delivery notes',{exact:true}).fill('Final delivery.');await a.getByLabel('Work files (audio, video, PDF or ZIP)',{exact:true}).setInputFiles(pdf);await a.getByRole('button',{name:'Send delivery',exact:true}).click();await expect(a.getByRole('form',{name:'Delivery form'})).toHaveCount(0);
+ await prepareSubmission(a, 'Final delivery.', false, true);await a.getByRole('button',{name:'Send delivery',exact:true}).click();await expect(a.getByRole('form',{name:'Delivery form'})).toHaveCount(0);
  await page.reload();await page.getByRole('button',{name:'Mark completed',exact:true}).click();await expect(page.getByText('This collaboration is completed.',{exact:true})).toBeVisible();
  await page.getByRole('button',{name:/Mark viewed activity as read/}).click();await expect(page.getByRole('button',{name:/Mark viewed activity as read/})).toHaveCount(0);
  await page.getByRole('navigation', { name: 'Primary navigation' }).getByRole('link', { name: 'messages', exact: true }).click();await page.getByRole('button',{name:'Conversations',exact:true}).click();await expect(page.getByRole('link',{name:/Unified project/})).toContainText('completed');
