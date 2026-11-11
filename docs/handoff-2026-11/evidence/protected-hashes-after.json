@@ -1,0 +1,32 @@
+[
+  {
+    "path": "presentation/assets/covers/luna-original.png",
+    "before": "1bb5836b0e348d936a3532c48dc300f602104fe01414488305f9517719c34c8c",
+    "after": "1bb5836b0e348d936a3532c48dc300f602104fe01414488305f9517719c34c8c",
+    "match": true
+  },
+  {
+    "path": "presentation/assets/covers/luna-chilz-remix.png",
+    "before": "a22fd31bb33bd30a56e2d873cf98ab3d4ef3f0eb84e0cae3e0cd5043378949c3",
+    "after": "a22fd31bb33bd30a56e2d873cf98ab3d4ef3f0eb84e0cae3e0cd5043378949c3",
+    "match": true
+  },
+  {
+    "path": "presentation/seed/manifest.json",
+    "before": "e6c3ba991fb43170d0fa5583fe695f232eec48ad49bc4bd383b79e7b0f5f097b",
+    "after": "e6c3ba991fb43170d0fa5583fe695f232eec48ad49bc4bd383b79e7b0f5f097b",
+    "match": true
+  },
+  {
+    "path": "presentation/seed/scene.sqlite",
+    "before": "975abb459894a5498fdf6acc9e5e0c8b70046a996ec4da58d971cc89ef875016",
+    "after": "975abb459894a5498fdf6acc9e5e0c8b70046a996ec4da58d971cc89ef875016",
+    "match": true
+  },
+  {
+    "path": "artifacts/nebula/src/features/discovery/feed-scroll.ts",
+    "before": "35dca688b1757fb61268cadcaa016b0fad207dac345e3478a698a1c7db074ac9",
+    "after": "35dca688b1757fb61268cadcaa016b0fad207dac345e3478a698a1c7db074ac9",
+    "match": true
+  }
+]

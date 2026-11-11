@@ -1,0 +1,70 @@
+✔ LUNA adds mapped demo artists, one shared original and an attributed full-song remix without changing existing records (37.728166ms)
+✔ LUNA copies only registered immutable assets and generates credentials only for the new accounts (310.993625ms)
+✔ insertion failure rolls back every database record, sequence and newly copied file (12.345917ms)
+✔ conflicting demo identity or missing CHILZ mapping refuses the import without replacing any account (1.198375ms)
+Prepared 12 fictional accounts, 26 publications and 64 media files. Open with pnpm start.
+Presentation already prepared. Existing edits are preserved. Use demo:reset explicitly to restore.
+✔ portable fixture excludes credentials and sessions, installs all media and preserves later edits (1436.303292ms)
+✔ durable accounts, private drafts, publishing, range playback and withdrawal across clients and restart (261.219417ms)
+✔ server rejects forged ownership, foreign assets, unpublished projects, CSRF and stale edits (250.106042ms)
+✔ upload format checks and deletion cannot expose or delete another artist’s files (182.337833ms)
+✔ concurrent duplicate registrations preserve one account and server quotas are enforced (139.230875ms)
+✔ social permissions, idempotent stars, private saves, comment moderation and restart persistence (302.438834ms)
+✔ feed snapshots keep order and pagination stable while counts update and withdrawal takes effect (255.832458ms)
+✔ server funding history remains USD, grouped publicly, private by account and durable after archive (229.125209ms)
+✔ historical collaboration lifecycle, immutable proposal terms, private messages/media, revisions and restart (372.039791ms)
+✔ offer visibility, USD validation, ownership and stale terms are enforced (179.456959ms)
+✔ notifications are private, paginated, durable and preserve arrivals after mark-all snapshot (501.816375ms)
+✔ private editable drafts enforce ownership, source revisions, media privacy, retry and conflict across restart (375.006459ms)
+✔ a private rendered remix shares only its final output through a proposal with durable credit (285.158292ms)
+✔ multi-file work preserves every revision, downloads names and keeps all attachments private across restart (338.068209ms)
+✔ private remix format matrix rejects audio over video and mismatched results (309.273042ms)
+✔ historical public and flattened draft remixes remain intact, without enabling new public release (173.853542ms)
+✔ waveform API requires artist access and current original permission even after caching (469.092959ms)
+✔ Home aggregates public opportunities without duplicates, respects lifecycle and preserves the catalog (213.910917ms)
+✔ Home search and suggestions search before pagination, combine real fields and validate public scope (237.49225ms)
+✔ Project Browser facets, truthful modes and cursor pagination use existing records without writes (193.567541ms)
+✔ artist identity additions preserve legacy accounts, related data and sessions across restart (380.073833ms)
+✔ private preference operations enforce ownership, roles, CSRF and strict validation (249.092833ms)
+✔ canonical artist taxonomies validate on the server and preserve unresolved legacy identity (229.87975ms)
+✔ Artist 1.2 identity saves are atomic, resumable and private across restart and accounts (237.553166ms)
+✔ public artist catalog separates project audio, independent posts and private records before pagination (271.140834ms)
+✔ artist genre search integrates canonical identity, legacy compatibility, pagination, Following and visibility without changing project search (522.147666ms)
+✔ optional project funding persists across restart without permitting zero-goal funding or erasing receipts (154.813417ms)
+✔ effective follows notify only the recipient, survive retries/restarts, and refollows create a new occurrence (413.189417ms)
+Request failed: Injected notification failure
+✔ notification insertion failure atomically rolls back a new follow and allows a safe retry (148.958292ms)
+Request failed: The saved preview data is damaged or incompatible. Download a backup before starting a new preview.
+Request failed: The saved preview data is damaged or incompatible. Download a backup before starting a new preview.
+✔ existing relationships are never backfilled and missing account/profile pairs cannot follow or link (155.602417ms)
+✔ publication retries preserve one write and keep legacy revision checks (176.189084ms)
+✔ general request stays one thread: read-only composition, exclusive delivery, reads, repeat sends, retry/restart, decisions and legacy isolation (460.538ms)
+Request failed: injected failure
+✔ decline closes only its request; response and notification are atomic; valid project context never fabricates a collaboration (328.986833ms)
+Request failed: injected failure
+✔ formal requests send complete proposals atomically, prevent old API bypass, revise and accept exact proposal, deliver and complete on the same thread (390.474ms)
+✔ closed, withdrawn, expired requests cannot reopen while historical rejected chats preserve their behavior (337.705084ms)
+✔ offer closure, withdrawal, expiry and pending competitor rejection obey admission independently (323.964625ms)
+✔ inbox and transcript pagination stay bounded, scope reads, and do not expose other participants receipts (693.737791ms)
+Request failed: injected failure
+Request failed: injected failure
+Request failed: injected failure
+✔ general request, acceptance and chat writes roll back together with failed notifications (286.577792ms)
+✔ handoff inbox uses the peer image for both participants with nullable fallback (273.412417ms)
+✔ stage A: legacy migration preserves all history, indexes and deleted high-water IDs across repeated startup (5.284709ms)
+✔ stage A: failed physical migration rolls back original schema, rows, indexes and sequence (3.168875ms)
+✔ stage A: fresh and empty legacy databases initialize repeatedly without backfill (1.5615ms)
+✔ stage A: mixed destinations paginate once, keep reads private/idempotent, and preserve newer arrivals (4.414083ms)
+✔ stage A: unavailable actors, missing/foreign/corrupt workspaces remain readable without leaking context (1.715416ms)
+✔ legacy disk migration survives close/reopen with read state, sequence and both destination types intact (6.834ms)
+✔ stage A: index creation failure rolls back the completed table copy too (2.122542ms)
+✔ messages migration preserves prior Follow schema, read state, unique occurrences and deleted sequence, with mixed destination history (1.144334ms)
+✔ handoff unread filter paginates before limiting and preserves read history (2.428167ms)
+ℹ tests 52
+ℹ suites 0
+ℹ pass 52
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 7406.738708

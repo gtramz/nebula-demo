@@ -1,0 +1,78 @@
+[WebServer] (node:9185) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 23 tests using 1 worker
+
+(node:9189) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [desktop] › tests-presentation/contributions-layout.spec.ts:4:1 › received project cards preserve filtering, history, responsive state and archived records (3.2s)
+  ✓   2 [desktop] › tests-presentation/guided-creation.spec.ts:18:49 › guided audio publication preserves inputs, draft and publish (22.0s)
+  ✓   3 [desktop] › tests-presentation/guided-creation.spec.ts:18:49 › guided video publication preserves inputs, draft and publish (21.6s)
+  ✓   4 [desktop] › tests-presentation/guided-creation.spec.ts:53:1 › guided project validates stages, preserves songs and publishes a scoped opportunity (18.6s)
+  ✓   5 [desktop] › tests-presentation/guided-creation.spec.ts:78:1 › Save & exit creates a real private project without publishing (2.7s)
+  ✓   6 [desktop] › tests-presentation/guided-creation.spec.ts:84:1 › new project formats reserve tracklists for Album and EP without losing in-progress songs (23.9s)
+  ✓   7 [desktop] › tests-presentation/guided-creation.spec.ts:134:1 › existing Single projects retain their format and songs when editing details (10.2s)
+  ✓   8 [desktop] › tests-presentation/handoff-forms.spec.ts:13:1 › registration validates, preserves Back, guards departure and creates once after retry (12.6s)
+  ✓   9 [desktop] › tests-presentation/handoff-forms.spec.ts:39:1 › song list validates, retains Back and cancelled reload, retries without losing revision (12.7s)
+  ✓  10 [desktop] › tests-presentation/handoff-forms.spec.ts:69:1 › publication audio uses one source, rejects metadata-only readiness and recovers replacement failure (12.5s)
+  ✓  11 [desktop] › tests-presentation/handoff.spec.ts:13:1 › handoff profile cleanup preserves artwork and destinations; empty search is silent (7.7s)
+  ✓  12 [desktop] › tests-presentation/handoff.spec.ts:30:1 › handoff notifications anchor to the bell, read without deletion and preserve search (7.8s)
+  ✓  13 [desktop] › tests-presentation/handoff.spec.ts:56:1 › handoff messages keep the list beside a real thread, peer avatar and draft through polling (13.3s)
+  ✓  14 [desktop] › tests-presentation/handoff.spec.ts:81:1 › handoff Discovery retains intro, decorative backdrop and tap pause (6.6s)
+  ✓  15 [desktop] › tests-presentation/handoff.spec.ts:95:1 › handoff identity wizard retains values, blocks invalid input and recovers a failed save (17.8s)
+  ✓  16 [desktop] › tests-presentation/handoff.spec.ts:119:1 › handoff fresh project intent resets only after guarded navigation (787ms)
+  ✓  17 [desktop] › tests-presentation/handoff.spec.ts:132:1 › handoff notification navigation respects a cancelled dirty-form guard (1.9s)
+(node:9967) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  18 [desktop] › tests-presentation/guided-workspaces.spec.ts:10:1 › guided collaboration: bounded stages, prepared video, draft, submission and private review (24.5s)
+  ✓  19 [desktop] › tests-presentation/guided-workspaces.spec.ts:27:1 › Forge receives a finished version without mixing and saves a private draft (10.3s)
+  ✘  20 [desktop] › tests-presentation/guided-workspaces.spec.ts:40:1 › no-reference Mix accepts finished work; save errors keep the current stage and upload (3.5s)
+(node:10122) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  21 [desktop] › tests-presentation/guided-workspaces.spec.ts:48:2 › Remix capture › video format gate, recording controls, save and account isolation (4.5s)
+  ✓  22 [desktop] › tests-presentation/guided-workspaces.spec.ts:61:1 › audio-to-video route works with blocked session storage, keyboard and reduced motion (22.0s)
+  ✓  23 [desktop] › tests-presentation/guided-workspaces.spec.ts:77:1 › two guided Remix tabs preserve local text on revision conflict and recover saved work (11.9s)
+
+
+  1) [desktop] › tests-presentation/guided-workspaces.spec.ts:40:1 › no-reference Mix accepts finished work; save errors keep the current stage and upload 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByLabel('Contribution preview')
+    Expected: visible
+    Error: strict mode violation: getByLabel('Contribution preview') resolved to 7 elements:
+        1) <section role="region" aria-busy="false" data-playing="false" class="antiq-audio-player" aria-label="Contribution preview player">…</section> aka getByLabel('Contribution preview player')
+        2) <button type="button" aria-pressed="false" class="antiq-audio-play" aria-label="Play Contribution preview">…</button> aka getByLabel('Play Contribution preview')
+        3) <input min="0" max="2" value="0" step="0.1" type="range" class="antiq-audio-seek" aria-valuetext="0:00 of 0:02" aria-label="Seek Contribution preview"/> aka getByLabel('Seek Contribution preview')
+        4) <button type="button" aria-pressed="false" aria-controls="«rn»" class="antiq-audio-icon" aria-label="Mute Contribution preview">…</button> aka getByLabel('Mute Contribution preview')
+        5) <input min="0" max="1" value="1" step="0.05" type="range" aria-valuetext="100%" aria-label="Volume Contribution preview"/> aka getByLabel('Volume Contribution preview')
+        6) <button type="button" data-state="closed" aria-expanded="false" aria-haspopup="dialog" class="antiq-audio-icon" aria-label="Audio options Contribution preview">…</button> aka getByLabel('Audio options Contribution')
+        7) <audio preload="auto" class="antiq-audio-source" data-playback-allowed="true" aria-label="Contribution preview" src="/media/d888aed0-1eb8-4049-83e6-904aac9dd4a6"></audio> aka getByLabel('Contribution preview', { exact: true })
+
+    Call log:
+      - Expect "toBeVisible" getByLabel('Contribution preview') with timeout 5000ms
+      - waiting for getByLabel('Contribution preview')
+
+
+      40 | test('no-reference Mix accepts finished work; save errors keep the current stage and upload',async({page})=>{
+      41 |  await setup(page);const opportunities=await(await page.request.get('/api/opportunities/projects?q=No%20Regrets')).json();const project=opportunities.items[0];const offers=await(await page.request.get(`/api/projects/${project.project?.id??project.id}/offers`)).json();const offer=offers.find((o:any)=>o.need==='Mix');
+    > 42 |  await page.goto(`/messages/offer/${offer.id}`);await expect(page.getByRole('link',{name:'Download reference'})).toHaveCount(0);await next(page);await page.getByLabel('Upload your complete mix or master',{exact:true}).setInputFiles({name:'finished.wav',mimeType:'audio/wav',buffer:wave()});await expect(page.getByLabel('Contribution preview')).toBeVisible();await next(page);await expect(page.getByRole('button',{name:'Render proposal',exact:true})).toHaveCount(0);await next(page);
+         |                                                                                                                                                                                                                                                                                                                                                         ^
+      43 |  await page.getByLabel('Introduction',{exact:true}).fill('Finished work');await page.getByLabel('Your proposal',{exact:true}).fill('Stereo mix');await page.route(`**/api/offers/${offer.id}/conversations`,r=>r.request().method()==='PATCH'?r.fulfill({status:503,contentType:'application/json',body:JSON.stringify({error:'Save unavailable. Try again.'})}):r.continue());
+      44 |  await page.getByRole('button',{name:'Save & exit',exact:true}).click();await expect(page.getByRole('alert')).toBeVisible();await expect(page.getByLabel('Introduction',{exact:true})).toHaveValue('Finished work');await expect(page.getByRole('heading',{name:'Review & send',exact:true})).toBeVisible();await page.unrouteAll();await page.getByRole('button',{name:'Save & exit',exact:true}).click();await expect(page).toHaveURL(/\/messages$/);
+      45 | });
+        at /Users/luisgramz/Documents/ChatGPT/NEBULA DEMO/antiqnebula_demo2/tests-presentation/guided-workspaces.spec.ts:42:345
+
+    Error Context: test-results-presentation/guided-workspaces-no-refer-3fd66-he-current-stage-and-upload-desktop/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results-presentation/guided-workspaces-no-refer-3fd66-he-current-stage-and-upload-desktop/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results-presentation/guided-workspaces-no-refer-3fd66-he-current-stage-and-upload-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop] › tests-presentation/guided-workspaces.spec.ts:40:1 › no-reference Mix accepts finished work; save errors keep the current stage and upload 
+  22 passed (4.6m)

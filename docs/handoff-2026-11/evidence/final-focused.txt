@@ -1,0 +1,53 @@
+[WebServer] (node:10441) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 4 tests using 1 worker
+
+(node:10444) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › tests-presentation/guided-workspaces.spec.ts:40:1 › no-reference Mix accepts finished work; save errors keep the current stage and upload (8.2s)
+(node:10483) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  2 [desktop] › tests-presentation/handoff.spec.ts:30:1 › handoff notifications anchor to the bell, read without deletion and preserve search (6.9s)
+(node:10526) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  3 [desktop] › tests-presentation/handoff.spec.ts:56:1 › handoff messages keep the list beside a real thread, peer avatar and draft through polling (14.6s)
+  ✓  4 [desktop] › tests-presentation/handoff.spec.ts:132:1 › handoff notification navigation respects a cancelled dirty-form guard (1.8s)
+
+
+  1) [desktop] › tests-presentation/handoff.spec.ts:30:1 › handoff notifications anchor to the bell, read without deletion and preserve search 
+
+    Error: apiRequestContext.fetch: read ECONNRESET
+    Call log:
+      - → GET http://127.0.0.1:4177/api/notifications
+        - user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.8078.4 Safari/537.36
+        - accept: */*
+        - accept-encoding: gzip,deflate,br
+        - Origin: http://127.0.0.1:4177
+        - X-Nebula-Request: 1
+        - cookie: [redacted disposable session]
+
+
+      2 | const headers = { Origin: 'http://127.0.0.1:4177', 'X-Nebula-Request': '1' };
+      3 | async function request(page: Page, path: string, data?: object, method = 'POST') {
+    > 4 |   const response = await page.request.fetch(path, { method: data ? method : 'GET', headers, data });
+        |                                       ^
+      5 |   expect(response.ok(), await response.text()).toBe(true); return response.json();
+      6 | }
+      7 | test.beforeEach(async ({ page }, info) => {
+        at request (/Users/luisgramz/Documents/ChatGPT/NEBULA DEMO/antiqnebula_demo2/tests-presentation/handoff.spec.ts:4:39)
+        at /Users/luisgramz/Documents/ChatGPT/NEBULA DEMO/antiqnebula_demo2/tests-presentation/handoff.spec.ts:48:23
+
+    Error Context: test-results-presentation/handoff-handoff-notificati-e5ce4-eletion-and-preserve-search-desktop/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results-presentation/handoff-handoff-notificati-e5ce4-eletion-and-preserve-search-desktop/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results-presentation/handoff-handoff-notificati-e5ce4-eletion-and-preserve-search-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [desktop] › tests-presentation/handoff.spec.ts:30:1 › handoff notifications anchor to the bell, read without deletion and preserve search 
+  3 passed (34.7s)

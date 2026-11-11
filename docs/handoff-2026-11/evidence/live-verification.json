@@ -1,0 +1,22 @@
+{
+  "desktopStatus": 200,
+  "mobileStatus": 200,
+  "unreadFilter": true,
+  "counterpartContract": true,
+  "covers": [
+    {
+      "id": 17,
+      "title": "luna",
+      "coverUrl": "/media/3ad6dcec-ba8d-456f-94f2-85ae387d53df",
+      "sha256": "1bb5836b0e348d936a3532c48dc300f602104fe01414488305f9517719c34c8c",
+      "match": true
+    },
+    {
+      "id": 18,
+      "title": "luna - chilz remix",
+      "coverUrl": "/media/161deee5-8a9f-4021-bb2b-677f433ee51d",
+      "sha256": "a22fd31bb33bd30a56e2d873cf98ab3d4ef3f0eb84e0cae3e0cd5043378949c3",
+      "match": true
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "before": [
+    {
+      "id": 17,
+      "owner": 32,
+      "title": "luna",
+      "coverId": "3ad6dcec-ba8d-456f-94f2-85ae387d53df",
+      "projectId": 34,
+      "remix": null
+    },
+    {
+      "id": 18,
+      "owner": 21,
+      "title": "luna - chilz remix",
+      "coverId": "161deee5-8a9f-4021-bb2b-677f433ee51d",
+      "projectId": 35,
+      "remix": {
+        "sourceId": 17,
+        "sourceRevision": 1,
+        "startSeconds": 0,
+        "endSeconds": 175.287438,
+        "baseGain": 1,
+        "voiceGain": 1,
+        "voiceOffset": 0,
+        "contributionKind": "audio",
+        "artistId": 32,
+        "artistName": "gramz",
+        "title": "luna",
+        "projectId": 34,
+        "grantedAt": "2026-11-09T20:53:49.856Z",
+        "sourceMediaId": "f0d5a801-571a-4c7e-8457-ee0e54130905"
+      }
+    }
+  ],
+  "after": [
+    {
+      "id": 17,
+      "owner": 32,
+      "title": "luna",
+      "coverId": "3ad6dcec-ba8d-456f-94f2-85ae387d53df",
+      "projectId": 34,
+      "remix": null
+    },
+    {
+      "id": 18,
+      "owner": 21,
+      "title": "luna - chilz remix",
+      "coverId": "161deee5-8a9f-4021-bb2b-677f433ee51d",
+      "projectId": 35,
+      "remix": {
+        "sourceId": 17,
+        "sourceRevision": 1,
+        "startSeconds": 0,
+        "endSeconds": 175.287438,
+        "baseGain": 1,
+        "voiceGain": 1,
+        "voiceOffset": 0,
+        "contributionKind": "audio",
+        "artistId": 32,
+        "artistName": "gramz",
+        "title": "luna",
+        "projectId": 34,
+        "grantedAt": "2026-11-09T20:53:49.856Z",
+        "sourceMediaId": "f0d5a801-571a-4c7e-8457-ee0e54130905"
+      }
+    }
+  ],
+  "match": true
+}
