@@ -1,0 +1,47 @@
+[
+  {
+    "set": "marea-voice",
+    "actualContributionResidualRms": 0.13429716001013497,
+    "residualCorrelationWithContribution": 0.9998946559599062,
+    "resultRms": 0.17772706216123474,
+    "clippedSamples": 0,
+    "motion": [
+      {
+        "file": "video/marea-vocal-take.mp4",
+        "sampledFrames": 31,
+        "distinctFrames": 31
+      },
+      {
+        "file": "video/marea-vocal-result.mp4",
+        "sampledFrames": 31,
+        "distinctFrames": 31
+      },
+      {
+        "file": "video/marea-live-original.mp4",
+        "sampledFrames": 31,
+        "distinctFrames": 31
+      }
+    ],
+    "subjectiveListening": "Not performed; requires human audition. Native audio retained; no exact lip/finger synchronization certification."
+  },
+  {
+    "set": "afterglow-percussion",
+    "actualContributionResidualRms": 0.039336718698497176,
+    "residualCorrelationWithContribution": 0.9963706153759685,
+    "resultRms": 0.08577607719213279,
+    "clippedSamples": 0,
+    "motion": [
+      {
+        "file": "video/afterglow-percussion-take.mp4",
+        "sampledFrames": 40,
+        "distinctFrames": 40
+      },
+      {
+        "file": "video/afterglow-percussion-result.mp4",
+        "sampledFrames": 40,
+        "distinctFrames": 40
+      }
+    ],
+    "subjectiveListening": "Not performed; requires human audition. Native audio retained; no exact lip/finger synchronization certification."
+  }
+]

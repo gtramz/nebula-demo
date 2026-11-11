@@ -1,0 +1,81 @@
+.nebula-loading { min-width:0; width:100%; color:transparent; pointer-events:none; }
+.loading-page { max-width:1024px; margin:0 auto; padding:32px 24px; }
+.loading-page-content { display:flex; flex-direction:column; gap:32px; }
+.loading-page-heading,.loading-lines,.loading-profile-copy,.loading-project-copy { display:flex; min-width:0; flex-direction:column; gap:12px; }
+.loading-line { height:12px; width:78%; }
+.loading-line-wide { width:94%; }
+.loading-line-short { width:48%; }
+.loading-heading { height:38px; width:min(72%,420px); }
+.loading-toolbar { height:44px; width:100%; }
+.loading-inline { display:flex; gap:16px; }
+.loading-count { height:14px; width:88px; }
+.loading-action { height:32px; width:112px; }
+.loading-list { display:flex; flex-direction:column; gap:0; }
+.loading-list-row { display:flex; min-height:92px; gap:16px; align-items:center; padding:20px 0; border-bottom:1px solid #ffffff0a; }
+.loading-list-row .loading-lines { flex:1; }
+.loading-avatar { width:40px; height:40px; flex-shrink:0; border-radius:50%; }
+.loading-row-end { width:80px; height:16px; flex-shrink:0; }
+.loading-comment-row { align-items:flex-start; min-height:94px; }
+.loading-comment-row .loading-avatar { width:32px; height:32px; }
+.loading-cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr)); gap:20px; }
+.loading-card { min-width:0; overflow:hidden; border:1px solid #ffffff0a; border-radius:14px; background:#080909; }
+.loading-card-cover { width:100%; aspect-ratio:1.35; border-radius:0; }
+.loading-card-body { display:flex; flex-direction:column; gap:22px; padding:18px; }
+.loading-card-footer { display:flex; align-items:center; gap:12px; }
+.loading-card-footer .loading-avatar { width:28px; height:28px; }
+.loading-profile-header { display:grid; grid-template-columns:160px minmax(0,1fr); gap:24px; min-height:230px; align-items:start; }
+.loading-profile-avatar { width:160px; height:160px; border-radius:50%; }
+.loading-profile-copy { gap:16px; }
+.loading-account-header { grid-template-columns:80px minmax(0,1fr); padding:24px; border:1px solid #ffffff0a; border-radius:16px; min-height:128px; }
+.loading-account-header .loading-profile-avatar { width:80px; height:80px; }
+.loading-account-header .loading-profile-copy>.loading-lines,.loading-account-header .loading-inline { display:none; }
+.loading-tabs { display:flex; gap:20px; min-height:48px; align-items:center; border-block:1px solid #ffffff0a; }
+.loading-tab { width:92px; height:13px; }
+.loading-player { padding:20px; border:1px solid #ffffff0a; border-radius:14px; background:#080909; }
+.loading-player-heading { display:flex; align-items:center; gap:20px; }
+.loading-player-heading .loading-lines { flex:1; }
+.loading-player-cover { width:96px; height:96px; flex-shrink:0; border-radius:10px; }
+.loading-wave { height:44px; display:flex; align-items:center; gap:3px; margin-top:20px; }
+.loading-wave .nebula-skeleton { flex:1; min-width:2px; border-radius:2px; }
+.loading-wave-compact { margin-top:0; }
+.loading-section[data-loading-variant=media]>[aria-hidden=true] { height:100%; }
+.loading-media { width:100%; height:100%; min-height:44px; }
+.loading-player-controls { display:flex; align-items:center; gap:12px; padding-top:12px; }
+.loading-play { width:32px; height:32px; border-radius:50%; flex-shrink:0; }
+.loading-player-time { height:10px; width:64px; margin-left:auto; }
+.loading-form { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; }
+.loading-field { display:flex; flex-direction:column; gap:10px; }
+.loading-field-label { width:100px; height:11px; }
+.loading-field-input { width:100%; height:44px; }
+.loading-form-story { height:128px; grid-column:1/-1; }
+.loading-project-header { display:grid; grid-template-columns:260px minmax(0,1fr); gap:32px; align-items:end; }
+.loading-project-cover { width:260px; height:260px; border-radius:12px; }
+.loading-project-copy { gap:20px; }
+.loading-project-copy .loading-heading { height:48px; width:85%; }
+.loading-project-copy .loading-list-row { border:0; padding:0; min-height:44px; }
+.loading-project-copy .loading-row-end { display:none; }
+.loading-page-receipt { display:flex; flex:1; align-items:center; justify-content:center; }
+.loading-page-receipt>.loading-page-content { width:100%; max-width:448px; }
+.loading-receipt { display:flex; flex-direction:column; align-items:center; gap:28px; padding:40px; border:1px solid #ffffff0c; background:#080909; }
+.loading-receipt .loading-heading,.loading-receipt .loading-lines,.loading-receipt .loading-list { width:100%; }
+.loading-receipt-mark { width:80px; height:80px; border-radius:50%; }
+.loading-receipt .loading-avatar { display:none; }
+.loading-page-feed { display:flex; flex:1; max-width:none; min-height:0; padding:12px 8px 12px 12px; }
+.loading-page-feed>.loading-page-content { flex:1; min-height:0; }
+.loading-feed { display:grid; grid-template-columns:minmax(0,1fr) 64px; gap:8px; height:100%; min-height:500px; }
+.loading-feed-stage { position:relative; overflow:hidden; border-radius:16px; background:#080909; border:1px solid #ffffff0a; }
+.loading-feed-art { position:absolute; width:min(36%,300px); aspect-ratio:1; left:50%; top:40%; transform:translate(-50%,-50%); opacity:.4; }
+.loading-feed-caption { position:absolute; inset:auto 24px 24px; display:flex; flex-direction:column; gap:16px; }
+.loading-feed-timeline { width:100%; height:3px; margin-top:12px; }
+.loading-feed-rail { display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:24px; padding-bottom:20px; }
+.loading-feed-action { width:28px; height:28px; border-radius:50%; }
+.loading-conversation { display:flex; min-height:280px; flex-direction:column; gap:20px; }
+.loading-message { width:74%; height:64px; }
+.loading-message:nth-child(2n) { margin-left:auto; width:62%; }
+.loading-page-landing { display:flex; flex:1; max-width:600px; align-items:center; justify-content:center; }
+.loading-page-landing>.loading-page-content { width:100%; }
+.loading-landing { display:flex; flex-direction:column; align-items:center; gap:28px; text-align:center; }
+.loading-landing-logo { width:64px; height:96px; }
+.loading-landing .loading-heading { width:320px; max-width:100%; height:90px; }
+.loading-landing .loading-lines { width:100%; max-width:380px; align-items:center; }
+.loading-landing .loading-action { width:280px; max-width:100%; height:44px; border-radius:24px; }

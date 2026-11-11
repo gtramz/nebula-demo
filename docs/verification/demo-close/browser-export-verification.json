@@ -1,0 +1,74 @@
+[
+  {
+    "set": "marea-voice",
+    "viewport": "desktop",
+    "file": "test-results-presentation/closing-complete-musical-example-marea-voice-desktop/browser-export.webm",
+    "duration": 7.8,
+    "video": {
+      "codec_name": "vp8",
+      "codec_type": "video",
+      "width": 720,
+      "height": 1280
+    },
+    "estimatedBaseGain": 0.922496581467427,
+    "estimatedContributionGain": 0.5078321940924521,
+    "signalExplainedByBothInputs": 0.9909915634128912,
+    "baseDelaySeconds": 0.019875,
+    "contributionDelaySeconds": 0.025125,
+    "distinctSampledFrames": 31
+  },
+  {
+    "set": "marea-voice",
+    "viewport": "mobile",
+    "file": "test-results-presentation/closing-complete-musical-example-marea-voice-mobile/browser-export.webm",
+    "duration": 7.8,
+    "video": {
+      "codec_name": "vp8",
+      "codec_type": "video",
+      "width": 720,
+      "height": 1280
+    },
+    "estimatedBaseGain": 0.9201534979547639,
+    "estimatedContributionGain": 0.5095282812009663,
+    "signalExplainedByBothInputs": 0.9975192525583934,
+    "baseDelaySeconds": 0.0145,
+    "contributionDelaySeconds": 0.0145,
+    "distinctSampledFrames": 31
+  },
+  {
+    "set": "afterglow-percussion",
+    "viewport": "desktop",
+    "file": "test-results-presentation/closing-complete-musical-example-afterglow-percussion-desktop/browser-export.webm",
+    "duration": 9.96,
+    "video": {
+      "codec_name": "vp8",
+      "codec_type": "video",
+      "width": 720,
+      "height": 1280
+    },
+    "estimatedBaseGain": 0.9209722486973123,
+    "estimatedContributionGain": 0.48218266253504655,
+    "signalExplainedByBothInputs": 0.9869060771374927,
+    "baseDelaySeconds": 0.013875,
+    "contributionDelaySeconds": 0.019125,
+    "distinctSampledFrames": 40
+  },
+  {
+    "set": "afterglow-percussion",
+    "viewport": "mobile",
+    "file": "test-results-presentation/closing-complete-musical-example-afterglow-percussion-mobile/browser-export.webm",
+    "duration": 9.96,
+    "video": {
+      "codec_name": "vp8",
+      "codec_type": "video",
+      "width": 720,
+      "height": 1280
+    },
+    "estimatedBaseGain": 0.9202741566032699,
+    "estimatedContributionGain": 0.4813486479202551,
+    "signalExplainedByBothInputs": 0.9864175408324092,
+    "baseDelaySeconds": 0.013875,
+    "contributionDelaySeconds": 0.013875,
+    "distinctSampledFrames": 40
+  }
+]

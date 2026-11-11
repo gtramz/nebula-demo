@@ -1,0 +1,23 @@
+import {test,expect} from '@playwright/test';
+test('Marea performance video plays locally with sound and keeps its position beside comments',async({page})=>{
+ const external:string[]=[];
+ await page.route('**/*',route=>{const u=new URL(route.request().url());if(!['127.0.0.1','localhost'].includes(u.hostname)&&u.protocol!=='data:'){external.push(u.href);return route.abort();}return route.continue();});
+ await page.request.post('/api/presentation/switch',{headers:{Origin:'http://127.0.0.1:4177','X-Nebula-Request':'1'},data:{accountId:1}});
+ await page.goto('/discovery?post=post-11');
+ const post=page.locator('article[data-active=true]'),video=post.locator('video');
+ await expect(post.getByRole('heading',{name:'Marea Alta — rooftop session',exact:true})).toBeVisible();
+ await expect.poll(()=>video.evaluate((v:HTMLVideoElement)=>v.readyState)).toBeGreaterThanOrEqual(2);
+ const meta=await video.evaluate((v:HTMLVideoElement)=>({duration:v.duration,width:v.videoWidth,height:v.videoHeight,fit:getComputedStyle(v).objectFit}));
+ expect(meta.duration).toBeGreaterThanOrEqual(9);expect(meta.duration).toBeLessThan(11);expect(meta.height).toBeGreaterThan(meta.width);expect(meta.fit).toBe('contain');
+ await expect(video).toHaveJSProperty('muted',false);
+ const play=post.getByRole('button',{name:'Play Marea Alta — rooftop session',exact:true});if(await play.isVisible())await play.click();
+ await expect.poll(()=>video.evaluate((v:HTMLVideoElement)=>v.currentTime)).toBeGreaterThan(.1);
+ expect(await video.evaluate((v:HTMLVideoElement)=>v.muted)).toBe(false);
+ await post.getByRole('slider',{name:'Seek Marea Alta — rooftop session',exact:true}).fill('3');
+ await post.getByRole('button',{name:'Comments',exact:true}).click();await expect(page.locator('.discovery-comments-panel')).toBeVisible();
+ expect(await video.evaluate((v:HTMLVideoElement)=>v.currentTime)).toBeGreaterThanOrEqual(3);
+ await page.getByRole('button',{name:'Close comments',exact:true}).click();
+ await page.goto('/discovery?post=post-4');const audioPlay=page.locator('article[data-active=true]').getByRole('button',{name:'Play Marea Alta',exact:true});if(await audioPlay.isVisible())await audioPlay.click();
+ await expect.poll(()=>page.locator('audio').evaluateAll((media:HTMLAudioElement[])=>media.filter(m=>!m.paused).length)).toBe(1);
+ expect(external).toEqual([]);
+});

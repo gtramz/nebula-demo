@@ -1,0 +1,10 @@
+$ vitest run
+
+ RUN  v4.1.12 <repository>
+
+
+ Test Files  11 passed (11)
+      Tests  71 passed (71)
+   Start at  12:55:43
+   Duration  468ms (transform 580ms, setup 0ms, import 880ms, tests 790ms, environment 1ms)
+

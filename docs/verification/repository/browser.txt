@@ -1,0 +1,24 @@
+$ playwright test --config playwright.presentation.config.ts tests-presentation/closing.spec.ts tests-presentation/offline.spec.ts
+[WebServer] (node:1222) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 8 tests using 1 worker
+
+(node:1226) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › tests-presentation/closing.spec.ts:6:28 › complete musical example: marea-voice (16.6s)
+  ✓  2 [desktop] › tests-presentation/closing.spec.ts:6:28 › complete musical example: afterglow-percussion (18.5s)
+  ✓  3 [desktop] › tests-presentation/closing.spec.ts:38:1 › prepared video take in Remix: render, private save, reload and proposal entry (11.3s)
+(node:1423) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  4 [desktop] › tests-presentation/offline.spec.ts:3:1 › prepared presentation works with external traffic blocked, including remix render and comparison (4.2s)
+(node:1461) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  5 [mobile] › tests-presentation/closing.spec.ts:6:28 › complete musical example: marea-voice (16.8s)
+  ✓  6 [mobile] › tests-presentation/closing.spec.ts:6:28 › complete musical example: afterglow-percussion (19.3s)
+  ✓  7 [mobile] › tests-presentation/closing.spec.ts:38:1 › prepared video take in Remix: render, private save, reload and proposal entry (11.2s)
+(node:1642) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  8 [mobile] › tests-presentation/offline.spec.ts:3:1 › prepared presentation works with external traffic blocked, including remix render and comparison (4.2s)
+
+  8 passed (1.8m)

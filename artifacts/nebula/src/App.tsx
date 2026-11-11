@@ -1,0 +1,108 @@
+import { type ReactNode } from 'react';
+import {
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query';
+import { ErrorBoundary } from '@/components/error-boundary';
+import { Toaster } from '@/components/ui/toaster';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { Route, Redirect, Switch, useLocation, Router as WouterRouter } from 'wouter';
+
+import { AuthProvider } from '@/context/AuthContext';
+import { ReturnContext } from '@/components/shell/return-context';
+import { AppShell } from '@/components/shell/app-shell';
+
+import { SavedPublications } from '@/features/discovery/social';
+import { CollaborationRequestPage, CollaborationPage } from '@/features/collaborations';
+import { MessagesPage, MessageComposePage, GeneralMessagePage } from '@/features/messages';
+import { NotificationsPage, NotificationsProvider } from '@/features/notifications';
+import { RemixPage, LegacyRemixPage } from '@/features/remix';
+import Home from '@/pages/home';
+import Explore from '@/pages/explore';
+import Discovery from '@/features/discovery/live-discovery';
+import { Publications, PublicationEditor } from '@/pages/publications';
+import Search from '@/pages/search';
+import ArtistProfile from '@/pages/artist';
+import ArtistOnboardingPage from '@/features/artist-identity/onboarding';
+import ProjectDetail from '@/pages/project';
+import Pledges from '@/pages/pledges';
+import Receipt from '@/pages/receipt';
+import Profile from '@/pages/profile';
+import Login from '@/pages/login';
+import Register from '@/pages/register';
+import NotFound from '@/pages/not-found';
+import { PresentationPage, PresentationRuntime } from '@/features/presentation';
+import { MobilePreview } from '@/features/presentation/mobile-preview';
+import { PlaybackCoordinator } from '@/components/playback-coordinator';
+import { useRouteScrollTop } from '@/components/shell/route-scroll';
+
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } },
+});
+
+function Router() {
+  const [path] = useLocation();
+  useRouteScrollTop();
+  if (path === '/presentation/mobile') return <MobilePreview />;
+  return (
+    <ReturnContext><NotificationsProvider><PlaybackCoordinator/><PresentationRuntime/><AppShell>
+      <RoutedErrorBoundary>
+        <Switch>
+          <Route path="/presentation" component={PresentationPage} />
+          <Route path="/" component={Home} />
+          <Route path="/explore" component={Explore} />
+          <Route path="/discovery" component={Discovery} />
+          <Route path="/saved" component={SavedPublications} />
+          <Route path="/collaborations"><Redirect to="/messages" /></Route>
+          <Route path="/messages" component={MessagesPage} />
+          <Route path="/messages/new/:id" component={MessageComposePage} />
+          <Route path="/messages/offer/:id" component={CollaborationRequestPage} />
+          <Route path="/messages/general/:id" component={GeneralMessagePage} />
+          <Route path="/messages/collaboration/:id" component={CollaborationPage} />
+          <Route path="/notifications" component={NotificationsPage} />
+          <Route path="/remix/:id/proposal"><LegacyRemixPage proposal /></Route>
+          <Route path="/remix/:id"><LegacyRemixPage /></Route>
+          <Route path="/studio/remix/proposal"><RemixPage proposal /></Route>
+          <Route path="/studio/remix"><RemixPage /></Route>
+          <Route path="/collaborations/:id" component={CollaborationPage} />
+          <Route path="/studio" component={Publications} />
+          <Route path="/publish" component={PublicationEditor} />
+          <Route path="/publish/:id" component={PublicationEditor} />
+          <Route path="/search" component={Search} />
+          <Route path="/artist/:id" component={ArtistProfile} />
+          <Route path="/project/:id" component={ProjectDetail} />
+          <Route path="/pledges"><Pledges /></Route>
+          <Route path="/received"><Pledges received /></Route>
+          <Route path="/receipt/:id" component={Receipt} />
+          <Route path="/profile" component={Profile} />
+          <Route path="/onboarding" component={ArtistOnboardingPage} />
+          <Route path="/login" component={Login} />
+          <Route path="/register" component={Register} />
+          <Route component={NotFound} />
+        </Switch>
+      </RoutedErrorBoundary>
+    </AppShell></NotificationsProvider></ReturnContext>
+  );
+}
+
+function RoutedErrorBoundary({ children }: { children: ReactNode }) {
+  const [location] = useLocation();
+  return <ErrorBoundary resetKey={location}>{children}</ErrorBoundary>;
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <TooltipProvider>
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+            <Router />
+          </WouterRouter>
+          <Toaster />
+        </TooltipProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+}
+
+export default App;

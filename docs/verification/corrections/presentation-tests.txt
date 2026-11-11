@@ -1,0 +1,20 @@
+$ playwright test --config playwright.presentation.config.ts
+[WebServer] (node:83946) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 8 tests using 1 worker
+
+(node:83947) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  1 [desktop] › tests-presentation/corrections.spec.ts:4:1 › new artist: navigation, integrated comments, Saved, exact-song opportunity and private musical proposal (8.6s)
+  ✓  2 [desktop] › tests-presentation/corrections.spec.ts:55:1 › navigation follows routes, history, detail context and persona; mobile Saved stays reachable (3.8s)
+  ✓  3 [desktop] › tests-presentation/corrections.spec.ts:64:1 › Mix preparation accepts a complete recording without mandatory overdub or fragment (1.0s)
+  ✓  4 [desktop] › tests-presentation/offline.spec.ts:3:1 › prepared presentation works with external traffic blocked, including remix render and comparison (3.7s)
+(node:84124) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  5 [mobile] › tests-presentation/corrections.spec.ts:4:1 › new artist: navigation, integrated comments, Saved, exact-song opportunity and private musical proposal (9.0s)
+  ✓  6 [mobile] › tests-presentation/corrections.spec.ts:55:1 › navigation follows routes, history, detail context and persona; mobile Saved stays reachable (4.7s)
+  ✓  7 [mobile] › tests-presentation/corrections.spec.ts:64:1 › Mix preparation accepts a complete recording without mandatory overdub or fragment (1.0s)
+  ✓  8 [mobile] › tests-presentation/offline.spec.ts:3:1 › prepared presentation works with external traffic blocked, including remix render and comparison (3.9s)
+
+  8 passed (37.7s)

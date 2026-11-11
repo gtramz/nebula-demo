@@ -1,0 +1,38 @@
+$ playwright test --config playwright.presentation.config.ts
+[WebServer] (node:98408) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 22 tests using 1 worker
+
+(node:98409) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 [desktop] › tests-presentation/audiovisual.spec.ts:4:1 › video reference and contribution: actual export, invalidation, cancel, private draft and same-thread review (25.1s)
+  ✓   2 [desktop] › tests-presentation/corrections.spec.ts:4:1 › new artist: navigation, integrated comments, Saved, exact-song opportunity and private musical proposal (9.8s)
+  ✓   3 [desktop] › tests-presentation/corrections.spec.ts:55:1 › navigation follows routes, history, detail context and persona; mobile Saved stays reachable (8.8s)
+  ✓   4 [desktop] › tests-presentation/corrections.spec.ts:64:1 › Mix preparation accepts a complete recording without mandatory overdub or fragment (1.0s)
+  ✓   5 [desktop] › tests-presentation/offline.spec.ts:3:1 › prepared presentation works with external traffic blocked, including remix render and comparison (4.5s)
+  ✓   6 [desktop] › tests-presentation/polish.spec.ts:3:1 › prepared artist: edit, listening preferences, independent previews, Saved, return context and restoration (8.8s)
+  ✓   7 [desktop] › tests-presentation/polish.spec.ts:28:1 › prepared private proposal sends, accepts and chats in one thread; rejection preserves its response (2.5s)
+  ✓   8 [desktop] › tests-presentation/video.spec.ts:2:1 › Marea performance video plays locally with sound and keeps its position beside comments (3.1s)
+(node:98680) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   9 [desktop] › tests-presentation/closing.spec.ts:6:28 › complete musical example: marea-voice (16.9s)
+  ✓  10 [desktop] › tests-presentation/closing.spec.ts:6:28 › complete musical example: afterglow-percussion (18.9s)
+  ✓  11 [desktop] › tests-presentation/closing.spec.ts:38:1 › prepared video take in Remix: render, private save, reload and proposal entry (11.3s)
+(node:98832) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  12 [mobile] › tests-presentation/audiovisual.spec.ts:4:1 › video reference and contribution: actual export, invalidation, cancel, private draft and same-thread review (25.3s)
+  ✓  13 [mobile] › tests-presentation/corrections.spec.ts:4:1 › new artist: navigation, integrated comments, Saved, exact-song opportunity and private musical proposal (10.2s)
+  ✓  14 [mobile] › tests-presentation/corrections.spec.ts:55:1 › navigation follows routes, history, detail context and persona; mobile Saved stays reachable (8.7s)
+  ✓  15 [mobile] › tests-presentation/corrections.spec.ts:64:1 › Mix preparation accepts a complete recording without mandatory overdub or fragment (1.0s)
+  ✓  16 [mobile] › tests-presentation/offline.spec.ts:3:1 › prepared presentation works with external traffic blocked, including remix render and comparison (4.4s)
+  ✓  17 [mobile] › tests-presentation/polish.spec.ts:3:1 › prepared artist: edit, listening preferences, independent previews, Saved, return context and restoration (8.7s)
+  ✓  18 [mobile] › tests-presentation/polish.spec.ts:28:1 › prepared private proposal sends, accepts and chats in one thread; rejection preserves its response (2.5s)
+  ✓  19 [mobile] › tests-presentation/video.spec.ts:2:1 › Marea performance video plays locally with sound and keeps its position beside comments (3.1s)
+(node:99064) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  20 [mobile] › tests-presentation/closing.spec.ts:6:28 › complete musical example: marea-voice (16.9s)
+  ✓  21 [mobile] › tests-presentation/closing.spec.ts:6:28 › complete musical example: afterglow-percussion (18.7s)
+  ✓  22 [mobile] › tests-presentation/closing.spec.ts:38:1 › prepared video take in Remix: render, private save, reload and proposal entry (11.1s)
+
+  22 passed (3.8m)

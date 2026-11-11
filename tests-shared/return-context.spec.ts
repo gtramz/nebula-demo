@@ -1,0 +1,131 @@
+import { test, expect, type Page, type Dialog } from '@playwright/test';
+const headers = { Origin: 'http://127.0.0.1:4175', 'X-Nebula-Request': '1' };
+async function rpc(page: Page, method: string, ...args: unknown[]) {
+  const response = await page.request.post('/api/rpc', { headers, data: { method, args } }); expect(response.ok()).toBeTruthy(); return response.json();
+}
+async function artist(page: Page) {
+  return rpc(page, 'register', { name: 'Return artist', role: 'artist', email: `return-${crypto.randomUUID()}@example.invalid`, password: 'preview123' });
+}
+const nav = (page: Page, name: string) => page.getByRole('navigation', { name: 'Primary navigation', exact: true }).getByRole('link', { name, exact: true });
+
+test('Home category survives a project return at the top; direct entry has a fallback', async ({ page }, info) => {
+  await artist(page);
+  for (let i = 0; i < 9; i++) await rpc(page, 'createProject', { title: `Return project ${i}`, category: 'EP', goalAmount: 1000, status: 'funding' });
+  await page.goto('/explore'); await page.getByRole('button', { name: /^Filters/ }).click(); await page.getByRole('checkbox', { name: 'EP', exact: true }).check(); await page.getByRole('button', { name: /^Apply filters/ }).click();
+  const link = page.locator('a[href^="/project/"]').last();
+  await link.scrollIntoViewIfNeeded(); await link.focus();
+  const position = () => page.evaluate(() => ({ body: document.body.scrollTop, window: scrollY, shell: document.querySelector('.shell-page')!.scrollTop, page: document.querySelector('[data-page-scroll]')!.scrollTop }));
+  const before = await position(), href = await link.getAttribute('href');
+  expect(Object.values(before).some(value => value > 0)).toBe(true);
+  await link.click(); await page.goBack();
+  await expect(page.getByRole('button', { name: 'Remove Project type: EP', exact: true })).toBeVisible();
+  await expect.poll(position).toEqual({ body: 0, window: 0, shell: 0, page: 0 });
+  await expect(page.getByRole('heading', { name: 'Find your next project.', exact: true })).toBeVisible();
+  await page.goto(href!); const home = nav(page, 'home');
+  await expect(page.getByRole('link', { name: /^(Back|Go) to / })).toHaveCount(0);
+  await expect(home).toHaveAttribute('href', '/explore'); await home.focus();
+  expect((await home.boundingBox())!.height).toBeGreaterThanOrEqual(44);
+  await page.screenshot({ path: info.outputPath('project-navigation.png') });
+  await home.press('Enter'); await expect(page).toHaveURL(/\/explore$/);
+});
+
+test('Search query survives artist and project return; browser Back uses the same context', async ({ page }) => {
+  await artist(page); await rpc(page, 'createProject', { title: 'Return query project', category: 'EP', goalAmount: 1000, status: 'funding' });
+  await page.goto('/search'); await page.getByRole('searchbox').fill('Return query');
+  await page.locator('a[href^="/project/"]').first().click();
+  await page.goBack();
+  await expect(page.getByRole('searchbox')).toHaveValue('Return query');
+  await page.getByRole('searchbox').fill('Return artist'); await page.locator('a[href^="/artist/"]').first().click();
+  await expect(page.getByRole('navigation', { name: 'Primary navigation' })).toBeVisible();
+  await page.goBack(); await expect(page.getByRole('searchbox')).toHaveValue('Return artist');
+});
+
+test('publication changes resist sidebar and browser Back until explicitly discarded', async ({ page }) => {
+  await artist(page); await page.goto('/studio'); await page.getByRole('link', { name: 'New publication', exact: true }).click();
+  await page.getByLabel('Audio or video', { exact: true }).setInputFiles('artifacts/nebula/public/discovery-demo/soft-signal.wav');
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await page.getByLabel('Title', { exact: true }).fill('Keep my working title');
+  let dismissals = 0;
+  const reject = async (dialog: Dialog) => { dismissals++; await dialog.dismiss(); }; page.on('dialog', reject);
+  await expect(page.getByRole('link', { name: /^(Back|Go) to / })).toHaveCount(0);
+  await nav(page, 'home').click();
+  await expect.poll(() => dismissals).toBe(1);
+  await page.evaluate(() => history.back());
+  await expect.poll(() => dismissals).toBe(2);
+  await expect(page).toHaveURL(/\/publish$/); await expect(page.getByLabel('Title', { exact: true })).toHaveValue('Keep my working title');
+  page.off('dialog', reject); page.once('dialog', dialog => dialog.accept());
+  await nav(page, 'home').click(); await expect(page).toHaveURL(/\/explore$/);
+});
+
+test('Discovery reopens at its first post and keeps it during failed refresh and retry', async ({ page }) => {
+  const items = Array.from({ length: 8 }, (_, n) => ({ id: n + 1, artistId: 999, artistName: 'Feed return fixture', title: `Remember ${n}`, description: 'Return context fixture', status: 'published', allowRemix: false,
+    media: { id: `media-${n}`, kind: 'audio', url: '/discovery-demo/soft-signal.wav' }, social: { stars: 0, comments: 0, starred: false, saved: false }, offers: [], project: null }));
+  let fail = false;
+  await page.route('**/api/feed?*', route => route.fulfill(fail ? { status: 503, json: { error: 'Temporary feed error' } } : { json: { items, nextCursor: null, snapshot: 'stable-fixture' } }));
+  await page.goto('/discovery'); const feed = page.getByRole('region', { name: 'Discovery feed', exact: true });
+  await feed.focus(); for (let i = 0; i < 5; i++) await feed.press('ArrowDown');
+  await expect(page.locator('article[data-active=true]')).toHaveAttribute('data-index', '5');
+  await nav(page, 'home').click(); fail = true; await nav(page, 'discovery').click();
+  await expect(page.getByRole('alert')).toContainText('Temporary feed error');
+  await expect(page.locator('article[data-active=true]')).toHaveAttribute('data-index', '0');
+  await expect.poll(() => feed.evaluate(element => element.scrollTop)).toBe(0);
+  expect(await page.locator('.discovery-feed audio, .discovery-feed video').count()).toBeLessThanOrEqual(3);
+  fail = false; await page.getByRole('button', { name: 'Retry loading', exact: true }).click();
+  await expect(page.getByRole('alert')).toHaveCount(0); await expect(page.locator('article[data-active=true]')).toHaveAttribute('data-index', '0');
+});
+
+
+test('browser Back opens the shared Discovery entry at its first slot', async ({ page }) => {
+  const items = Array.from({ length: 8 }, (_, n) => ({ id: n + 1, artistId: 999, artistName: 'Shared return fixture', title: `Shared entry ${n}`, description: 'In-memory return fixture', status: 'published', allowRemix: false,
+    media: { id: `shared-media-${n}`, kind: 'audio', url: '/discovery-demo/soft-signal.wav' }, social: { stars: 0, comments: 0, starred: false, saved: false }, offers: [], project: null }));
+  await page.route('**/api/feed?*', route => route.fulfill({ json: { items, nextCursor: null, snapshot: 'shared-entry-fixture' } }));
+  await page.route('**/api/publications/1', route => route.fulfill({ json: items[0] }));
+  await page.goto('/discovery?post=post-1');
+  const feed = page.getByRole('region', { name: 'Discovery feed', exact: true });
+  await feed.focus(); for (let i = 0; i < 5; i++) await feed.press('ArrowDown');
+  await expect(page.locator('article[data-active=true]')).toHaveAttribute('aria-label', 'Shared entry 5 by Shared return fixture');
+  await nav(page, 'home').click(); await page.goBack();
+  await expect(page).toHaveURL(/\/discovery\?post=post-1$/);
+  await expect(page.locator('article[data-active=true]')).toHaveAttribute('aria-label', 'Shared entry 0 by Shared return fixture');
+  await expect(page.locator('article[data-active=true]')).toHaveAttribute('data-index', '0');
+  await expect.poll(() => feed.evaluate(element => element.scrollTop)).toBe(0);
+  // A fresh shared-link visit still opens its named publication rather than old view memory.
+  await page.goto('/discovery?post=post-1');
+  await expect(page.locator('article[data-active=true]')).toHaveAttribute('aria-label', 'Shared entry 0 by Shared return fixture');
+});
+
+test('Back traverses real history, survives reload and preserves browser Forward', async ({page}) => {
+  await artist(page);
+  await rpc(page,'createProject',{title:'History chain',category:'Single',goalAmount:100,status:'funding'});
+  await page.goto('/search');await page.getByRole('searchbox').fill('History chain');
+  await page.locator('a[href^="/project/"]').first().click();
+  const projectUrl=page.url();
+  await page.locator('header a[href^="/artist/"]').click();
+  const artistUrl=page.url(), length=await page.evaluate(()=>history.length);
+  await page.reload();await page.goBack();
+  await expect(page).toHaveURL(projectUrl);expect(await page.evaluate(()=>history.length)).toBe(length);
+  await page.goBack();await expect(page).toHaveURL(/\/search$/);
+  expect(await page.evaluate(()=>history.length)).toBe(length);
+  await page.goForward();await expect(page).toHaveURL(projectUrl);
+  await page.goForward();await expect(page).toHaveURL(artistUrl);
+  await page.goBack();await expect(page).toHaveURL(projectUrl);
+});
+
+test('standalone pages use the main navigation, while browser Back restores Search', async({page,context})=>{
+ await artist(page);await page.setViewportSize({width:1024,height:900});await page.goto('/search');
+ await nav(page,'saved').click();await page.goBack();await expect(page).toHaveURL(/\/search$/);
+ const separate=await context.newPage();await separate.goto('/saved');await expect(separate.getByRole('heading',{name:'Saved publications',exact:true})).toBeVisible();await expect(separate.getByRole('link',{name:/^(Back|Go) to /})).toHaveCount(0);await separate.close();
+ await page.goto('/publish');await expect(nav(page,'profile')).toBeVisible();await expect(page.getByRole('link',{name:/^(Back|Go) to /})).toHaveCount(0);
+ await page.goto('/messages/general/999999');await expect(page.getByRole('link',{name:'All messages',exact:true})).toHaveCount(0);await nav(page,'messages').click();await expect(page).toHaveURL(/\/messages$/);
+});
+
+test('guest forms keep browser history and an accessible branded home link',async({page})=>{
+ await page.goto('/search?from=return-test');
+ // The desktop sidebar is available at either test project's initial device width.
+ await page.setViewportSize({width:1024,height:900});
+ await page.getByRole('link',{name:'log in',exact:true}).click();
+ await expect(page.getByRole('link',{name:'Nebula home',exact:true})).toHaveAttribute('href','/');await expect(page.getByRole('link',{name:/^(Back|Go) to /})).toHaveCount(0);await page.goBack();await expect(page).toHaveURL(/\/search\?from=return-test$/);
+ await page.getByRole('link',{name:'sign up',exact:true}).click();
+ await expect(page.getByRole('link',{name:'Nebula home',exact:true})).toHaveAttribute('href','/');await page.goBack();await expect(page).toHaveURL(/\/search\?from=return-test$/);
+ await page.goto('/login');await page.getByRole('link',{name:'Nebula home',exact:true}).click();await expect(page).toHaveURL(/\/$/);
+});

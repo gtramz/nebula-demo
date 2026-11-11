@@ -1,0 +1,9 @@
+/* Exact blue from the active Nebula logo artwork: assets/antiq-logo.png. */
+.shell-scroll-progress { position:fixed; top:0; left:0; right:0; z-index:45; height:3px; pointer-events:none; overflow:hidden; contain:layout paint; }
+.shell-scroll-progress-fill { display:block; width:100%; height:100%; background:#00bfff; transform:scaleX(0); transform-origin:left center; will-change:transform; }
+.shell-scroll-progress[hidden],.shell-scroll-progress[data-scrollable=false] { display:none; }
+
+/* Hide only native page/feed scrollbars. Independent inner controls keep theirs. */
+html,body,.app-shell,.shell-content,.shell-page,.shell-page [data-page-scroll]:not([role="dialog"] *,[role="alertdialog"] *,[role="menu"] *),.shell-page .discovery-feed { scrollbar-width:none; }
+html::-webkit-scrollbar,body::-webkit-scrollbar,.app-shell::-webkit-scrollbar,.shell-content::-webkit-scrollbar,.shell-page::-webkit-scrollbar,.shell-page [data-page-scroll]:not([role="dialog"] *,[role="alertdialog"] *,[role="menu"] *)::-webkit-scrollbar,.shell-page .discovery-feed::-webkit-scrollbar { display:none; }
+@media(prefers-reduced-motion:reduce) { .shell-scroll-progress-fill { transition:none; } }

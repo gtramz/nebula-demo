@@ -1,0 +1,48 @@
+{
+  "scope": "Local presentation assets: fictional audiovisual examples, public catalog visuals and user-supplied LUNA recordings",
+  "existingAssetSources": "presentation/assets/manifest.json",
+  "vocal": {
+    "model": "MiniMax H3 Singularity Economy",
+    "creditsUsed": 132,
+    "generatedDurationSeconds": 10,
+    "editedDurationSeconds": 7.8,
+    "reasonForTrim": "Visual artifact in generated ending",
+    "nativeAudioPreserved": true
+  },
+  "percussion": {
+    "model": "MiniMax H3 Singularity Economy",
+    "creditsUsed": 53,
+    "generatedDurationSeconds": 10,
+    "editedDurationSeconds": 10,
+    "nativeAudioPreserved": true
+  },
+  "newBatchTotalCredits": 185,
+  "humanArtisticAudition": "Not performed by the agent; requires presenter review",
+  "luna": {
+    "source": "User-supplied finished recordings, copied unchanged on 2026-11-09",
+    "original": {
+      "title": "luna",
+      "artists": [
+        "gramz",
+        "SANNFERNNA"
+      ],
+      "file": "presentation/assets/audio/luna-original.m4a",
+      "sha256": "abc61138656aab4dcd928faa81177ba0ebae46122f3a0e13d1b615fd0f1b3ee3"
+    },
+    "remix": {
+      "title": "luna - chilz remix",
+      "artists": [
+        "CHILZ"
+      ],
+      "file": "presentation/assets/audio/luna-chilz-remix.m4a",
+      "sha256": "0fdcd19e95953850063d4549e57730f88bb9b289725c5dfa7c42d2569c1bf529"
+    },
+    "durationSeconds": 175.287438,
+    "codec": "AAC",
+    "sampleRate": 44100,
+    "channels": 2,
+    "coverArt": "Original typographic artwork created locally for this presentation",
+    "studioRender": false,
+    "spotifyAudio": false
+  }
+}

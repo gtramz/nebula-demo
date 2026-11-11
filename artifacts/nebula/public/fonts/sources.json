@@ -1,0 +1,146 @@
+{
+  "provider": "Google Fonts",
+  "retrieved": "2026-11-11",
+  "fonts": [
+    {
+      "file": "inter-italic-100-900-latin-ext.woff2",
+      "family": "Inter",
+      "style": "italic",
+      "weight": "100 900",
+      "subset": "latin-ext",
+      "source": "https://fonts.gstatic.com/s/inter/v20/UcC53FwrK3iLTcvneQg7Ca725JhhKnNqk6L3UUMbndwVgHU.woff2",
+      "bytes": 91836,
+      "sha256": "e3f94a6c4b2177643513bf5e2317b8458183d064e40031fa04c074136be205e8"
+    },
+    {
+      "file": "inter-italic-100-900-latin.woff2",
+      "family": "Inter",
+      "style": "italic",
+      "weight": "100 900",
+      "subset": "latin",
+      "source": "https://fonts.gstatic.com/s/inter/v20/UcC53FwrK3iLTcvneQg7Ca725JhhKnNqk6L5UUMbndwV.woff2",
+      "bytes": 51636,
+      "sha256": "7ddd9658a57d7c5811b4f6aa43625433d72c05ac83c46a231ef3dfd88813c8a1"
+    },
+    {
+      "file": "inter-normal-100-900-latin-ext.woff2",
+      "family": "Inter",
+      "style": "normal",
+      "weight": "100 900",
+      "subset": "latin-ext",
+      "source": "https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa25L7W0Q5n-wU.woff2",
+      "bytes": 85272,
+      "sha256": "a28eb6d3ccb534ae0c94ca999371df024aab60b08c3c8a5720ee9e32fa0faaa2"
+    },
+    {
+      "file": "inter-normal-100-900-latin.woff2",
+      "family": "Inter",
+      "style": "normal",
+      "weight": "100 900",
+      "subset": "latin",
+      "source": "https://fonts.gstatic.com/s/inter/v20/UcC73FwrK3iLTeHuS_nVMrMxCp50SjIa1ZL7W0Q5nw.woff2",
+      "bytes": 48432,
+      "sha256": "c940764593d0fe5d596be327ca7558855e018039fb78509aa21921fd3644c3e4"
+    },
+    {
+      "file": "space-grotesk-normal-300-700-latin-ext.woff2",
+      "family": "Space Grotesk",
+      "style": "normal",
+      "weight": "300 700",
+      "subset": "latin-ext",
+      "source": "https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPb94C_k3HqUtEw.woff2",
+      "bytes": 18924,
+      "sha256": "054c266fbb441ee059365dba0885d206f67ca05b375de869b88e02ebfccc9b9d"
+    },
+    {
+      "file": "space-grotesk-normal-300-700-latin.woff2",
+      "family": "Space Grotesk",
+      "style": "normal",
+      "weight": "300 700",
+      "subset": "latin",
+      "source": "https://fonts.gstatic.com/s/spacegrotesk/v22/V8mDoQDjQSkFtoMM3T6r8E7mPbF4C_k3HqU.woff2",
+      "bytes": 22320,
+      "sha256": "a0d054c4af557de20afd6ca59f47ab353bcaec49c63ff04b6c9d39d0f8910557"
+    },
+    {
+      "file": "space-mono-italic-400-latin-ext.woff2",
+      "family": "Space Mono",
+      "style": "italic",
+      "weight": "400",
+      "subset": "latin-ext",
+      "source": "https://fonts.gstatic.com/s/spacemono/v17/i7dNIFZifjKcF5UAWdDRYERMSXK_MQacb0yG.woff2",
+      "bytes": 10048,
+      "sha256": "099b3a34168b64961be6051130a6bf5effa9d2a927e5e48e4ef1c2c82a0aabea"
+    },
+    {
+      "file": "space-mono-italic-400-latin.woff2",
+      "family": "Space Mono",
+      "style": "italic",
+      "weight": "400",
+      "subset": "latin",
+      "source": "https://fonts.gstatic.com/s/spacemono/v17/i7dNIFZifjKcF5UAWdDRYERMR3K_MQacbw.woff2",
+      "bytes": 10660,
+      "sha256": "7b001804bf97cfe4488183f1713fcb0f5312dd127526e423a8acd1a303c7dd12"
+    },
+    {
+      "file": "space-mono-italic-700-latin-ext.woff2",
+      "family": "Space Mono",
+      "style": "italic",
+      "weight": "700",
+      "subset": "latin-ext",
+      "source": "https://fonts.gstatic.com/s/spacemono/v17/i7dSIFZifjKcF5UAWdDRYERE_FeqEiSRRXaPY-je.woff2",
+      "bytes": 10096,
+      "sha256": "a0297b33312ee20a153750b84191f6a9fd2a5f6d5a49ad7861cf2288ce3ba3a2"
+    },
+    {
+      "file": "space-mono-italic-700-latin.woff2",
+      "family": "Space Mono",
+      "style": "italic",
+      "weight": "700",
+      "subset": "latin",
+      "source": "https://fonts.gstatic.com/s/spacemono/v17/i7dSIFZifjKcF5UAWdDRYERE_FeqHCSRRXaPYw.woff2",
+      "bytes": 10500,
+      "sha256": "bb03cb70d44305b604e4d814b4071a8239af4f9542fbbbb67113c5df329560f7"
+    },
+    {
+      "file": "space-mono-normal-400-latin-ext.woff2",
+      "family": "Space Mono",
+      "style": "normal",
+      "weight": "400",
+      "subset": "latin-ext",
+      "source": "https://fonts.gstatic.com/s/spacemono/v17/i7dPIFZifjKcF5UAWdDRYE98RXi4EwSsbg.woff2",
+      "bytes": 9752,
+      "sha256": "b4f90459adf4851575a46d9a492c17ee34c97fe40d56979521de67d1ee77d75a"
+    },
+    {
+      "file": "space-mono-normal-400-latin.woff2",
+      "family": "Space Mono",
+      "style": "normal",
+      "weight": "400",
+      "subset": "latin",
+      "source": "https://fonts.gstatic.com/s/spacemono/v17/i7dPIFZifjKcF5UAWdDRYEF8RXi4EwQ.woff2",
+      "bytes": 9464,
+      "sha256": "e0c8e616bda27642f4c3cebaecff6525d901e73afc8a227cbbb0f2af4810f300"
+    },
+    {
+      "file": "space-mono-normal-700-latin-ext.woff2",
+      "family": "Space Mono",
+      "style": "normal",
+      "weight": "700",
+      "subset": "latin-ext",
+      "source": "https://fonts.gstatic.com/s/spacemono/v17/i7dMIFZifjKcF5UAWdDRaPpZUFuaHi6WZ3S_Yg.woff2",
+      "bytes": 9732,
+      "sha256": "512458b32bf452ac0e4b33fd6277bf4f07821acefb59db2d1498aa107679a1a6"
+    },
+    {
+      "file": "space-mono-normal-700-latin.woff2",
+      "family": "Space Mono",
+      "style": "normal",
+      "weight": "700",
+      "subset": "latin",
+      "source": "https://fonts.gstatic.com/s/spacemono/v17/i7dMIFZifjKcF5UAWdDRaPpZUFWaHi6WZ3Q.woff2",
+      "bytes": 9552,
+      "sha256": "af7cf6d2b897ec453acdcdacde4e9bcc8410718af5914de865b453e09f10eebc"
+    }
+  ]
+}

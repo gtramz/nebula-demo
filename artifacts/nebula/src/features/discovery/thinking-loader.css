@@ -1,0 +1,14 @@
+.discovery-entry { position:relative; display:flex; flex:1; min-width:0; min-height:0; }
+.discovery-entry-content { display:flex; flex:1; min-width:0; min-height:0; }
+.discovery-thinking-loader { position:absolute; inset:0; z-index:25; display:grid; place-items:center; background:#000; }
+.discovery-thinking-character { display:flex; flex-direction:column; align-items:center; gap:12px; }
+.discovery-thinking-character svg { display:block; width:144px; height:144px; overflow:visible; }
+.discovery-thinking-gaze { animation:discovery-thinking-look 4.2s ease-in-out infinite; }
+.discovery-thinking-blink { transform-box:fill-box; transform-origin:center; animation:discovery-thinking-blink 3.1s ease-in-out infinite; }
+.discovery-thinking-dots { display:flex; height:8px; align-items:center; gap:7px; }
+.discovery-thinking-dots i { width:3px; height:3px; border-radius:50%; background:#f2efe680; animation:discovery-thinking-dot 1.5s ease-in-out infinite; }
+.discovery-thinking-dots i:nth-child(2) { animation-delay:.15s; }.discovery-thinking-dots i:nth-child(3) { animation-delay:.3s; }
+@keyframes discovery-thinking-look { 0%,12%,90%,100% { transform:translate(0,0); } 28%,55% { transform:translate(8px,-8px); } 70% { transform:translate(-4px,-3px); } }
+@keyframes discovery-thinking-blink { 0%,43%,49%,100% { transform:scaleY(1); } 46% { transform:scaleY(.08); } }
+@keyframes discovery-thinking-dot { 0%,70%,100% { opacity:.3; } 35% { opacity:1; } }
+@media(prefers-reduced-motion:reduce) { .discovery-thinking-character * { animation:none; } }

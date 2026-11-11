@@ -1,0 +1,87 @@
+import { test, expect, type Page } from '@playwright/test';
+
+const headers = { Origin: 'http://127.0.0.1:4177', 'X-Nebula-Request': '1' };
+const nav = (page: Page, name: string) => page.getByRole('navigation', { name: 'Primary navigation' }).getByRole('link', { name, exact: true });
+const pageReturns = (page: Page) => page.getByRole('link', { name: /^(Back to |Go to |All messages$)/ });
+
+test('main navigation reopens Discovery at the top while Remix keeps its steps and original reference', async ({ page }) => {
+  await page.request.post('/api/presentation/reset', { headers, data: { confirm: true } });
+  await page.request.post('/api/presentation/switch', { headers, data: { accountId: 19 } });
+  await page.goto('/discovery?post=post-15');
+  const active = page.locator('article[data-active=true]');
+  await expect(active).toBeVisible();
+  const original = await active.getAttribute('aria-label');
+  await page.getByRole('navigation', { name: 'Primary navigation' }).getByRole('button', { name: 'Create', exact: true }).click();
+  await page.getByRole('menuitem', { name: 'Publish audio or video', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Share your sound', exact: true })).toBeVisible();
+  await expect(pageReturns(page)).toHaveCount(0);
+  await nav(page, 'discovery').click();
+  await expect(page).toHaveURL(/\/discovery$/);
+  await expect(active).toHaveAttribute('data-index', '0');
+  await expect.poll(() => page.locator('.discovery-feed').evaluate(element => element.scrollTop)).toBe(0);
+  await page.goto('/discovery?post=post-15');
+  await expect(active).toHaveAttribute('aria-label', original!);
+  await active.getByRole('button', { name: 'Remix', exact: true }).click();
+  await expect(page).toHaveURL(/\/studio\/remix$/);
+  await expect(page.getByRole('heading', { name: 'Remix studio', exact: true })).toBeVisible();
+  await expect(pageReturns(page)).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Your private drafts', exact: true })).toHaveCount(0);
+  const source = page.getByRole('link', { name: 'Open original', exact: true });
+  await expect(source).toHaveAttribute('href', '/discovery?post=post-15');
+  await expect(source.locator('svg')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await page.getByRole('button', { name: 'Back', exact: true }).click();
+  await expect(page).toHaveURL(/\/studio\/remix$/);
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await page.getByRole('button', { name: 'Open Forge', exact: true }).click();
+  await page.getByRole('button', { name: 'Review your version', exact: true }).click();
+  await expect(page.getByRole('region', { name: 'Finished version player', exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Continue', exact: true }).click();
+  await page.getByLabel('Remix title', { exact: true }).fill('Unsaved private version');
+  let count = 0;
+  const reject = async (dialog: import('@playwright/test').Dialog) => { count++; await dialog.dismiss(); };
+  page.on('dialog', reject);
+  await nav(page, 'discovery').click();
+  await expect(page.getByLabel('Remix title', { exact: true })).toHaveValue('Unsaved private version');
+  expect(count).toBe(1);
+  page.off('dialog', reject);
+  page.once('dialog', dialog => dialog.accept());
+  await nav(page, 'discovery').click();
+  await expect(page).toHaveURL(/\/discovery$/);
+  await expect(active).toHaveAttribute('data-index', '0');
+  await expect.poll(() => page.locator('.discovery-feed').evaluate(element => element.scrollTop)).toBe(0);
+});
+
+test('saved has a clean heading and navigation remains scoped to the current account', async ({ page }) => {
+  await page.request.post('/api/presentation/reset', { headers, data: { confirm: true } });
+  await page.request.post('/api/presentation/switch', { headers, data: { accountId: 19 } });
+  await page.goto('/profile');
+  await page.getByRole('link', { name: /Saved publications/ }).click();
+  await expect(page.getByRole('heading', { name: 'Saved publications', exact: true })).toBeVisible();
+  await expect(pageReturns(page)).toHaveCount(0);
+  await page.request.post('/api/presentation/switch', { headers, data: { accountId: 21 } });
+  await page.reload();
+  await nav(page, 'profile').click();
+  await expect(page.getByRole('heading', { name: 'CHILZ', exact: true })).toBeVisible();
+  await page.request.post('/api/presentation/switch', { headers, data: { accountId: 19 } });
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Sol Rivera', exact: true })).toBeVisible();
+  await expect(pageReturns(page)).toHaveCount(0);
+});
+
+test('legacy Remix links retain browser history and direct entry uses the main navigation', async ({ page }) => {
+  await page.request.post('/api/presentation/reset', { headers, data: { confirm: true } });
+  await page.request.post('/api/presentation/switch', { headers, data: { accountId: 19 } });
+  await page.goto('/saved');
+  await expect(page.getByRole('heading', { name: 'Saved publications', exact: true })).toBeVisible();
+  await page.evaluate(() => history.pushState(null, '', '/remix/15?mode=video'));
+  await expect(page).toHaveURL(/\/studio\/remix$/);
+  await expect(page.getByRole('button', { name: 'Start private remix', exact: true })).toBeVisible();
+  await expect(pageReturns(page)).toHaveCount(0);
+  await page.goBack();
+  await expect(page).toHaveURL(/\/saved$/);
+  await page.goto('/studio/remix');
+  await expect(pageReturns(page)).toHaveCount(0);
+  await nav(page, 'profile').click();
+  await expect(page.getByRole('heading', { name: 'Profile', exact: true })).toBeVisible();
+});

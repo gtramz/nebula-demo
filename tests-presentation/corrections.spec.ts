@@ -1,0 +1,73 @@
+import {test,expect} from '@playwright/test';
+import {resolve} from 'node:path';
+const headers={Origin:'http://127.0.0.1:4177','X-Nebula-Request':'1'};
+test('new artist: navigation, integrated comments, Saved, exact-song opportunity and private musical proposal',async({page},info)=>{
+ test.setTimeout(120000);
+ const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+ const call=async(path:string,data:unknown,method='POST')=>{const r=await page.request.fetch(path,{method,headers,data});expect(r.ok(),await r.text()).toBeTruthy();return r.json();};
+ await call('/api/presentation/switch',{accountId:4});
+ const source=await(await page.request.get('/api/publications/4')).json();
+ const opportunity=await call('/api/projects/12/offers',{workId:4,referenceMediaId:source.media.id,need:'Feature',deliverable:'A melodic counterpoint',requirements:'Keep the pulse',deadline:null,status:'open',compensation:{kind:'split',percent:15}});
+ await call('/api/presentation/switch',{accountId:0});
+ const email=`corrections-${crypto.randomUUID()}@example.invalid`;
+ await call('/api/rpc',{method:'register',args:[{name:'New Musical Artist',email,password:'preview123',role:'artist'}]});
+ await page.goto('/explore');
+ const active=page.locator('#primary-navigation a[aria-current=page]');await expect(active).toHaveAttribute('href','/explore');
+ await page.goto('/saved');await expect(page.getByText('No saved publications yet.',{exact:true})).toBeVisible();
+ await page.goto('/discovery?post=post-4');const post=page.locator('article[data-active=true]');await expect(post.getByRole('heading',{name:'Marea Alta',exact:true})).toBeVisible();
+ await post.getByRole('button',{name:'Play Marea Alta',exact:true}).click();
+ await expect.poll(()=>post.locator('audio').evaluate((a:HTMLAudioElement)=>a.currentTime)).toBeGreaterThan(0);
+ const before=await post.locator('audio').evaluate((a:HTMLAudioElement)=>a.currentTime);
+ await post.getByRole('button',{name:'Comments',exact:true}).click();
+ await expect(page.locator('.discovery-panel-overlay')).toHaveCount(0);
+ await page.getByLabel('Add a comment',{exact:true}).fill('A new harmony from a new artist.');await page.getByRole('button',{name:'Post comment',exact:true}).click();
+ await expect(page.locator('.discovery-comments').getByText('A new harmony from a new artist.',{exact:true})).toBeVisible();
+ expect(await post.locator('audio').evaluate((a:HTMLAudioElement)=>a.currentTime)).toBeGreaterThanOrEqual(before);
+ await page.screenshot({path:info.outputPath('comments.png')});await page.getByRole('button',{name:'Close comments',exact:true}).click();
+ await post.getByRole('button',{name:'Save',exact:true}).click();await expect(post.getByRole('button',{name:'Save',exact:true})).toHaveAttribute('aria-pressed','true');
+ await page.goto('/saved');await expect(page.getByRole('link',{name:'Open original',exact:true})).toBeVisible();await page.reload();await expect(page.getByRole('button',{name:'Play Marea Alta',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Remove from saved',exact:true}).click();await expect(page.getByText('No saved publications yet.',{exact:true})).toBeVisible();await page.reload();await expect(page.getByText('No saved publications yet.',{exact:true})).toBeVisible();
+ await page.goto('/profile?create=project');await page.getByLabel('TITLE',{exact:true}).fill('Second-song opportunity');await page.getByLabel('CATEGORY',{exact:true}).selectOption('EP');await page.getByRole('button',{name:'Continue',exact:true}).click();
+ await page.getByRole('button',{name:'Add song',exact:true}).click();await page.getByLabel('Song 1 title',{exact:true}).fill('First sketch');await page.getByRole('button',{name:'Add song',exact:true}).click();await page.getByLabel('Song 2 title',{exact:true}).fill('The selected song');
+ await page.getByRole('button',{name:'Continue',exact:true}).click();await page.getByLabel('Find collaborators for this project',{exact:true}).check();await page.getByRole('combobox',{name:'Opportunity scope',exact:true}).selectOption('1');await page.getByLabel('Expected deliverable',{exact:true}).fill('A feature on the second song');
+ await page.getByLabel('Upload reference audio or video',{exact:true}).setInputFiles(resolve('presentation/assets/audio/afterglow.mp3'));await expect(page.getByLabel('Opportunity reference',{exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Continue',exact:true}).click();await expect(page.locator('.creation-summary')).toContainText('The selected song');await page.getByRole('button',{name:'Save project',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'New Project',exact:true})).toBeHidden();
+ const projects=(await call('/api/rpc',{method:'listProjects',args:[]})).result;
+ const own=projects.find((p:any)=>p.title==='Second-song opportunity');expect(own.status).toBe('draft');
+ const offers=await(await page.request.get(`/api/projects/${own.id}/offers`)).json();expect(offers[0].workTitle).toBe('The selected song');expect(offers[0].available).toBe(false);
+ await page.goto(`/messages/offer/${opportunity.id}`);await expect(page.getByRole('button',{name:'Use prepared take',exact:true})).toBeEnabled();
+ await page.getByRole('button',{name:'Use prepared take',exact:true}).click();await expect(page.getByRole('button',{name:'Render proposal',exact:true})).toBeEnabled();await page.getByRole('button',{name:'Render proposal',exact:true}).click();
+ await expect(page.getByRole('button',{name:'Your proposal',exact:true})).toBeVisible();
+ await page.getByLabel('Introduction',{exact:true}).fill('I hear a melodic counterpoint.');await page.getByLabel('Your proposal',{exact:true}).fill('A layered full-track arrangement.');
+ await page.getByRole('button',{name:'Save private draft',exact:true}).click();await expect(page.getByText('Private draft saved. No request has been sent.',{exact:true})).toBeVisible();
+ let current=await(await page.request.get(`/api/offers/${opportunity.id}/conversations`)).json();expect(current.existing).toBeNull();expect(current.draft.files).toHaveLength(1);expect(current.draft.files[0].id).not.toBe(source.media.id);
+ await page.goto('/studio?view=drafts');await page.getByRole('region',{name:'Private proposal drafts',exact:true}).getByRole('link').click();await page.reload();await expect(page.getByLabel('Introduction',{exact:true})).toHaveValue('I hear a melodic counterpoint.');await expect(page.getByRole('button',{name:'Your proposal',exact:true})).toBeVisible();
+ await page.getByRole('slider',{name:/Comparison position/}).fill('12');await page.getByRole('button',{name:'Your proposal',exact:true}).click();await expect.poll(()=>page.getByLabel('Compare Your proposal',{exact:true}).evaluate((a:HTMLAudioElement)=>a.currentTime)).toBeCloseTo(12,1);
+ await page.screenshot({path:info.outputPath('proposal.png'),fullPage:true});
+ await page.getByRole('checkbox',{name:'I reviewed the current deliverable, compensation and terms.',exact:true}).check();await page.getByRole('button',{name:'Send request',exact:true}).click();await expect(page).toHaveURL(/\/messages\/collaboration\/\d+$/);
+ const id=(await page.url()).split('/').at(-1);
+ await call('/api/presentation/switch',{accountId:4});await page.reload();await expect(page.getByRole('button',{name:'Accept proposal',exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Original',exact:true})).toBeVisible();await page.getByRole('button',{name:'Accept proposal',exact:true}).click();await expect(page.getByLabel('Message',{exact:true})).toBeVisible();expect(page.url()).toContain(`/messages/collaboration/${id}`);
+ await page.getByLabel('Message',{exact:true}).fill('Welcome, let us make the next version.');await page.getByRole('button',{name:'Send message',exact:true}).click();await page.reload();await expect(page.getByText('Welcome, let us make the next version.',{exact:true})).toBeVisible();
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);expect(errors).toEqual([]);
+});
+
+test('navigation follows routes, history, detail context and persona; mobile Saved stays reachable',async({page},info)=>{
+ const call=async(id:number)=>{const r=await page.request.post('/api/presentation/switch',{headers,data:{accountId:id}});expect(r.ok()).toBeTruthy();};
+ await call(1);await page.goto('/explore');const active=page.locator('#primary-navigation a[aria-current=page]:visible');
+ for(const [path,href] of [['/explore','/explore'],['/search','/search'],['/messages','/messages'],['/profile','/profile'],['/discovery','/discovery']]){await page.goto(path);await expect(active).toHaveCount(1);await expect(active).toHaveAttribute('href',href);await page.reload();await expect(active).toHaveAttribute('href',href);}
+ await page.goto('/explore');await page.getByRole('article',{name:'Afterglow',exact:true}).getByRole('link',{name:'View project',exact:true}).click();await expect(active).toHaveAttribute('href','/explore');await page.reload();await expect(active).toHaveAttribute('href','/explore');await page.goBack();await expect(active).toHaveAttribute('href','/explore');await page.goForward();await expect(active).toHaveAttribute('href','/explore');
+ await page.goto('/profile');await page.getByRole('link',{name:/Saved publications Your private collection/}).click();await expect(active).toHaveAttribute('href',info.project.name==='mobile'?'/profile':'/saved');
+ await call(7);await page.reload();await expect(active).toHaveAttribute('href',info.project.name==='mobile'?'/profile':'/saved');await page.goto('/');await expect(page).toHaveURL(/\/explore$/);await expect(active).toHaveAttribute('href','/explore');
+});
+
+test('Mix preparation accepts a complete recording without mandatory overdub or fragment',async({page},info)=>{
+ const call=async(path:string,data:unknown,method='POST')=>{const r=await page.request.fetch(path,{method,headers,data});expect(r.ok(),await r.text()).toBeTruthy();return r.json();};
+ await call('/api/presentation/switch',{accountId:4});const source=await(await page.request.get('/api/publications/4')).json();
+ const offer=await call('/api/projects/12/offers',{workId:4,referenceMediaId:source.media.id,need:'Mix',deliverable:'Complete stereo mix',requirements:'Preserve the full arrangement',deadline:null,status:'open',compensation:{kind:'fee',amount:250,currency:'USD'}});
+ await call('/api/presentation/switch',{accountId:0});await call('/api/rpc',{method:'register',args:[{name:'Mixing Artist',email:`mix-${crypto.randomUUID()}@example.invalid`,password:'preview123',role:'artist'}]});
+ await page.goto(`/messages/offer/${offer.id}`);await expect(page.getByLabel('Upload your complete mix or master',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Render proposal',exact:true})).toHaveCount(0);
+ await page.getByLabel('Upload your complete mix or master',{exact:true}).setInputFiles(resolve('presentation/assets/audio/marea-remix.mp3'));await expect(page.getByRole('button',{name:'Your proposal',exact:true})).toBeVisible();
+ await page.getByRole('button',{name:'Save private draft',exact:true}).click();await expect(page.getByText('Private draft saved. No request has been sent.',{exact:true})).toBeVisible();await page.reload();await expect(page.getByRole('button',{name:'Your proposal',exact:true})).toBeVisible();
+ await expect(page.getByRole('slider',{name:/Original level/})).toHaveCount(0);await expect(page.getByRole('button',{name:'Render proposal',exact:true})).toHaveCount(0);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+});

@@ -1,0 +1,5 @@
+/* Keep native touch panning/snap on the compositor; nested readers own their
+   scroll and never chain a metadata/card gesture into another publication. */
+.discovery .discovery-feed { overflow-anchor:none; touch-action:pan-y pinch-zoom; }
+.discovery .discovery-feed[data-scroll-locked=true] { overflow-y:hidden; }
+.discovery :is(.discovery-post-info,.discovery-action-rail,textarea) { overscroll-behavior-y:contain; }

@@ -1,0 +1,16 @@
+.opportunity-card { position:relative; isolation:isolate; }
+.opportunity-card .opportunity-project-link { position:static; }
+.opportunity-card .opportunity-project-link::after { content:""; position:absolute; inset:0; z-index:1; border-radius:12px; cursor:pointer; }
+.opportunity-card .opportunity-project-link:focus-visible { outline:none; }
+.opportunity-card .opportunity-project-link:focus-visible::after { outline:2px solid var(--color-accent); outline-offset:3px; }
+.opportunity-card :is(.opportunity-author,.opportunity-artist-link,.opportunity-save),.opportunity-card .audio-preview button { position:relative; z-index:2; }
+/* The existing relative waveform keeps its absolute, 44px range hit target. */
+.opportunity-card .audio-preview-wave { z-index:2; }
+.opportunity-card .opportunity-footer-meta { display:flex; flex:1; min-width:0; flex-direction:column; gap:3px; }
+.opportunity-card .opportunity-footer-meta .opportunity-meta { margin-top:0; }
+.opportunity-card .opportunity-copy .opportunity-genres span:first-child { text-transform:inherit; }
+.opportunity-card .opportunity-art { position:relative; }
+
+.opportunity-card-slot { position:relative; min-width:0; min-height:248px; }
+.opportunity-card-slot>article { height:100%; }
+.opportunity-card-slot>[data-loading-variant=opportunities] { position:absolute; inset:0; }

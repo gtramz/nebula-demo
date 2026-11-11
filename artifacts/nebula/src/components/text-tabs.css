@@ -1,0 +1,8 @@
+.text-tabs { display:flex; flex-wrap:wrap; align-items:center; gap:0 24px; }
+.text-tabs > .text-tab-option { appearance:none; display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; padding:0; border:0; border-radius:0; background:transparent; color:var(--color-ink); box-shadow:none; font-size:14px; font-weight:400; line-height:20px; text-decoration:none; transition:none; -webkit-tap-highlight-color:transparent; }
+.text-tab-option > span { position:relative; display:inline-block; white-space:nowrap; }
+.text-tabs > .text-tab-option[aria-pressed=true] { font-weight:700; }
+.text-tab-option[aria-pressed=true] > span::after { content:""; position:absolute; left:0; right:0; bottom:-5px; height:2px; background:#cdf03f; }
+.text-tabs > .text-tab-option:focus-visible { outline:2px solid #cdf03f; outline-offset:3px; }
+.text-tabs > .text-tab-option:disabled { color:var(--color-muted); opacity:.5; cursor:not-allowed; }
+@media(max-width:480px) { .text-tabs { column-gap:18px; }.text-tabs > .text-tab-option { font-size:13px; } }

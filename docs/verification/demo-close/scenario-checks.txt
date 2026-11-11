@@ -1,0 +1,14 @@
+PASS prepared principal plus eight supporting accounts, all existing posts and attributed remixes
+PASS every publication and cover loads locally; every waveform has real audio
+PASS new identity has no fake history; Home ranks compatible needs
+PASS follow, Following, likes, comments and private saves
+PASS global search resolves songs and publications
+PASS prepared take belongs to the new artist and stays private
+PASS private remix proposal, acceptance and conversation in the same thread
+PASS new project, incoming proposal, delivery, revision and completion
+PASS private draft and public publication transitions
+PASS autonomous community reactions persist once; guided mode waits
+PASS rejection closes the request without opening a chat
+PASS Investor contribution is reflected in recipient history
+PASS server restart preserves identity, projects and conversations
+PASS repeated restore returns to the clean opening scene

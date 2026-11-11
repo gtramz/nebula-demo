@@ -1,0 +1,55 @@
+.antiq-audio-player { container-type:inline-size; width:100%; min-width:0; padding:6px 0; border-block:1px solid #ffffff18; background:transparent; }
+.antiq-audio-transport { display:grid; grid-template-columns:44px minmax(0,1fr) auto; align-items:center; gap:14px; min-width:0; min-height:52px; }
+.antiq-audio-player button,.antiq-audio-options a,.antiq-audio-options select { -webkit-tap-highlight-color:transparent; }
+.antiq-audio-play { position:relative; display:grid; place-items:center; width:44px; height:44px; border:0; border-radius:50%; color:var(--color-cream); background:transparent; transition:background .16s ease; }
+.antiq-audio-play:hover:not(:disabled) { background:#ffffff09; }
+.antiq-audio-play > :not(.antiq-audio-pause-mark) { grid-area:1/1; }
+.antiq-audio-play-glyph { display:grid; place-items:center; width:100%; height:100%; }
+.antiq-audio-pause-mark { position:absolute; right:0; bottom:0; display:grid; place-items:center; width:14px; height:14px; border-radius:50%; background:#000; color:var(--color-cream); }
+.antiq-audio-timeline { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; gap:12px; min-width:0; }
+.antiq-audio-seek-shell { position:relative; min-width:0; }
+.antiq-audio-player .antiq-audio-seek-skeleton { position:absolute; inset-inline:0; top:calc(50% - 1px); height:2px; background:#ffffff24; border-radius:2px; pointer-events:none; }
+.antiq-audio-clock { min-width:4ch; font:10px/1 var(--font-mono); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.antiq-audio-elapsed { color:#d2d6d1; }
+.antiq-audio-duration { color:#7f8782; text-align:right; }
+.antiq-audio-player input[type=range] { display:block; height:44px; min-width:0; margin:0; padding:0; border:0; background:transparent; cursor:pointer; accent-color:var(--color-accent); touch-action:none; }
+.antiq-audio-player .antiq-audio-seek { appearance:none; -webkit-appearance:none; width:100%; }
+.antiq-audio-seek::-webkit-slider-runnable-track { height:2px; border-radius:2px; background:linear-gradient(to right,var(--color-cream) var(--audio-progress),#ffffff24 var(--audio-progress)); }
+.antiq-audio-seek::-webkit-slider-thumb { appearance:none; -webkit-appearance:none; width:6px; height:6px; margin-top:-2px; border:0; border-radius:50%; background:var(--color-cream); opacity:0; transition:opacity .14s ease; }
+.antiq-audio-seek:hover::-webkit-slider-thumb,.antiq-audio-seek:focus-visible::-webkit-slider-thumb,.antiq-audio-seek:active::-webkit-slider-thumb { opacity:1; }
+.antiq-audio-seek::-moz-range-track { height:2px; border-radius:2px; background:#ffffff24; }
+.antiq-audio-seek::-moz-range-progress { height:2px; border-radius:2px; background:var(--color-cream); }
+.antiq-audio-seek::-moz-range-thumb { width:6px; height:6px; border:0; border-radius:50%; background:var(--color-cream); opacity:0; transition:opacity .14s ease; }
+.antiq-audio-seek:hover::-moz-range-thumb,.antiq-audio-seek:focus-visible::-moz-range-thumb,.antiq-audio-seek:active::-moz-range-thumb { opacity:1; }
+.antiq-audio-actions { display:flex; align-items:center; }
+.antiq-audio-icon { display:grid; place-items:center; width:44px; height:44px; flex-shrink:0; color:#929b94; transition:background .16s ease,color .16s ease; }
+.antiq-audio-player .antiq-audio-icon svg,.antiq-audio-play-glyph svg { stroke-width:1.5; }
+.antiq-audio-icon:hover:not(:disabled) { background:#ffffff09; color:var(--color-ink); }
+.antiq-audio-volume { position:relative; width:44px; height:44px; }
+.antiq-audio-volume-tray { position:absolute; z-index:2; inset-inline-end:100%; top:0; display:flex; align-items:center; width:124px; height:44px; padding-inline:12px; background:#111; border:1px solid var(--color-border); border-radius:8px; opacity:0; visibility:hidden; pointer-events:none; transform:translateX(4px); transition:opacity .16s ease,transform .16s ease,visibility 0s linear .16s; }
+.antiq-audio-volume[data-open=true] .antiq-audio-volume-tray { opacity:1; visibility:visible; pointer-events:auto; transform:translateX(0); transition-delay:0s; }
+.antiq-audio-volume-tray input { width:100%; }
+.antiq-audio-status { font:10px/18px var(--font-reading); color:var(--color-muted); }
+.antiq-audio-status[data-visible=true] { padding:2px 0 6px 58px; }
+.antiq-audio-status > [role=alert] { display:flex; align-items:baseline; flex-wrap:wrap; column-gap:8px; color:#f07d70; }
+.antiq-audio-status button { min-height:44px; color:var(--color-ink); text-decoration:underline; text-underline-offset:3px; }
+.antiq-audio-source { display:none; }
+.antiq-audio-player :is(button,input):focus-visible,.antiq-audio-options :is(a,select):focus-visible { outline:2px solid var(--color-accent); outline-offset:3px; }
+.antiq-audio-player :is(button,input):disabled { opacity:.4; cursor:not-allowed; }
+.antiq-audio-options { width:208px; max-width:calc(100vw - 24px); padding:12px; border-radius:10px; background:#111; border-color:var(--color-border); font-size:12px; }
+.antiq-audio-options label { display:flex; align-items:center; justify-content:space-between; gap:12px; color:var(--color-muted); }
+.antiq-audio-options select { width:72px; min-height:44px; padding:0 8px; background:var(--color-surfaceAlt); color:var(--color-ink); border:1px solid var(--color-border); }
+.antiq-audio-options a { display:flex; align-items:center; gap:10px; min-height:44px; margin-top:8px; color:var(--color-ink); }
+.antiq-audio-options a:hover { color:var(--color-accent); }
+.antiq-audio-loading { animation:antiq-audio-spin 1s linear infinite; }
+@keyframes antiq-audio-spin { to { transform:rotate(360deg); } }
+@container (max-width:420px) {
+ .antiq-audio-transport,.antiq-audio-timeline { gap:8px; }
+ .antiq-audio-clock { font-size:9px; }
+ .antiq-audio-status[data-visible=true] { padding-left:52px; }
+}
+@container (max-width:260px) {
+ .antiq-audio-transport { grid-template-columns:44px minmax(0,1fr); }
+ .antiq-audio-actions { grid-column:2; justify-self:end; }
+}
+@media(prefers-reduced-motion:reduce) { .antiq-audio-player *,.antiq-audio-options { transition:none; }.antiq-audio-loading { animation:none; } }

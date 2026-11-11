@@ -1,0 +1,48 @@
+{
+  "date": "2026-11-09",
+  "scope": "Six requested corrections to the independent local simulation",
+  "status": {
+    "navigation": "verified",
+    "musical_video": "missing local performance asset for post 11",
+    "integrated_comments": "verified desktop and mobile viewport",
+    "saved": "verified empty, save, recover, remove, reload",
+    "opportunities": "verified project draft, publication, exact second song and public profile",
+    "proposal_preparation": "verified two distinct references, private save, resume, send, accept, reject and persistence"
+  },
+  "checks": {
+    "build": "passed",
+    "server": {
+      "passed": 83,
+      "failed": 0
+    },
+    "presentation_browser": {
+      "passed": 8,
+      "failed": 0
+    },
+    "existing_collaborations_browser": {
+      "passed": 36,
+      "failed": 0
+    },
+    "restoration_old_schema_repeated": "passed",
+    "final_navigation_after_visual_polish": {
+      "passed": 2,
+      "failed": 0
+    }
+  },
+  "manual": {
+    "artist": "Sol Rivera",
+    "artistId": 19,
+    "projectId": 20,
+    "songId": 10,
+    "createdOfferId": 11,
+    "acceptedThreadId": 6,
+    "rejectedThreadId": 7,
+    "privateDraftOfferId": 1
+  },
+  "limits": [
+    "Post 11 remains an animated cover until real musical footage with audio is supplied.",
+    "Physical phone software keyboard not exercised; VisualViewport handling implemented and mobile viewport reviewed."
+  ],
+  "catalogReset": false,
+  "externalServicesUsed": false
+}

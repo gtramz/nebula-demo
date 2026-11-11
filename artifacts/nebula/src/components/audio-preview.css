@@ -1,0 +1,4 @@
+.audio-preview-skeleton { display:flex; align-items:center; justify-content:space-between; gap:3px; width:100%; height:100%; animation:audio-preview-pulse 1.8s ease-in-out infinite; }
+.audio-preview-skeleton span { flex:1; min-width:2px; max-width:6px; border-radius:2px; background:#ffffff18; }
+@keyframes audio-preview-pulse { 0%,100% { opacity:.5; } 50% { opacity:1; } }
+@media(prefers-reduced-motion:reduce) { .audio-preview-skeleton { animation:none; } }

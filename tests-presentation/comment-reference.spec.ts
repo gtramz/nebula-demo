@@ -1,0 +1,30 @@
+import {test,expect} from '@playwright/test';
+const headers={Origin:'http://127.0.0.1:4177','X-Nebula-Request':'1'};
+test.beforeEach(async({page},info)=>{test.skip(info.project.name!=='desktop','Desktop comment redesign');await page.request.post('/api/presentation/reset',{headers,data:{confirm:true}});});
+test('reference comments: portraits, likes, replies, compact composer and persistent playback',async({page},info)=>{
+ await page.setViewportSize({width:1440,height:930});await page.goto('/discovery?post=post-11');
+ const active=page.locator('article[data-active=true]');await active.getByRole('button',{name:'Comments',exact:true}).click();
+ const panel=page.getByRole('complementary',{name:'Publication comments'}),rows=panel.locator('.comment-thread > .comment-row');await expect(rows).toHaveCount(2);
+ await expect(rows.first().locator('.comment-face img')).toBeVisible();
+ expect(await rows.first().evaluate(e=>getComputedStyle(e).borderBottomWidth)).toBe('0px');
+ const nav=page.getByRole('navigation',{name:'Feed controls'});await expect(nav.locator('button')).toHaveCount(2);await expect(nav.locator('span')).toHaveClass('sr-only');
+ const source=await active.locator('video').elementHandle();await source!.evaluate(async(m:HTMLVideoElement)=>{m.muted=true;await m.play();});
+ const like=rows.first().getByRole('button',{name:/^Like comment/});await like.click();await expect(rows.first().getByRole('button',{name:/^Unlike comment/})).toHaveAttribute('aria-pressed','true');
+ await rows.first().getByRole('button',{name:'Reply',exact:true}).click();await expect(panel.getByText(/^Replying to/)).toBeVisible();await page.getByLabel('Add a comment',{exact:true}).fill('A real reply from the temporary demo test');await page.getByRole('button',{name:'Post comment',exact:true}).click();
+ await expect(panel.locator('.comment-replies')).toContainText('A real reply from the temporary demo test');
+ expect((await page.getByLabel('Add a comment',{exact:true}).boundingBox())!.height).toBeLessThanOrEqual(24);
+ expect(await source!.evaluate((m:HTMLMediaElement)=>m.isConnected&&!m.paused)).toBe(true);
+ await page.screenshot({path:info.outputPath('desktop-comments-1440.png')});
+ await page.reload();await page.locator('article[data-active=true]').getByRole('button',{name:'Comments',exact:true}).click();await expect(panel.getByRole('button',{name:/^Unlike comment/})).toBeVisible();await panel.getByRole('button',{name:'View 1 reply',exact:true}).click();await expect(panel.locator('.comment-replies')).toContainText('A real reply');
+ await panel.getByRole('button',{name:/^Unlike comment/}).click();await expect(panel.getByRole('button',{name:/^Unlike comment/})).toHaveCount(0);
+ await page.setViewportSize({width:983,height:930});await page.screenshot({path:info.outputPath('desktop-comments-983.png')});
+ await panel.getByRole('button',{name:'Close comments',exact:true}).click();await page.screenshot({path:info.outputPath('desktop-no-comments-983.png')});
+});
+test('reply drafts stay with their publication and identity, and failed writes keep text',async({page})=>{
+ await page.goto('/discovery?post=post-3');await page.locator('article[data-active=true]').getByRole('button',{name:'Comments',exact:true}).click();
+ const panel=page.getByRole('complementary',{name:'Publication comments'});await panel.getByRole('button',{name:'Reply',exact:true}).first().click();await page.getByLabel('Add a comment',{exact:true}).fill('Unsent reply');
+ await page.getByRole('button',{name:'Next post',exact:true}).click();await expect(page.getByLabel('Add a comment',{exact:true})).toHaveValue('');await expect(panel.getByText(/^Replying to/)).toHaveCount(0);
+ await page.getByRole('button',{name:'Previous post',exact:true}).click();await expect(page.getByLabel('Add a comment',{exact:true})).toHaveValue('Unsent reply');await expect(panel.getByText(/^Replying to/)).toBeVisible();
+ await page.route('**/api/publications/3/comments',route=>route.request().method()==='POST'?route.fulfill({status:503,json:{error:'Temporary failure'}}):route.continue());await page.getByRole('button',{name:'Post comment',exact:true}).click();await expect(panel.getByRole('alert')).toBeVisible();await expect(page.getByLabel('Add a comment',{exact:true})).toHaveValue('Unsent reply');await page.unroute('**/api/publications/3/comments');
+ await page.request.post('/api/presentation/switch',{headers,data:{accountId:4}});await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await expect.poll(()=>page.locator('textarea').evaluateAll((els:HTMLTextAreaElement[])=>els.some(e=>e.value==='Unsent reply'))).toBe(false);
+});

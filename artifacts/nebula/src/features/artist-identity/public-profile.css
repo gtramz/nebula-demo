@@ -1,0 +1,20 @@
+.artist-profile-player { --post-color:#d9f947; }
+.artist-profile-player .discovery-media { display:grid; grid-template-columns:64px minmax(0,1fr); gap:16px; align-items:start; }
+.artist-profile-player .discovery-audio-stage { flex:unset; container-type:normal; padding:0; }
+.artist-profile-player .discovery-cover { width:64px; }
+.artist-profile-player .discovery-cover-fallback > span { font-size:28px; }
+.artist-profile-player .discovery-media-controls { width:100%; grid-column:1 / -1; }
+.artist-profile-player .discovery-media-status { position:static; }
+.artist-profile-player .discovery-media.is-audio { grid-template-rows:auto auto; height:auto; padding:0; border:0; background:transparent; }
+.artist-profile-player .discovery-media.is-audio .discovery-audio-stage { width:64px; height:64px; flex:none; padding:0; }
+.artist-profile-player .discovery-media.is-audio .discovery-cover { width:64px; height:64px; }
+.artist-profile-player .discovery-media.is-audio .discovery-media-controls { max-width:none; grid-column:1 / -1; grid-row:2; }
+/* The same artwork-led music module is used in public profiles and projects. */
+.artist-profile-player .discovery-media { grid-template-columns:96px minmax(0,1fr); }
+.artist-profile-player .discovery-media.is-audio .discovery-audio-stage,
+.artist-profile-player .discovery-media.is-audio .discovery-cover { width:96px; height:96px; }
+@media (min-width:768px) {
+  .artist-profile-player .discovery-media { grid-template-columns:128px minmax(0,1fr); gap:24px; }
+  .artist-profile-player .discovery-media.is-audio .discovery-audio-stage,
+  .artist-profile-player .discovery-media.is-audio .discovery-cover { width:128px; height:128px; }
+}

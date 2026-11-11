@@ -1,0 +1,342 @@
+[
+  {
+    "path": "audio/afterglow-contribution.wav",
+    "bytes": 7938082,
+    "sha256": "bdb860cf8422d861f5a5cc8e82bd2b7c9b1578b90c41596ff324b2b8e827d36b"
+  },
+  {
+    "path": "audio/afterglow-contribution.waveform.json",
+    "bytes": 6767,
+    "sha256": "0c021af7c757b74ef9dd36b2d49f46e144dbcee26ce3d4b6efe61b6829cb65c9"
+  },
+  {
+    "path": "audio/afterglow-remix.mp3",
+    "bytes": 1080402,
+    "sha256": "a707b82eba9a3839b7c17e7cda48e4a56667ed2acef4566bfbf923bdb0a88d57"
+  },
+  {
+    "path": "audio/afterglow-remix.waveform.json",
+    "bytes": 7205,
+    "sha256": "15a0c1464938954d8cfa53790534c29ec9cc6804fb79f3327adde6f7e972d254"
+  },
+  {
+    "path": "audio/afterglow-spectrum.png",
+    "bytes": 762259,
+    "sha256": "c27eaa55df80e079166bcfd700622375fa4995becbadd9458db33dbe72875f1e"
+  },
+  {
+    "path": "audio/afterglow.mp3",
+    "bytes": 1080402,
+    "sha256": "3824764108568061f7d8c72d9a34758723156054d9161865791432f746b8adb7"
+  },
+  {
+    "path": "audio/afterglow.waveform.json",
+    "bytes": 7192,
+    "sha256": "70681b0d40ea20422792d46f64b256b479d4a92a728db6ca3afa2d86c704c72f"
+  },
+  {
+    "path": "audio/concreto-contribution.mp3",
+    "bytes": 721585,
+    "sha256": "4bcacaa0f62ec8fd4175881c7b6e03f729fed630ce325ee16d7de57a00cd6a54"
+  },
+  {
+    "path": "audio/concreto.mp3",
+    "bytes": 1081512,
+    "sha256": "e022a2e1844f9dca7ccfb71a52a8ef2a626223c012e119c1a25e6f5047308283"
+  },
+  {
+    "path": "audio/concreto.waveform.json",
+    "bytes": 7200,
+    "sha256": "9d06b14785a5f71a50ab2d1bc1be95315abf93823a5993b14011cee9823ec0e9"
+  },
+  {
+    "path": "audio/glasshouse.mp3",
+    "bytes": 1080402,
+    "sha256": "7a797b78b15c33d3f79af82d8811f75a0c5c76ed86acfaddac62cd817b815a96"
+  },
+  {
+    "path": "audio/glasshouse.waveform.json",
+    "bytes": 7211,
+    "sha256": "1905e49b908f58bd7c755ae858fb8d21146bd3703d66c71b0b68252e845fdb11"
+  },
+  {
+    "path": "audio/lowtide.mp3",
+    "bytes": 1081512,
+    "sha256": "29ae1a19bd2c457dbc5d7e88dd3cd3b44970c8156bfc90eb0d10fd0f89303795"
+  },
+  {
+    "path": "audio/lowtide.waveform.json",
+    "bytes": 7213,
+    "sha256": "3b85ab64dc623491919ed7a4eba3faf7f0138b1334a5ceebfea75e095e920888"
+  },
+  {
+    "path": "audio/marea-contribution.wav",
+    "bytes": 7938078,
+    "sha256": "e486c64d5cbbeb277df3b0c4b422eefc4378039f75a598e39186bb27cb98bca0"
+  },
+  {
+    "path": "audio/marea-contribution.waveform.json",
+    "bytes": 6610,
+    "sha256": "498499b6621b8c80a185fa392b4684782c3cf43612d138dc9fe6f649dc82729b"
+  },
+  {
+    "path": "audio/marea-remix.mp3",
+    "bytes": 1080402,
+    "sha256": "a41b050e4a5afe12d139feebfda8aa719545238bcbf1a0a2fd99b4628d0746d0"
+  },
+  {
+    "path": "audio/marea-remix.waveform.json",
+    "bytes": 7179,
+    "sha256": "b7e73bc7aad2570c8cd7b5e56dbc11098cb599d8378a1f64c08716bcd654a7a4"
+  },
+  {
+    "path": "audio/marea.mp3",
+    "bytes": 1080402,
+    "sha256": "ebe77842dd0c582f1a6eba09cfc5b9c5ecf3ac6faa8de05d76ba835068ce0a6c"
+  },
+  {
+    "path": "audio/marea.waveform.json",
+    "bytes": 7202,
+    "sha256": "e3df3a4b3af23c1c4dbecb4545df2e9f4d9c500d0ed4397b30cfd15637dde895"
+  },
+  {
+    "path": "audio/meridian.mp3",
+    "bytes": 1081574,
+    "sha256": "480711bad9a674973d529e636c164b6eda9536c4a668b2d7eb4ed43f1d15f51f"
+  },
+  {
+    "path": "audio/meridian.waveform.json",
+    "bytes": 7201,
+    "sha256": "355724ef2496e090714def5f6edc2d54a1a983a81f4b823338caf365893ccf65"
+  },
+  {
+    "path": "audio/sources/afterglow-adapted.wav",
+    "bytes": 8306486,
+    "sha256": "dafb53ef4bff9a283e4c7903a14165fa8cc7f9a920a4ae521ce7c9103db66c9f"
+  },
+  {
+    "path": "audio/sources/afterglow-generated.mp3",
+    "bytes": 721585,
+    "sha256": "5adb426af72a19e5ddfcb991f0ba04332f1f57802d3b5c70f240865fb61686ae"
+  },
+  {
+    "path": "audio/sources/chill-lofi-inspired.mp3",
+    "bytes": 2717205,
+    "sha256": "1796a480e3db0c02d5e58059b2ae7cfbeab344f95e0443496790da022cbe91b5"
+  },
+  {
+    "path": "audio/sources/concreto-contribution-generated.mp3",
+    "bytes": 721585,
+    "sha256": "4bcacaa0f62ec8fd4175881c7b6e03f729fed630ce325ee16d7de57a00cd6a54"
+  },
+  {
+    "path": "audio/sources/glasshouse-generated.mp3",
+    "bytes": 721585,
+    "sha256": "9f6aabf2cbfc2a47559dd9eac05d5bda02c34e9f473d00994ef0bcc31b67b1d8"
+  },
+  {
+    "path": "audio/sources/marea-adapted.wav",
+    "bytes": 6090990,
+    "sha256": "96a3c7382fa041715e43579efd5cd44362b89e758e5ae047f15603b05dfa18cd"
+  },
+  {
+    "path": "audio/sources/marea-generated.mp3",
+    "bytes": 721585,
+    "sha256": "64f85bf94bacdec327c57abc0a4662cb41014eeb33315c30a93d803192773a1b"
+  },
+  {
+    "path": "audio/sources/november-snow.mp3",
+    "bytes": 13982823,
+    "sha256": "7e4675f6fbc86b97603d620dc54b0753eb5fe773ccc2fab99bc863cb7afde32c"
+  },
+  {
+    "path": "audio/sources/space-ranger.mp3",
+    "bytes": 2881897,
+    "sha256": "192d83a6a639c1b88f4a74b791367b48b1bee47bde65c7d56d606c346da742d8"
+  },
+  {
+    "path": "covers/afterglow.jpg",
+    "bytes": 73445,
+    "sha256": "91f2ddba026ec2c6334e422961728e9ef28da1f462e8ce05d2f368e5f299afce"
+  },
+  {
+    "path": "covers/afterglow.png",
+    "bytes": 2583219,
+    "sha256": "01a997b2a2fa190d37277c90e49506ee23629122de6e8e1d6428613729375d65"
+  },
+  {
+    "path": "covers/bluehour.jpg",
+    "bytes": 76216,
+    "sha256": "eb70151d77a731eac35beaf045d674000b829908ee4173fd6d3be1cfdac5db47"
+  },
+  {
+    "path": "covers/bluehour.png",
+    "bytes": 2636131,
+    "sha256": "3a2d5a65b1807db6889a08c2c79318ec9fdce90f938cbf7d788edebf6daa3f2d"
+  },
+  {
+    "path": "covers/concreto.jpg",
+    "bytes": 124452,
+    "sha256": "fff830e4ea11d7fccfecba372b981b4ee193292f36e3313f476a84c6a1933469"
+  },
+  {
+    "path": "covers/concreto.png",
+    "bytes": 2983810,
+    "sha256": "16564d47668e582035ef870f36476495bcb59fae2078fe9b2bb7dc7b69e06075"
+  },
+  {
+    "path": "covers/glasshouse.jpg",
+    "bytes": 98728,
+    "sha256": "5ac8057eec4861baf135f08b10cfedebf398b2916a1bedb3bbb46e075479c83f"
+  },
+  {
+    "path": "covers/glasshouse.png",
+    "bytes": 2323267,
+    "sha256": "cdc78da38f9b055cf76ac5c318400d7197444e9ba44e513b5e35cd2cf40da4ff"
+  },
+  {
+    "path": "covers/lowtide.jpg",
+    "bytes": 143232,
+    "sha256": "eea8ce58b285ab5ac6d37ca8d55c52e9cf3335015289037f48d8792e62c4ec2b"
+  },
+  {
+    "path": "covers/lowtide.png",
+    "bytes": 2806726,
+    "sha256": "735402ecd79d7e26d79187547da2212a24d67736188a8b2d8890c4e1833812ec"
+  },
+  {
+    "path": "covers/marea.jpg",
+    "bytes": 154377,
+    "sha256": "2aa51369a1351eb5aefda92864b67a57efb84d0f07b390c6b8731dc2df16119a"
+  },
+  {
+    "path": "covers/marea.png",
+    "bytes": 2787933,
+    "sha256": "e0e8b01460cf27ff0fb9ca488b8bcff70c9fb6024e205ec101acd2bd1e907dcc"
+  },
+  {
+    "path": "covers/meridian.jpg",
+    "bytes": 42257,
+    "sha256": "81430ee514790389054ec45154985a55b1690ebd1976a311f071d874696b38c4"
+  },
+  {
+    "path": "covers/meridian.png",
+    "bytes": 2162555,
+    "sha256": "99aa8436ceaa403f20965a8dcc56e0dd3dd36e809f623e043be94d89d7c67c8e"
+  },
+  {
+    "path": "covers/nightbloom.jpg",
+    "bytes": 87611,
+    "sha256": "84263a1f99224c1f40e2dcf2f2111561758daa37ca51157f2a2d1b3ec9aa5999"
+  },
+  {
+    "path": "covers/nightbloom.png",
+    "bytes": 2050584,
+    "sha256": "f6cf95ce2366232b7055167d7f9ed4424ff57a1d1eab2b849e80d54472512a59"
+  },
+  {
+    "path": "generation-record.json",
+    "bytes": 15976,
+    "sha256": "2b798ea6ff2e7dbe9a13fce2037e9afd3e681ee75679260d9d0de1af242b6656"
+  },
+  {
+    "path": "manifest.json",
+    "bytes": 10108,
+    "sha256": "31d2f13f52a60291837a5119421e7a99143ebecac1dc4696743217c4ed2e0c02"
+  },
+  {
+    "path": "portraits/dante.jpg",
+    "bytes": 58492,
+    "sha256": "a93f85e3d87bc78dcb34685d8f389eecb729df76d2dbbb74406142c7c31335a6"
+  },
+  {
+    "path": "portraits/dante.png",
+    "bytes": 2593675,
+    "sha256": "82d533249d00e94e3f3502a6bf0b513ad992de8d6a71a2180c84dc4032f1b53f"
+  },
+  {
+    "path": "portraits/gael.jpg",
+    "bytes": 42173,
+    "sha256": "41c36c43f404dbda11412f253f7dc6335373a90eb3bf459d50cf8e5958d371a4"
+  },
+  {
+    "path": "portraits/gael.png",
+    "bytes": 2252598,
+    "sha256": "47fc286ec9ba7360c6b53509bbc6df17bb53a3c303f6b45aa38145e3c2aa7edc"
+  },
+  {
+    "path": "portraits/ines.jpg",
+    "bytes": 57570,
+    "sha256": "38117d8c8ed8bd4230f116967b89838eb89dab2319a72a4ebc25d9c31a774576"
+  },
+  {
+    "path": "portraits/ines.png",
+    "bytes": 2626748,
+    "sha256": "294ce8b0c0770e5abbf8b96b9f33e2b05d041204f909b2c95505b55b9f9a4ceb"
+  },
+  {
+    "path": "portraits/lia.jpg",
+    "bytes": 21311,
+    "sha256": "7abeffec65848264377e51e8999e5f7a957be1f49a3aa0f9aee1225ed2b51cb2"
+  },
+  {
+    "path": "portraits/lia.png",
+    "bytes": 2158907,
+    "sha256": "7c1be053d778e3419e2d32aa013bf819a4a73ebd8120986c59a8efc2e648c723"
+  },
+  {
+    "path": "portraits/mara.jpg",
+    "bytes": 27395,
+    "sha256": "81b90cf8f30cb81ae76c0cb68d1578b742444b944a890585d4d8646c2130f7ed"
+  },
+  {
+    "path": "portraits/mara.png",
+    "bytes": 2149037,
+    "sha256": "08d25e09f331e803240de11ec12d11c2e9ca063bb0091d3f8876cc71f5cc879a"
+  },
+  {
+    "path": "portraits/marea.jpg",
+    "bytes": 37228,
+    "sha256": "f615d4e5eff96eebba8b2f990bb7f3d74cf5dbe591d251f4d7e30c901a13ae40"
+  },
+  {
+    "path": "portraits/marea.png",
+    "bytes": 2314420,
+    "sha256": "0240f2258b02d344f59cec539f04b62759fc4ff08c7c658dfaa7a1e73bc4766f"
+  },
+  {
+    "path": "verification.json",
+    "bytes": 2553,
+    "sha256": "e649bdad92d2d62434939af8ff3fca21ad5b7a34280408e1137e0cb6338ec625"
+  },
+  {
+    "path": "video/marea-performance-source.mp4",
+    "bytes": 9713110,
+    "sha256": "559fbc8dd926b31452984cb22d68ab99593fd74ee61ee324a986c7353972a6ba"
+  },
+  {
+    "path": "video/marea-session.jpg",
+    "bytes": 187005,
+    "sha256": "ed5525cc76fd1c815437c346b1e281df623e9108db6c464ad699d6fa11964e22"
+  },
+  {
+    "path": "video/marea-session.mp4",
+    "bytes": 8827802,
+    "sha256": "eba466a2c9a09c8fdb2b0e6c315d32b53fcd24e7668ad65ae67b0e7d6002a160"
+  },
+  {
+    "path": "video/marea-session.waveform.json",
+    "bytes": 1719,
+    "sha256": "a70500867bcfaaa8f3446a65bcb5c629cab86868dc4a999c29cc523a1ca97b13"
+  },
+  {
+    "path": "video/marea-visualizer.mp4",
+    "bytes": 3009500,
+    "sha256": "2a8a941a597fc49acbd12e3b1ae04ed4656838540bc2d701c708182c132471b9"
+  },
+  {
+    "path": "video/marea-visualizer.waveform.json",
+    "bytes": 7207,
+    "sha256": "5528664ea5168d9fc5c08d0316a2158b899d2c361c93c02ef4d3a537b4cbb620"
+  }
+]

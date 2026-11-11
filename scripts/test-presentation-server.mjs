@@ -1,0 +1,12 @@
+import {mkdtemp,cp,copyFile,rm} from 'node:fs/promises';
+import {join,resolve} from 'node:path';
+import {tmpdir} from 'node:os';
+import {createNebulaServer} from '../dist-server/server/app.js';
+const dir=await mkdtemp(join(tmpdir(),'nebula-presentation-browser-')),source=resolve(process.env.NEBULA_PRESENTATION_FIXTURE??'.data/presentation');
+await copyFile(join(source,'initial.sqlite'),join(dir,'nebula.sqlite'));
+await copyFile(join(source,'initial.sqlite'),join(dir,'initial.sqlite'));
+for(const name of ['media','prepared'])await cp(join(source,name),join(dir,name),{recursive:true});
+const server=await createNebulaServer({dataDir:dir,publicDir:resolve('artifacts/nebula/dist/public'),presentation:true,origin:process.env.ORIGIN});
+server.listen(Number(process.env.PORT??4177),'127.0.0.1');
+let closing=false;
+for(const signal of ['SIGINT','SIGTERM'])process.on(signal,async()=>{if(closing)return;closing=true;server.closeIdleConnections();await new Promise(r=>server.close(r));await rm(dir,{recursive:true,force:true});process.exit(0);});

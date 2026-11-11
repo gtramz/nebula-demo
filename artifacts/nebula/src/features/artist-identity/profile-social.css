@@ -1,0 +1,16 @@
+.artist-profile-connections { display:flex; flex-direction:column; align-items:flex-start; gap:2px; }
+.artist-profile-connection-counts { display:flex; flex-wrap:wrap; align-items:center; column-gap:24px; }
+.artist-profile-connection-count { display:inline-flex; align-items:center; gap:5px; min-height:44px; min-width:44px; padding:0; border:0; border-radius:0; background:transparent; color:var(--color-muted,#aaa); font-size:13px; line-height:1.4; text-align:left; }
+.artist-profile-connection-count strong { color:var(--color-ink,#fafafa); font-weight:600; }
+.artist-profile-connection-count span { font-weight:400; }
+.artist-profile-connection-count:hover span { color:var(--color-ink,#fafafa); text-decoration:underline; text-underline-offset:3px; }
+.artist-profile-social-actions { display:flex; flex-wrap:wrap; align-items:flex-start; gap:8px; }
+.artist-profile-social-actions:empty { display:none; }
+.artist-profile-follow-control { display:flex; flex-direction:column; gap:4px; }
+.artist-profile-social-action { position:relative; isolation:isolate; display:inline-flex; align-items:center; justify-content:center; min-width:72px; min-height:44px; padding:0 14px; border:0; border-radius:5px; background:transparent; color:var(--color-ink,#fafafa); font-size:12px; font-weight:500; line-height:1; text-align:center; white-space:nowrap; }
+.artist-profile-social-action::before { content:''; position:absolute; inset:6px 0; z-index:-1; border:1px solid #ffffff25; border-radius:5px; background:#ffffff04; pointer-events:none; transition:background-color .15s,border-color .15s; }
+.artist-profile-social-action:hover:not(:disabled)::before { border-color:#ffffff50; background:#ffffff0b; }
+.artist-profile-social-action[aria-pressed=true]::before { background:#ffffff09; }
+.artist-profile-social-action:disabled { cursor:wait; opacity:.5; }
+.artist-profile-connection-count:focus-visible,.artist-profile-social-action:focus-visible { outline:1px solid var(--color-accent,#d5f43f); outline-offset:2px; }
+@media (prefers-reduced-motion:reduce) { .artist-profile-social-action::before { transition:none; } }
