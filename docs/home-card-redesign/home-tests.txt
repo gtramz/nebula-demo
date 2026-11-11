@@ -1,0 +1,95 @@
+[WebServer] (node:33933) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 18 tests using 1 worker
+
+(node:33936) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/18] [desktop] › tests-presentation/home-card-design.spec.ts:5:1 › artist cards fit target viewports and align rows without truncating controls
+[2/18] [desktop] › tests-presentation/home-card-design.spec.ts:27:1 › missing artwork, long content, extra opportunities and unavailable main media remain usable
+[3/18] [desktop] › tests-presentation/home-card-design.spec.ts:45:1 › manual play, keyboard seek, save and artist navigation remain independent
+[4/18] [desktop] › tests-presentation/home-card-design.spec.ts:58:1 › desktop hover starts and leaves the existing audio; manual play survives leaving
+  1) [desktop] › tests-presentation/home-card-design.spec.ts:58:1 › desktop hover starts and leaves the existing audio; manual play survives leaving 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: locator.hover: Test timeout of 60000ms exceeded.
+    Browser logs:
+
+    Call log:
+      - waiting for locator('article.opportunity-card').first().locator('.opportunity-title')
+        - locator resolved to <h2 class="opportunity-title break-words">LUNA · Next phase</h2>
+      - attempting hover action
+        2 × waiting for element to be visible and stable
+          - element is visible and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <a href="/project/50" class="opportunity-project-link inline-flex min-h-11 items-center text-sm font-semibold">…</a> from <footer class="opportunity-footer">…</footer> subtree intercepts pointer events
+        - retrying hover action
+        - waiting 20ms
+        2 × waiting for element to be visible and stable
+          - element is visible and stable
+          - scrolling into view if needed
+          - done scrolling
+          - <a href="/project/50" class="opportunity-project-link inline-flex min-h-11 items-center text-sm font-semibold">…</a> from <footer class="opportunity-footer">…</footer> subtree intercepts pointer events
+        - retrying hover action
+          - waiting 100ms
+        109 × waiting for element to be visible and stable
+            - element is visible and stable
+            - scrolling into view if needed
+            - done scrolling
+            - <a href="/project/50" class="opportunity-project-link inline-flex min-h-11 items-center text-sm font-semibold">…</a> from <footer class="opportunity-footer">…</footer> subtree intercepts pointer events
+          - retrying hover action
+            - waiting 500ms
+        - waiting for element to be visible and stable
+
+
+      61 |   // Warm browser audio permission with an explicit interaction before checking optional hover.
+      62 |   await card.locator('.audio-preview-play').click();await expect(audio).toHaveJSProperty('paused',false);await card.locator('.audio-preview-play').click();await page.getByRole('heading',{name:'Find your next project.'}).hover();
+    > 63 |   await card.hover({position:{x:20,y:20}});await expect(audio).toHaveJSProperty('paused',false);await page.getByRole('heading',{name:'Find your next project.'}).hover();await expect(audio).toHaveJSProperty('paused',true);
+         |                                            ^
+      64 |   await card.locator('.audio-preview-play').click();await page.getByRole('heading',{name:'Find your next project.'}).hover();await expect(audio).toHaveJSProperty('paused',false);await expect(page).toHaveURL(/\/explore$/);
+      65 | });
+      66 | test('video keeps its native controls and the investor catalog keeps its layout',async({page})=>{
+        at <repo>/tests-presentation/home-card-design.spec.ts:63:44
+
+    Error Context: test-results-presentation/home-card-design-desktop-h-33b80-anual-play-survives-leaving-desktop/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results-presentation/home-card-design-desktop-h-33b80-anual-play-survives-leaving-desktop/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results-presentation/home-card-design-desktop-h-33b80-anual-play-survives-leaving-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:34287) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[5/18] [desktop] › tests-presentation/home-card-design.spec.ts:66:1 › video keeps its native controls and the investor catalog keeps its layout
+[6/18] [desktop] › tests-presentation/home-card-design.spec.ts:72:1 › waveform failure retains a functional timeline without fabricated recording data
+[7/18] [desktop] › tests-presentation/home-playback.spec.ts:16:1 › Home audio is exclusive, including fast switches and silent catalog players
+[8/18] [desktop] › tests-presentation/home-playback.spec.ts:50:1 › entering a project stops Home audio; project playback and Back never duplicate it
+[9/18] [desktop] › tests-presentation/home-recordings.spec.ts:3:1 › Home shows real linked LUNA recordings and compact catalog transports
+(node:34489) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[10/18] [mobile] › tests-presentation/home-card-design.spec.ts:5:1 › artist cards fit target viewports and align rows without truncating controls
+[11/18] [mobile] › tests-presentation/home-card-design.spec.ts:27:1 › missing artwork, long content, extra opportunities and unavailable main media remain usable
+[12/18] [mobile] › tests-presentation/home-card-design.spec.ts:45:1 › manual play, keyboard seek, save and artist navigation remain independent
+[13/18] [mobile] › tests-presentation/home-card-design.spec.ts:58:1 › desktop hover starts and leaves the existing audio; manual play survives leaving
+[14/18] [mobile] › tests-presentation/home-card-design.spec.ts:66:1 › video keeps its native controls and the investor catalog keeps its layout
+[15/18] [mobile] › tests-presentation/home-card-design.spec.ts:72:1 › waveform failure retains a functional timeline without fabricated recording data
+[16/18] [mobile] › tests-presentation/home-playback.spec.ts:16:1 › Home audio is exclusive, including fast switches and silent catalog players
+[17/18] [mobile] › tests-presentation/home-playback.spec.ts:50:1 › entering a project stops Home audio; project playback and Back never duplicate it
+[18/18] [mobile] › tests-presentation/home-recordings.spec.ts:3:1 › Home shows real linked LUNA recordings and compact catalog transports
+  1 failed
+    [desktop] › tests-presentation/home-card-design.spec.ts:58:1 › desktop hover starts and leaves the existing audio; manual play survives leaving 
+  1 skipped
+  16 passed (3.4m)

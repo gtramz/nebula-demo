@@ -1,0 +1,30 @@
+[WebServer] (node:34777) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 14 tests using 1 worker
+
+(node:34778) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/14] [desktop] › tests-presentation/discovery-audio-record.spec.ts:72:1 › record follows actual play, pause, seek, waiting, visibility and feed navigation without resetting its angle
+[2/14] [desktop] › tests-presentation/discovery-like.spec.ts:25:27 › like morph on publication 3 confirms once and preserves playback and layout
+[3/14] [desktop] › tests-presentation/discovery-like.spec.ts:25:27 › like morph on publication 11 confirms once and preserves playback and layout
+[4/14] [desktop] › tests-presentation/discovery-project-preview.spec.ts:59:1 › Escape and overlay close restore focus, manual pause, feed position and the same player
+[5/14] [desktop] › tests-presentation/discovery-scroll-regression.spec.ts:16:1 › fractional viewport heights keep every successive piece aligned without returning to an older index
+[6/14] [desktop] › tests-presentation/discovery-scroll-regression.spec.ts:32:1 › a delayed decaying trackpad tail cannot skip a piece or bounce backwards
+[7/14] [desktop] › tests-presentation/home-card-design.spec.ts:58:1 › desktop hover starts and leaves the existing audio; manual play survives leaving
+(node:35056) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[8/14] [mobile] › tests-presentation/discovery-audio-record.spec.ts:72:1 › record follows actual play, pause, seek, waiting, visibility and feed navigation without resetting its angle
+[9/14] [mobile] › tests-presentation/discovery-like.spec.ts:25:27 › like morph on publication 3 confirms once and preserves playback and layout
+[10/14] [mobile] › tests-presentation/discovery-like.spec.ts:25:27 › like morph on publication 11 confirms once and preserves playback and layout
+[11/14] [mobile] › tests-presentation/discovery-project-preview.spec.ts:59:1 › Escape and overlay close restore focus, manual pause, feed position and the same player
+[12/14] [mobile] › tests-presentation/discovery-scroll-regression.spec.ts:16:1 › fractional viewport heights keep every successive piece aligned without returning to an older index
+[13/14] [mobile] › tests-presentation/discovery-scroll-regression.spec.ts:32:1 › a delayed decaying trackpad tail cannot skip a piece or bounce backwards
+[14/14] [mobile] › tests-presentation/home-card-design.spec.ts:58:1 › desktop hover starts and leaves the existing audio; manual play survives leaving
+  2 skipped
+  12 passed (2.0m)

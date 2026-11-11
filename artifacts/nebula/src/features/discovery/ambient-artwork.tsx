@@ -62,7 +62,7 @@ function palette(url: string, variant: 'subtle' | 'audio') {
 }
 
 /** Decorative only: no hit targets, media ownership, measurements or animation loop. */
-export function AmbientArtwork({ post, enabled = true, variant = 'subtle', source }: { post: DemoPost; enabled?: boolean; variant?: 'subtle' | 'audio'; source?: string | null }) {
+export function AmbientArtwork({ post, enabled = true, variant = 'subtle', source }: { post: Pick<DemoPost, 'coverUrl' | 'projectCoverUrl'>; enabled?: boolean; variant?: 'subtle' | 'audio'; source?: string | null }) {
   const key = `${variant}|${source === undefined ? `${post.coverUrl ?? ''}|${post.projectCoverUrl ?? ''}` : source ?? ''}`;
   const [result, setResult] = useState<{ key: string; colors: Palette }>();
   useEffect(() => {

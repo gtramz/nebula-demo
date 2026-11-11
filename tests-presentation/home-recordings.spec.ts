@@ -6,7 +6,7 @@ test('Home shows real linked LUNA recordings and compact catalog transports',asy
  await page.goto('/explore');
  let previous:any;
  for(const [name,recording] of [['LUNA · Next phase',scene.featuredRemix.original],['CHILZ · Next chapter',scene.featuredRemix.remix]] as const){
-  const card=page.getByRole('article',{name,exact:true});await card.scrollIntoViewIfNeeded();
+  const card=page.getByRole('article',{name,exact:true});await page.locator('.opportunity-card-slot').filter({has:page.locator(`article[aria-label="${name}"]`)}).scrollIntoViewIfNeeded();
   await expect(card.locator('.audio-preview')).toBeVisible();
   await expect(card.locator('.audio-preview-wave svg')).toBeVisible({timeout:15000});
   await card.getByRole('button',{name:`Play ${recording.title}`,exact:true}).click();
@@ -16,7 +16,7 @@ test('Home shows real linked LUNA recordings and compact catalog transports',asy
   previous=audio;
  }
  for(const name of ['No Pop','No Regrets']){
-  const card=page.getByRole('article',{name,exact:true});await card.scrollIntoViewIfNeeded();
+  const card=page.getByRole('article',{name,exact:true});await page.locator('.opportunity-card-slot').filter({has:page.locator(`article[aria-label="${name}"]`)}).scrollIntoViewIfNeeded();
   await expect(card.locator('.audio-preview-wave svg')).toBeVisible();await expect(card.locator('audio')).toHaveCount(0);
   await card.getByRole('button',{name:`Play: ${name}`,exact:true}).click();
   await expect(card.getByRole('slider')).not.toHaveValue('0');
