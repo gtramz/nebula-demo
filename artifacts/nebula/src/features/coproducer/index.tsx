@@ -1,3 +1,4 @@
+import { ShareSurface, ShareOverlay } from '@/components/ui/share-surface';
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { MessageSquare, Phone, X } from 'lucide-react';
@@ -47,10 +48,10 @@ export function CoproducerDock() {
       </button></Dialog.Trigger>
     </div>
     <Dialog.Portal>
-      <Dialog.Overlay className="coproducer-overlay" />
-      <Dialog.Content className="coproducer-panel" data-resting={!visible}>
-        <Dialog.Close className="coproducer-close" aria-label="Close Julio"><X size={20} aria-hidden="true" /></Dialog.Close>
-        <header className="coproducer-heading">
+      <ShareOverlay />
+      <ShareSurface className="coproducer-panel" data-resting={!visible}>
+        <Dialog.Close className="coproducer-close app-modal-close" aria-label="Close Julio"><X size={20} aria-hidden="true" /></Dialog.Close>
+        <div className="app-modal-body"><header className="coproducer-heading">
           <div className="coproducer-portrait"><CoproducerFace smiling /></div>
           <Dialog.Title>Julio</Dialog.Title>
           <Dialog.Description>Your co-producer</Dialog.Description>
@@ -59,7 +60,8 @@ export function CoproducerDock() {
           <button type="button" disabled><MessageSquare size={20} aria-hidden="true" /><span>Open chat</span><small>Coming soon</small></button>
           <button type="button" disabled><Phone size={20} aria-hidden="true" /><span>Call Julio</span><small>Coming soon</small></button>
         </div>
-      </Dialog.Content>
+        </div>
+      </ShareSurface>
     </Dialog.Portal>
   </Dialog.Root>;
 }

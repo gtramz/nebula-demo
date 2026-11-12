@@ -75,38 +75,38 @@
  .discovery .discovery-comments-panel header h2 { font-size:22px; letter-spacing:-.5px; }
  .discovery .discovery-comments-panel header p { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; }
  .discovery .discovery-comments-panel header button { border:0; border-radius:50%; background:#ffffff0b; }
- .discovery .comment-thread-list { padding:12px 16px; scrollbar-width:thin; }
- .discovery .comment-thread { margin-bottom:22px; }
- .discovery .comment-thread-list .comment-row { display:grid; grid-template-columns:32px minmax(0,1fr) 44px; column-gap:10px; padding:0; border:0; }
- .discovery .comment-identity { display:contents; color:#f4f4f4; }
- .discovery .comment-face { display:inline-flex; flex-shrink:0; width:32px; height:32px; border-radius:50%; overflow:hidden; grid-column:1; grid-row:1 / 4; align-self:start; }
- .discovery .comment-face img { width:100%; height:100%; object-fit:cover; }
- .discovery .comment-identity strong { grid-column:2 / 4; grid-row:1; font-size:13px; font-weight:600; line-height:20px; overflow-wrap:anywhere; }
- .discovery .comment-identity:focus-visible strong { outline:2px solid #d5f43f; outline-offset:3px; }
- .discovery .comment-thread-list .comment-text { grid-column:2 / 4; grid-row:2; margin:4px 0 0; color:#f1f1f1; font-size:15px; line-height:1.5; white-space:pre-wrap; overflow-wrap:anywhere; }
- .discovery .comment-meta { grid-column:2; grid-row:3; display:flex; align-items:center; gap:12px; font-size:12px; color:#aaa; }
- .discovery .comment-meta :is(button,a) { display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; }
- .discovery .comment-meta .comment-delete { margin-left:auto; }
- .discovery .comment-like { grid-column:3; grid-row:3; display:flex; align-items:center; justify-content:flex-end; gap:3px; min-height:44px; min-width:44px; color:#aaa; font-size:11px; }
- .discovery .comment-like[aria-pressed=true] { color:#d5f43f; }
- .discovery .comment-thread-list .comment-row-error { grid-column:2 / 4; font-size:12px; color:#ffb6b6; }
- .discovery .comment-replies-toggle { margin-left:42px; min-height:44px; color:#aaa; font-size:12px; }
- .discovery .comment-replies { margin-left:32px; }
- .discovery .comment-replies .comment-row { margin-top:12px; }
- .discovery .comment-empty { padding:20px 0; font-size:14px; }
- .discovery .comment-composer { flex-shrink:0; border-top:1px solid #ffffff16; padding:16px 12px; margin-top:auto; background:#202020; }
- .discovery .comment-composer-row { display:flex; align-items:center; gap:8px; }
- .discovery .comment-composer-row > .comment-face { align-self:center; }
- .discovery .comment-input-pill { flex:1; min-width:0; border-radius:24px; background:#353535; padding:12px 14px; }
- .discovery .comment-input-pill:focus-within { outline:2px solid #d5f43f; outline-offset:2px; }
- .discovery .comment-input-pill textarea { display:block; width:100%; min-height:20px; max-height:104px; padding:0; margin:0; resize:none; border:0; outline:none; box-shadow:none; background:transparent; color:white; font:inherit; font-size:14px; line-height:20px; border-radius:0; }
- .discovery .comment-submit { display:grid; place-items:center; width:44px; height:44px; flex-shrink:0; background:#d5f43f; color:#171717; border-radius:50%; }
- .discovery .comment-submit:disabled { opacity:.35; }
- .discovery .comment-reply-target { display:flex; align-items:center; gap:8px; font-size:12px; color:#bbb; }
- .discovery .comment-reply-target span { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
- .discovery .comment-reply-target button { width:44px; min-height:44px; display:grid; place-items:center; }
- .discovery .comment-composer [role=alert] { font-size:12px; color:#ffb6b6; margin-bottom:10px; }
- .discovery .comment-login { display:flex; min-height:44px; align-items:center; color:#d5f43f; }
+ :is(.discovery,.app-modal) .comment-thread-list { padding:12px 16px; scrollbar-width:thin; }
+ :is(.discovery,.app-modal) .comment-thread { margin-bottom:22px; }
+ :is(.discovery,.app-modal) .comment-thread-list .comment-row { display:grid; grid-template-columns:32px minmax(0,1fr) 44px; column-gap:10px; padding:0; border:0; }
+ :is(.discovery,.app-modal) .comment-identity { display:contents; color:#f4f4f4; }
+ :is(.discovery,.app-modal) .comment-face { display:inline-flex; flex-shrink:0; width:32px; height:32px; border-radius:50%; overflow:hidden; grid-column:1; grid-row:1 / 4; align-self:start; }
+ :is(.discovery,.app-modal) .comment-face img { width:100%; height:100%; object-fit:cover; }
+ :is(.discovery,.app-modal) .comment-identity strong { grid-column:2 / 4; grid-row:1; font-size:13px; font-weight:600; line-height:20px; overflow-wrap:anywhere; }
+ :is(.discovery,.app-modal) .comment-identity:focus-visible strong { outline:2px solid #d5f43f; outline-offset:3px; }
+ :is(.discovery,.app-modal) .comment-thread-list .comment-text { grid-column:2 / 4; grid-row:2; margin:4px 0 0; color:#f1f1f1; font-size:15px; line-height:1.5; white-space:pre-wrap; overflow-wrap:anywhere; }
+ :is(.discovery,.app-modal) .comment-meta { grid-column:2; grid-row:3; display:flex; align-items:center; gap:12px; font-size:12px; color:#aaa; }
+ :is(.discovery,.app-modal) .comment-meta :is(button,a) { display:inline-flex; align-items:center; justify-content:center; min-width:44px; min-height:44px; }
+ :is(.discovery,.app-modal) .comment-meta .comment-delete { margin-left:auto; }
+ :is(.discovery,.app-modal) .comment-like { grid-column:3; grid-row:3; display:flex; align-items:center; justify-content:flex-end; gap:3px; min-height:44px; min-width:44px; color:#aaa; font-size:11px; }
+ :is(.discovery,.app-modal) .comment-like[aria-pressed=true] { color:#d5f43f; }
+ :is(.discovery,.app-modal) .comment-thread-list .comment-row-error { grid-column:2 / 4; font-size:12px; color:#ffb6b6; }
+ :is(.discovery,.app-modal) .comment-replies-toggle { margin-left:42px; min-height:44px; color:#aaa; font-size:12px; }
+ :is(.discovery,.app-modal) .comment-replies { margin-left:32px; }
+ :is(.discovery,.app-modal) .comment-replies .comment-row { margin-top:12px; }
+ :is(.discovery,.app-modal) .comment-empty { padding:20px 0; font-size:14px; }
+ :is(.discovery,.app-modal) .comment-composer { flex-shrink:0; border-top:1px solid #ffffff16; padding:16px 12px; margin-top:auto; background:#202020; }
+ :is(.discovery,.app-modal) .comment-composer-row { display:flex; align-items:center; gap:8px; }
+ :is(.discovery,.app-modal) .comment-composer-row > .comment-face { align-self:center; }
+ :is(.discovery,.app-modal) .comment-input-pill { flex:1; min-width:0; border-radius:24px; background:#353535; padding:12px 14px; }
+ :is(.discovery,.app-modal) .comment-input-pill:focus-within { outline:2px solid #d5f43f; outline-offset:2px; }
+ :is(.discovery,.app-modal) .comment-input-pill textarea { display:block; width:100%; min-height:20px; max-height:104px; padding:0; margin:0; resize:none; border:0; outline:none; box-shadow:none; background:transparent; color:white; font:inherit; font-size:14px; line-height:20px; border-radius:0; }
+ :is(.discovery,.app-modal) .comment-submit { display:grid; place-items:center; width:44px; height:44px; flex-shrink:0; background:#d5f43f; color:#171717; border-radius:50%; }
+ :is(.discovery,.app-modal) .comment-submit:disabled { opacity:.35; }
+ :is(.discovery,.app-modal) .comment-reply-target { display:flex; align-items:center; gap:8px; font-size:12px; color:#bbb; }
+ :is(.discovery,.app-modal) .comment-reply-target span { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+ :is(.discovery,.app-modal) .comment-reply-target button { width:44px; min-height:44px; display:grid; place-items:center; }
+ :is(.discovery,.app-modal) .comment-composer [role=alert] { font-size:12px; color:#ffb6b6; margin-bottom:10px; }
+ :is(.discovery,.app-modal) .comment-login { display:flex; min-height:44px; align-items:center; color:#d5f43f; }
 }
 @media(min-width:768px) and (max-height:700px) {
  .discovery .discovery-pagination,.discovery .discovery-layout[data-comments=true] .discovery-pagination { top:12px; }

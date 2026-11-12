@@ -1,14 +1,14 @@
 import { SectionSkeleton } from '@/components/loading-states';
-import { useEffect, useId, useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import * as Popover from '@radix-ui/react-popover';
+import * as Dialog from '@radix-ui/react-dialog';
+import { ShareSurface, ShareOverlay } from '@/components/ui/share-surface';
 import { ArrowUpRight, Check, LoaderCircle, MapPin, Plus, RotateCw, X } from 'lucide-react';
 import { Link } from 'wouter';
 import { creativeRoleTaxonomy, getLocalStore, musicalGenreTaxonomy, type Artist } from '@nebula/local';
 import { StaticFace } from '@/components/blob-face';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useArtistFollowState } from '@/features/following';
-import { useIsMobile } from '@/hooks/use-mobile';
 import type { DemoPost } from './demo-posts';
 import './artist-preview.css';
 
@@ -38,12 +38,11 @@ function ArtistDetails({ artist }: { artist: Artist }) {
 }
 
 export function DiscoveryArtistPreview({ post, live, active }: { post: DemoPost; live: boolean; active: boolean }) {
-  const compact = useIsMobile();
   const follow = useArtistFollowState(post.artistId ?? 0, live && active && !!post.artistId);
   const hasProfile = live && follow.available && !!post.artistId;
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null), content = useRef<HTMLDivElement>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined), pinned = useRef(false), restoreFocus = useRef(false), activeRef = useRef(active);
+  const activeRef = useRef(active);
   activeRef.current = active;
   const headingId = useId(), cardId = useId();
   const profile = useQuery({
@@ -55,51 +54,32 @@ export function DiscoveryArtistPreview({ post, live, active }: { post: DemoPost;
   });
   const artist = profile.data?.artist;
   const following = follow.query.data?.isFollowing ?? false;
-  const clearTimer = () => { clearTimeout(timer.current); timer.current = undefined; };
-  const changeOpen = (next: boolean) => { clearTimer(); if (!next) pinned.current = false; setOpen(next && active); };
-  const scheduleClose = () => {
-    clearTimer();
-    if (!pinned.current && !content.current?.contains(document.activeElement)) timer.current = setTimeout(() => changeOpen(false), 220);
-  };
-  const hover = (event: PointerEvent) => {
-    if (event.pointerType !== 'mouse' || !active) return;
-    clearTimer(); timer.current = setTimeout(() => setOpen(true), 140);
-  };
-  useEffect(() => { if (!active) { clearTimeout(timer.current); pinned.current = false; setOpen(false); } }, [active]);
-  useEffect(() => () => clearTimeout(timer.current), []);
+  const changeOpen = (next: boolean) => setOpen(next && active);
+  useEffect(() => { if (!active) setOpen(false); }, [active]);
 
   function toggleFollow() {
     if (follow.query.isError) { void follow.query.refetch(); return; }
     if (!follow.canFollow || !follow.query.data || follow.change.isPending) return;
-    follow.change.mutate(undefined, { onError: () => { if (activeRef.current) { pinned.current = true; setOpen(true); } } });
+    follow.change.mutate(undefined, { onError: () => { if (activeRef.current) { setOpen(true); } } });
   }
 
   return <div className="discovery-artist" data-artist-id={post.artistId}>
-    <Popover.Root open={open} onOpenChange={changeOpen} modal={false}>
-      <Popover.Anchor asChild>
+    <Dialog.Root open={open} onOpenChange={changeOpen}>
+      <Dialog.Trigger asChild>
         <button ref={trigger} type="button" className="discovery-artist-trigger" aria-label={`About ${post.author}`} aria-haspopup="dialog" aria-expanded={open} aria-controls={open ? cardId : undefined}
-          data-artist-id={post.artistId} onPointerEnter={hover} onPointerLeave={scheduleClose}
-          onClick={() => {
-            const next = !open || !pinned.current; pinned.current = next; changeOpen(next);
-            if (next) requestAnimationFrame(() => content.current?.querySelector<HTMLElement>('button,a')?.focus({ preventScroll: true }));
-          }}>
+          data-artist-id={post.artistId}>
           <ArtistFace picture={post.artistPicture} name={post.author} id={post.artistId} initials={post.initials} />
         </button>
-      </Popover.Anchor>
-      <Popover.Portal>
-        <Popover.Content ref={content} id={cardId} className="discovery-artist-card" side={compact ? 'top' : 'left'} align={compact ? 'end' : 'start'} sideOffset={12} collisionPadding={12} aria-labelledby={headingId} onFocusCapture={() => { restoreFocus.current = true; }}
-          onPointerEnter={clearTimer} onPointerLeave={scheduleClose} onKeyDown={event => event.stopPropagation()}
-          onOpenAutoFocus={event => { if (!pinned.current) event.preventDefault(); }}
-          onInteractOutside={event => { if (trigger.current?.contains(event.detail.originalEvent.target as Node)) event.preventDefault(); }}
-          onCloseAutoFocus={event => {
-            event.preventDefault();
-            if (restoreFocus.current && (document.activeElement === document.body || content.current?.contains(document.activeElement))) trigger.current?.focus({ preventScroll: true });
-            restoreFocus.current = false;
-          }}>
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <ShareOverlay />
+        <ShareSurface ref={content} id={cardId} className="discovery-artist-card" aria-labelledby={headingId} aria-describedby={undefined}
+          onCloseAutoFocus={event => { event.preventDefault(); if (trigger.current?.isConnected) trigger.current.focus({preventScroll:true}); }}>
+          <div className="app-modal-body">
           <header className="discovery-artist-card-header">
             <ArtistFace picture={artist?.picture ?? post.artistPicture} name={artist?.name ?? post.author} id={post.artistId} initials={post.initials} />
-            <div><p className="discovery-artist-kicker">artist / nebula</p><h3 id={headingId}>{artist?.name ?? post.author}</h3>{artist?.username && <p className="discovery-artist-username">{artist.username.startsWith('@') ? artist.username : `@${artist.username}`}</p>}</div>
-            <Popover.Close className="discovery-artist-card-close" aria-label="Close artist preview"><X size={16} aria-hidden="true" /></Popover.Close>
+            <div><p className="discovery-artist-kicker">artist / nebula</p><Dialog.Title id={headingId}>{artist?.name ?? post.author}</Dialog.Title>{artist?.username && <p className="discovery-artist-username">{artist.username.startsWith('@') ? artist.username : `@${artist.username}`}</p>}</div>
+            <Dialog.Close className="discovery-artist-card-close app-modal-close" aria-label="Close artist preview"><X size={16} aria-hidden="true" /></Dialog.Close>
           </header>
           {hasProfile ? <>
             {profile.isPending && <SectionSkeleton variant="list" label="Loading artist details" rows={1} className="py-3 [&_.loading-avatar]:hidden [&_.loading-row-end]:hidden [&_.loading-list-row]:border-0 [&_.loading-list-row]:min-h-0 [&_.loading-list-row]:py-0"/>}
@@ -113,9 +93,10 @@ export function DiscoveryArtistPreview({ post, live, active }: { post: DemoPost;
             {follow.canFollow && follow.query.data && !follow.query.isError && <span className="discovery-artist-follow-status">{following ? <><Check size={13} aria-hidden="true" />Following</> : 'Not following'}</span>}
             <Link href={`/artist/${post.artistId}`} onClick={() => changeOpen(false)}>View profile <ArrowUpRight size={15} aria-hidden="true" /></Link>
           </footer>}
-        </Popover.Content>
-      </Popover.Portal>
-    </Popover.Root>
+          </div>
+        </ShareSurface>
+      </Dialog.Portal>
+    </Dialog.Root>
     {hasProfile && (!follow.user ? <Link href="/login" className="discovery-follow-button discovery-artist-follow" aria-label="Sign in to follow" title={`Sign in to follow ${post.author}`}><span><Plus size={15} aria-hidden="true" /></span></Link>
       : follow.canFollow && <button type="button" className="discovery-follow-button discovery-artist-follow" aria-label={follow.query.isError ? 'Retry follow information' : !follow.query.data ? 'Loading follow status' : following ? 'Following' : 'Follow'} aria-pressed={follow.query.data ? following : undefined}
         title={follow.query.isError ? 'Follow information unavailable. Retry.' : following ? `Unfollow ${post.author}` : `Follow ${post.author}`} disabled={follow.change.isPending || !follow.query.data && !follow.query.isError || follow.query.isError && follow.query.isFetching}

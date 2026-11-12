@@ -1,3 +1,4 @@
+import { ShareSurface, ShareOverlay } from '@/components/ui/share-surface';
 import { RefreshNotice } from '@/components/loading-states';
 import { useInitialAssets } from '@/hooks/use-initial-assets';
 import { useProjectProductCopy, useProjectPresentationCatalog } from '@/features/presentation/catalog';
@@ -137,7 +138,7 @@ export default function ProjectDetail() {
                     {viewerHasSupported ? 'SUPPORTED' : 'SUPPORT SYMBOLICALLY'}
                   </button>
                 ) : (
-                  <Dialog.Root open={isFundModalOpen} onOpenChange={(open) => { setIsFundModalOpen(open); setVisibilityDraft(null); }}>
+                  <Dialog.Root open={isFundModalOpen} onOpenChange={(open) => { if (createInvestment.isPending) return; setIsFundModalOpen(open); setVisibilityDraft(null); }}>
                     <Dialog.Trigger asChild>
                       <button className="w-full py-4 bg-cream text-bg rounded-full font-bold tracking-wide voice text-xs hover:bg-white transition shadow-lg cursor-pointer">
                         BACK THIS PROJECT
@@ -145,11 +146,14 @@ export default function ProjectDetail() {
                     </Dialog.Trigger>
 
                     <Dialog.Portal>
-                         <Dialog.Overlay className="fixed inset-0 bg-bg/90 z-50 animate-fade-in" />
-                       <Dialog.Content className="fixed bottom-0 left-0 right-0 lg:bottom-auto lg:top-1/2 lg:left-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 w-full lg:max-w-md bg-surface border border-border p-6 z-50 max-h-[90dvh] overflow-y-auto animate-sheet-up lg:animate-expand-in">
+                         <ShareOverlay />
+                       <ShareSurface aria-label="Back this project" onEscapeKeyDown={e=>{if(createInvestment.isPending)e.preventDefault();}} onPointerDownOutside={e=>{if(createInvestment.isPending)e.preventDefault();}}>
+                        <Dialog.Close className="app-modal-close" aria-label="Close funding" disabled={createInvestment.isPending}>×</Dialog.Close>
+                        <header className="app-modal-heading">
                         <Dialog.Title className="text-2xl font-display font-bold text-ink mb-3 text-center text-veil">Select Amount</Dialog.Title>
                         <Dialog.Description className="mb-6 text-center text-sm text-muted">Choose your contribution and how it appears on this project.</Dialog.Description>
 
+                        </header><div className="app-modal-body">
                         {!isAuthenticated ? (
                           <div className="text-center space-y-6">
                             <p className="text-muted">You need an investor account to back projects.</p>
@@ -188,7 +192,7 @@ export default function ProjectDetail() {
                             </div>
 
                             <PublicVisibilityFields value={visibility} onChange={setVisibilityDraft} disabled={createInvestment.isPending} />
-                            <Dialog.Close className="text-sm underline text-muted">Cancel</Dialog.Close>
+                            <Dialog.Close disabled={createInvestment.isPending} className="text-sm underline text-muted">Cancel</Dialog.Close>
                             <button
                               type="submit"
                               disabled={createInvestment.isPending}
@@ -200,7 +204,8 @@ export default function ProjectDetail() {
                             {createInvestment.error && <p role="alert" className="text-sm text-danger">{createInvestment.error.message}</p>}
                           </form>
                         )}
-                      </Dialog.Content>
+                        </div>
+                      </ShareSurface>
                     </Dialog.Portal>
                   </Dialog.Root>
                 )

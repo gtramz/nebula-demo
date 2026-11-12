@@ -1,8 +1,8 @@
+import { ShareSurface, ShareOverlay } from '@/components/ui/share-surface';
 import { SectionSkeleton } from '@/components/loading-states';
 import { useRef, useState } from 'react';
-import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { SlidersHorizontal, X } from 'lucide-react';
-import { Dialog, DialogPortal, DialogOverlay, DialogTrigger, DialogClose, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Dialog, DialogPortal, DialogTrigger, DialogClose, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { controlStyles } from '@/components/antiq/workspace';
 import { emptyHomeFilters, facetLabels, facetValueLabel, homeFilterEntries, normalizeHomeFilters, opportunityNeeds, projectTypes, type HomeFilters, type HomeFacetOptions } from '@nebula/local';
 import './browser.css';
@@ -24,18 +24,18 @@ export function HomeFiltersPanel({ filters, facets, loading, failed, retry, onAp
   return <Dialog open={open} onOpenChange={changeOpen}>
     <DialogTrigger asChild><button type="button" className="home-filter-trigger" aria-label={`Filters${count ? ` (${count} active)` : ''}`} data-active={count > 0}><SlidersHorizontal size={18} aria-hidden />{count > 0 && <span className="home-filter-indicator" aria-hidden="true" />}</button></DialogTrigger>
     <DialogPortal>
-      <DialogOverlay className="z-[80]" />
-      <DialogPrimitive.Content className="home-filter-panel" ref={node => { if (node) panel.current = node; }} onCloseAutoFocus={event => {
+      <ShareOverlay />
+      <ShareSurface className="home-filter-panel" ref={node => { if (node) panel.current = node; }} onCloseAutoFocus={event => {
           // Preserve a user's new focus if they already started editing after Apply.
           const active = document.activeElement;
           if (active && active !== document.body && active !== document.documentElement && !panel.current?.contains(active)) event.preventDefault();
         }}>
-        <header className="border-b border-border px-6 py-4 pr-16 space-y-2 shrink-0">
+        <header className="app-modal-heading">
           <DialogTitle className="text-xl font-semibold">Filter projects</DialogTitle>
           <DialogDescription className="text-sm text-muted">Choose any options within a group. Projects must match each selected group.</DialogDescription>
-          <DialogClose className="absolute top-2 right-2 flex h-11 w-11 items-center justify-center" aria-label="Close filters"><X size={20} aria-hidden /></DialogClose>
+          <DialogClose className="app-modal-close" aria-label="Close filters"><X size={20} aria-hidden /></DialogClose>
         </header>
-        <div className="home-filter-options space-y-6">
+        <div className="app-modal-body home-filter-options space-y-6">
           {groups.map(({ field, values }) => <fieldset key={field} className="space-y-2">
             <legend className="text-sm font-semibold mb-2">{facetLabels[field]}</legend>
 
@@ -48,11 +48,11 @@ export function HomeFiltersPanel({ filters, facets, loading, failed, retry, onAp
             {field === 'artistGenres' && failed && !facets && <button className={controlStyles.button} onClick={retry}>Retry filters</button>}
           </fieldset>)}
         </div>
-        <footer className="home-filter-footer border-t border-border flex gap-3 justify-between shrink-0">
+        <footer className="app-modal-footer home-filter-footer flex gap-3 justify-between">
           <button className={controlStyles.button} onClick={() => setDraft(emptyHomeFilters())}>Clear all</button>
           <button className={controlStyles.primary} onClick={() => { onApply(draft); changeOpen(false); }}>Apply filters{homeFilterEntries(draft).length ? ` (${homeFilterEntries(draft).length})` : ''}</button>
         </footer>
-      </DialogPrimitive.Content>
+      </ShareSurface>
     </DialogPortal>
   </Dialog>;
 }

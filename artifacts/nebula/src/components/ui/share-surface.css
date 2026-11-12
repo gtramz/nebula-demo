@@ -1,0 +1,29 @@
+.app-modal-overlay.app-modal-overlay { position:fixed; inset:0; z-index:80; background:#000b; }
+.app-modal[data-share-surface][role=dialog] { position:fixed; z-index:81; inset:auto; top:50%; left:50%; transform:translate(-50%,-50%); width:min(560px,calc(100vw - 32px)); height:auto; max-height:88dvh; min-height:0; margin:0; padding:0; border:0; border-radius:24px; background:#212429; color:#ededed; display:flex; flex-direction:column; gap:0; overflow:hidden; box-shadow:0 20px 70px #0006; animation:none; outline:none; }
+.app-modal .app-modal-heading { position:relative; flex-shrink:0; min-height:70px; padding:22px 64px 16px; text-align:center; margin:0; }
+.app-modal .app-modal-heading h2 { margin:0; font-size:20px; line-height:1.3; font-weight:700; letter-spacing:0; overflow-wrap:anywhere; }
+.app-modal .app-modal-heading > p { font-size:12px; color:#b5b8bd; margin-top:6px; overflow-wrap:anywhere; }
+.app-modal .app-modal-close { position:absolute; top:12px; left:16px; right:auto; z-index:2; display:grid; place-items:center; min-width:44px; min-height:44px; border:0; border-radius:50%; background:transparent; color:#ededed; }
+.app-modal .app-modal-body { flex:0 1 auto; min-height:0; overflow-y:auto; overscroll-behavior:contain; padding:8px 24px 24px; overflow-wrap:anywhere; }
+.app-modal .app-modal-footer { flex-shrink:0; padding:16px 24px 24px; border-top:1px solid #ffffff16; }
+.app-modal :is(button,a,input,textarea):focus-visible { outline:2px solid #d5f43f; outline-offset:2px; }
+.app-modal :is(button,a) { touch-action:manipulation; }
+.app-modal .app-modal-comments { flex:0 1 auto; display:flex; flex-direction:column; min-height:0; padding:0; border:0; background:transparent; border-radius:0; gap:12px; }
+.app-modal[data-share-surface].app-modal-comments-window[role=dialog] { max-height:min(700px,88dvh,calc(var(--share-viewport-height,100dvh) - 16px)); }
+.app-modal .app-modal-comments .discovery-comments { flex:1; min-height:0; overflow:auto; overscroll-behavior:contain; padding:12px 24px; }
+.app-modal .app-modal-comments :is(.comment-composer,.discovery-comment-form,.discovery-auth-prompt) { flex-shrink:0; margin:0; padding:16px 24px; background:#212429; }
+.app-modal .app-modal-comments .discovery-comment-form textarea { max-height:100px; }
+.app-modal .home-filter-options { padding:8px 24px 24px; }
+.app-modal .follow-list { flex:0 1 auto; }
+.app-modal .discovery-artist-card-header { padding:24px 24px 16px; margin-top:40px; }
+.app-modal .discovery-artist-card-footer { margin:0; }
+.app-modal .coproducer-heading { padding-top:64px; }
+@media(max-width:767px) {
+ .app-modal[data-share-surface][role=dialog] { inset:auto 0 0; top:auto; left:0; transform:none; width:100%; max-height:min(88dvh,calc(var(--share-viewport-height,100dvh) - 16px)); bottom:var(--share-viewport-bottom,0px); border-radius:24px 24px 0 0; padding-bottom:env(safe-area-inset-bottom,0px); }
+ .app-modal .app-modal-body { padding-inline:20px; }
+ .app-modal .app-modal-comments { padding:0; }
+ .app-modal .app-modal-footer { padding:16px 20px 20px; }
+}
+@media(max-height:600px) { .app-modal .app-modal-heading { min-height:56px; padding-top:14px; padding-bottom:12px; } .app-modal .app-modal-footer { padding-block:12px; } }
+
+.app-modal .discovery-artist-card-header h2 { font-size:20px; font-weight:700; line-height:1.3; overflow-wrap:anywhere; }

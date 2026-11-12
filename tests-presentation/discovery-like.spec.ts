@@ -98,9 +98,9 @@ test('failed like returns to its previous state and a retry succeeds without pau
   await active(page).locator('.discovery-video-tap').click();
   await expect(active(page).locator('audio,video')).toHaveJSProperty('paused', true);
   await active(page).getByRole('button', { name: 'Comments', exact: true }).click();
-  const comments = page.getByRole('complementary', { name: 'Publication comments' });
+  const comments = page.getByRole('dialog', { name: 'Conversation', exact: true });
   await comments.getByLabel('Add a comment', { exact: true }).fill('Like animation preserves this draft');
-  await comments.getByRole('button', { name: 'Close comments' }).click();
+  await comments.getByRole('button', { name: 'Close panel' }).click();
   await expect(active(page).locator('audio,video')).toHaveJSProperty('paused', true);
   await expect(button).toHaveAttribute('aria-pressed', 'true');
 });

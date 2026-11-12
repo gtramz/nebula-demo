@@ -1,3 +1,4 @@
+import { ShareSurface, ShareOverlay } from '@/components/ui/share-surface';
 import { useProjectProductCopy } from '@/features/presentation/catalog';
 import { PublicationShare } from '@/features/discovery/share-panel';
 import { useFollowSync } from '@/features/following';
@@ -108,7 +109,7 @@ export default function Discovery({ posts = DEMO_POSTS, live = false, onLoadMore
     observer.observe(document.body, { attributes: true, attributeFilter: ['data-scroll-locked', 'style'] });
     update(); return () => observer.disconnect();
   }, []);
-  const workspaceOverlayOpen = notificationsOpen || coproducerOpen || modalLocked;
+  const workspaceOverlayOpen = notificationsOpen || coproducerOpen || (modalLocked && panel?.kind !== 'comments');
   const blocksPreparation = !!panel && (panel.kind !== 'comments' || isMobile || !live);
   const prepareNext = useNextMediaPreparation(activeMediaKey, readyMedia === activeMediaKey, blocksPreparation || workspaceOverlayOpen);
   const [comment, setComment] = useState('');
@@ -117,7 +118,7 @@ export default function Discovery({ posts = DEMO_POSTS, live = false, onLoadMore
   const [refreshing, setRefreshing] = useState(false), [refreshError, setRefreshError] = useState(''), [pull, setPull] = useState(0);
   const refreshingRef = useRef(false), mounted = useRef(true);
   const scroll = useDiscoveryScroll({ feed, cards, activeIndex, activeIndexRef, count: posts.length, order: postOrder,
-    blocked: introPending || refreshing || workspaceOverlayOpen || !!panel && (panel.kind !== 'comments' || isMobile),
+    blocked: introPending || refreshing || workspaceOverlayOpen || !!panel,
     onSelect: index => { if (posts[index]) setActiveId(posts[index].id); } });
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   async function refreshFeed() {
@@ -172,7 +173,7 @@ export default function Discovery({ posts = DEMO_POSTS, live = false, onLoadMore
     container.addEventListener('touchend', end); container.addEventListener('touchcancel', cancel); container.addEventListener('click', click, true);
     return () => { cancelAnimationFrame(frame); stopMove(); container.removeEventListener('touchstart', start); container.removeEventListener('touchend', end); container.removeEventListener('touchcancel', cancel); container.removeEventListener('click', click, true); };
   }, [isMobile, panel, workspaceOverlayOpen, refreshing]);
-  const panelPost = panel?.kind === 'comments' && !isMobile ? posts[activeIndex] : posts.find(post => post.id === panel?.postId);
+  const panelPost = posts.find(post => post.id === panel?.postId);
   const requestedTail = useRef<string | undefined>(undefined);
   const tail = posts.at(-1)?.id;
   // The existing feed snapshot/cursor owns paging. One request per loaded tail;
@@ -188,19 +189,7 @@ export default function Discovery({ posts = DEMO_POSTS, live = false, onLoadMore
     opener.current = document.activeElement as HTMLElement;
     setComment(''); setPanel({ kind, postId: post.id });
   }
-  function closeComments() {
-    setPanel(null);
-    // Mobile hides the action rail while comments are open. Restore focus only
-    // after React has made that rail visible again.
-    requestAnimationFrame(() => {
-      if (!mounted.current) return;
-      if (opener.current?.isConnected && !opener.current.closest('[inert]')) opener.current.focus({ preventScroll: true });
-      else {
-        const currentComments = cards.current[activeIndexRef.current]?.querySelector<HTMLButtonElement>('button[aria-label="Comments"]');
-        (currentComments ?? feed.current)?.focus({ preventScroll: true });
-      }
-    });
-  }
+
   function requireAccount(post: DemoPost, action: () => void) {
     if (!user) showPanel('login', post); else action();
   }
@@ -225,12 +214,12 @@ export default function Discovery({ posts = DEMO_POSTS, live = false, onLoadMore
   function sharedLink(post: DemoPost) { return `${window.location.origin}${import.meta.env.BASE_URL}discovery?post=${encodeURIComponent(post.id)}${live ? '' : '&demo=1'}`; }
   const panelTitle = panel?.kind === 'original' ? 'Original sound' : panel?.kind === 'compare' ? 'Compare versions' : panel?.kind === 'description' ? 'About this publication' : panel?.kind === 'project' ? 'The project' : panel?.kind === 'comments' ? 'Conversation' : panel?.kind === 'send' ? 'Share' : 'Join the conversation';
 
-  return <section className="discovery" aria-label="Discovery" data-keyboard={viewport.keyboard} style={isMobile&&panel?.kind==='comments'?{maxHeight:`${Math.max(220,viewport.height-64)}px`}:undefined}>
+  return <section className="discovery" aria-label="Discovery" data-keyboard={viewport.keyboard}>
     <header className="discovery-heading">
       <div><h1>discovery<span aria-hidden="true">✦</span></h1><p>new sounds. shared possibilities.</p></div>
 
     </header>
-    <div className="discovery-layout" data-comments={live && panel?.kind === 'comments'}>
+    <div className="discovery-layout" data-comments={false}>
       {(refreshing || pull > 10 || refreshError) && <div className="discovery-refresh-state" role="status">{refreshError ? <><span>{refreshError}</span><button onClick={() => void refreshFeed()}>Retry refresh</button></> : refreshing ? 'Refreshing…' : pull >= 80 ? 'Release to refresh' : 'Pull to refresh'}</div>}
       <div ref={feed} className="discovery-feed" role="region" aria-label="Discovery feed" tabIndex={0} onKeyDown={scroll.onKeyDown}>
         {posts.map((post, index) => {
@@ -272,10 +261,6 @@ export default function Discovery({ posts = DEMO_POSTS, live = false, onLoadMore
           </article>;
         })}
       </div>
-      {live && panel?.kind === 'comments' && panelPost && <aside className="discovery-comments-panel" aria-label="Publication comments" onKeyDown={e => { if(e.key === 'Escape') { closeComments(); } }}>
-        <header><div><h2>{isMobile ? 'Conversation' : <>Comments <span className="text-muted">{panelPost.social?.comments ?? 0}</span></>}</h2><p>{panelPost.title} · {panelPost.author}</p></div><button aria-label="Close comments" onClick={() => { closeComments(); }}><X size={20}/></button></header>
-        <LiveComments key={`${viewerIdentity}:${panelPost.id}`} postId={Number(panelPost.id.slice(5))} drafts={isMobile ? undefined : commentDrafts} replyDrafts={replyDrafts} rich={!isMobile}/>
-      </aside>}
       <nav className="discovery-pagination" aria-label="Feed controls">
         <button aria-label="Previous post" disabled={activeIndex === 0} onClick={() => moveTo(activeIndex - 1)}><ChevronUp size={20} /></button>
         <span className="sr-only" aria-live="polite">Publication {activeIndex + 1} of {posts.length}</span>
@@ -286,17 +271,18 @@ export default function Discovery({ posts = DEMO_POSTS, live = false, onLoadMore
       </div>}
     </div>
     <span className="sr-only" role="status">{announcement}</span>{interactionError && <p role="alert" className="discovery-interaction-error px-4 py-2 text-sm">{interactionError}</p>}
-    <Dialog.Root open={!!panel && !(live && panel.kind === 'comments')} onOpenChange={open => { if (!open && !sharePending) setPanel(null); }}>
+    <Dialog.Root open={!!panel} onOpenChange={open => { if (!open && !sharePending) setPanel(null); }}>
       <Dialog.Portal>
-        <Dialog.Overlay className="discovery-panel-overlay" />
-        <Dialog.Content className={`discovery-panel${panel?.kind === 'send' ? ' discovery-share-modal' : panel?.kind === 'project' ? ' discovery-project-modal' : ''}`} onEscapeKeyDown={e=>{if(sharePending)e.preventDefault();}} onPointerDownOutside={e=>{if(sharePending)e.preventDefault();}} onCloseAutoFocus={event => { event.preventDefault(); if (opener.current?.isConnected) opener.current.focus({ preventScroll: true }); else feed.current?.focus({ preventScroll: true }); }}>
-          <div className="discovery-panel-heading"><p className="discovery-eyebrow">discovery</p><Dialog.Title>{panelTitle}</Dialog.Title><Dialog.Description>{panelPost?.title} · {panelPost?.author}</Dialog.Description></div>
-          <Dialog.Close disabled={sharePending} className="discovery-panel-close" aria-label="Close panel"><X size={20} /></Dialog.Close>
+        <ShareOverlay className="discovery-panel-overlay" style={{zIndex:60}} />
+        <ShareSurface styled={panel?.kind !== 'send' && panel?.kind !== 'project'} className={`discovery-panel${panel?.kind === 'comments' ? ' app-modal-comments-window' : ''}${panel?.kind === 'send' ? ' discovery-share-modal' : panel?.kind === 'project' ? ' discovery-project-modal' : ''}`} onEscapeKeyDown={e=>{if(sharePending)e.preventDefault();}} onPointerDownOutside={e=>{if(sharePending)e.preventDefault();}} onCloseAutoFocus={event => { event.preventDefault(); if (opener.current?.isConnected) opener.current.focus({ preventScroll: true }); else feed.current?.focus({ preventScroll: true }); }}>
+          <div className={`discovery-panel-heading${panel?.kind !== 'send' && panel?.kind !== 'project' ? ' app-modal-heading' : ''}`}><p className="discovery-eyebrow">discovery</p><Dialog.Title>{panelTitle}</Dialog.Title><Dialog.Description>{panelPost?.title} · {panelPost?.author}</Dialog.Description></div>
+          <Dialog.Close disabled={sharePending} className={`discovery-panel-close${panel?.kind !== 'send' && panel?.kind !== 'project' ? ' app-modal-close' : ''}`} aria-label="Close panel"><X size={20} /></Dialog.Close>
+          <div className={panel?.kind === 'send' || panel?.kind === 'project' ? 'contents' : panel?.kind === 'comments' ? 'app-modal-body discovery-comments-panel app-modal-comments' : 'app-modal-body'}>
           {panelPost && panel?.kind === 'original' && <OriginalSoundPanel key={panelPost.id} post={panelPost} />}
           {panelPost && panel?.kind === 'compare' && <PublicationComparison id={Number(panelPost.id.slice(5))}/>}
           {panelPost && panel?.kind === 'description' && <><p className="whitespace-pre-wrap break-words">{panelPost.description}</p>{panelPost.media.kind === 'audio' && panelPost.original && <p className="mt-4">Remix of {panelPost.original.title} · {panelPost.original.author}{live && panelPost.original.available && <> · <Link href={`/discovery?post=${panelPost.original.postId}`}>Listen to the original</Link></>}</p>}</>}
           {panelPost && panel?.kind === 'project' && panelPost.project && <ProjectPanel key={panelPost.id} project={panelPost.project} coverUrl={panelPost.projectCoverUrl} live={live} projectId={panelPost.projectId} workId={panelPost.workId} ownerId={panelPost.artistId} />}
-          {panelPost && panel?.kind === 'comments' && live && <LiveComments key={panelPost.id} postId={Number(panelPost.id.slice(5))} />}
+          {panelPost && panel?.kind === 'comments' && live && <LiveComments key={`${viewerIdentity}:${panelPost.id}`} postId={Number(panelPost.id.slice(5))} drafts={commentDrafts} replyDrafts={replyDrafts} rich={!isMobile} />}
           {panelPost && panel?.kind === 'comments' && !live && <>
             <div className="discovery-comments" aria-label="Comments">
               {[...panelPost.comments, ...activity[panelPost.id].comments].map(item => <article key={item.id}><strong>{item.author}</strong><p>{item.text}</p></article>)}
@@ -311,7 +297,8 @@ export default function Discovery({ posts = DEMO_POSTS, live = false, onLoadMore
           </>}
           {panelPost && panel?.kind === 'send' && <PublicationShare key={`${viewerIdentity}:${panelPost.id}`} postId={Number(panelPost.id.slice(5))} title={panelPost.title} url={sharedLink(panelPost)} live={live} onBusy={setSharePending}/>}
           {panel?.kind === 'login' && <div className="discovery-auth-prompt"><p>Artists and investors can like, comment, save and share. Artists can also remix when the author allows it.</p><Link href="/login">log in</Link><Link href="/register">sign up</Link></div>}
-        </Dialog.Content>
+          </div>
+        </ShareSurface>
       </Dialog.Portal>
     </Dialog.Root>
   </section>;

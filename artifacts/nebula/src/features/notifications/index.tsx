@@ -1,5 +1,6 @@
+import { ShareSurface, ShareOverlay } from '@/components/ui/share-surface';
 import { SectionSkeleton } from '@/components/loading-states';
-import { createContext, useContext, useEffect, useMemo, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import * as Dialog from '@radix-ui/react-dialog';
 import { Bell, X } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
@@ -33,29 +34,8 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 function NotificationCenter({ artistId, children }: { artistId?: number; children: ReactNode }) {
   const [location] = useLocation(), client = useQueryClient();
   const [openedFor, setOpenedFor] = useState<number>(), [locked, setLocked] = useState(false), [reading, setReading] = useState(false);
-  const [anchor, setAnchor] = useState({ left: 12, top: 72, maxHeight: 480 });
   const trigger = useRef<HTMLElement | null>(null), previousArtist = useRef(artistId);
-  const [panelElement, setPanelElement] = useState<HTMLDivElement | null>(null);
   const open = !!artistId && openedFor === artistId;
-  useLayoutEffect(() => {
-    if (!open) return;
-    const position = () => {
-      const rect = trigger.current?.getBoundingClientRect();
-      if (!rect) return;
-      const width = Math.min(380, window.innerWidth - 24);
-      const beside = rect.left < 260;
-      const left = Math.max(12, Math.min(window.innerWidth - width - 12, beside ? rect.right + 12 : rect.right - width));
-      const maxHeight = Math.min(480, window.innerHeight - 24);
-      const height = Math.min(maxHeight, panelElement?.getBoundingClientRect().height || maxHeight);
-      const desired = beside ? (rect.top > window.innerHeight / 2 ? rect.bottom - height : rect.top)
-        : rect.bottom + 8 + height <= window.innerHeight - 12 ? rect.bottom + 8 : rect.top - height - 8;
-      const top = Math.max(12, Math.min(desired, window.innerHeight - height - 12));
-      setAnchor(previous => previous.left === left && previous.top === top && previous.maxHeight === maxHeight ? previous : { left, top, maxHeight });
-    };
-    position(); const observer = new ResizeObserver(position); if (panelElement) observer.observe(panelElement);
-    window.addEventListener('resize', position); window.addEventListener('scroll', position, true);
-    return () => { observer.disconnect(); window.removeEventListener('resize', position); window.removeEventListener('scroll', position, true); };
-  }, [open, panelElement]);
   const summary = useQuery({ queryKey: ['notification-summary', artistId],
     queryFn: ({ signal }) => apiRequest<NotificationSummary>('/api/notifications/summary', { signal }),
     enabled: !!artistId && !reading, staleTime: 5000, refetchInterval: 10_000, refetchOnWindowFocus: true });
@@ -84,8 +64,8 @@ function NotificationCenter({ artistId, children }: { artistId?: number; childre
   return <Controls.Provider value={controls}><Summary.Provider value={badge}>
     {children}
     <Dialog.Root open={open} onOpenChange={value => { if (!value) setOpenedFor(undefined); }}>
-      <Dialog.Portal><Dialog.Overlay className="notifications-overlay" />
-        <Dialog.Content ref={setPanelElement} className="notifications-panel" style={anchor} onCloseAutoFocus={event => {
+      <Dialog.Portal><ShareOverlay />
+        <ShareSurface className="notifications-panel" onCloseAutoFocus={event => {
           event.preventDefault();
           // Discovery hides its mobile header. A panel opened on desktop can still
           // be closed after resizing, when its former bell is no longer visible.
@@ -97,10 +77,10 @@ function NotificationCenter({ artistId, children }: { artistId?: number; childre
           const target = trigger.current?.isConnected && trigger.current.getClientRects().length ? trigger.current : fallback;
           target?.focus({ preventScroll: true });
         }}>
-          <header className="notifications-heading"><Dialog.Title className="text-lg font-semibold">Notifications</Dialog.Title><Dialog.Description className="sr-only">Unread activity</Dialog.Description></header>
-          <Dialog.Close className="notifications-close" aria-label="Close notifications"><X size={22} aria-hidden="true" /></Dialog.Close>
-          {artistId && <NotificationList key={artistId} artistId={artistId} panel />}
-        </Dialog.Content>
+          <header className="notifications-heading app-modal-heading"><Dialog.Title className="text-lg font-semibold">Notifications</Dialog.Title><Dialog.Description className="sr-only">Unread activity</Dialog.Description></header>
+          <Dialog.Close className="notifications-close app-modal-close" aria-label="Close notifications"><X size={22} aria-hidden="true" /></Dialog.Close>
+          <div className="app-modal-body">{artistId && <NotificationList key={artistId} artistId={artistId} panel />}</div>
+        </ShareSurface>
       </Dialog.Portal>
     </Dialog.Root>
   </Summary.Provider></Controls.Provider>;

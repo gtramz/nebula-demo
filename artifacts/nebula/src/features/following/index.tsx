@@ -1,6 +1,6 @@
+import { ShareSurface, ShareOverlay } from '@/components/ui/share-surface';
 import { SectionSkeleton } from '@/components/loading-states';
 import { StaticFace } from '@/components/blob-face';
-import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 import './following.css';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
@@ -10,7 +10,7 @@ import { apiRequest, isServerMode } from '@nebula/local';
 import { useAuth } from '@/context/AuthContext';
 import { controlStyles } from '@/components/antiq/workspace';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Dialog, DialogPortal, DialogOverlay, DialogClose, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogPortal, DialogClose, DialogTitle } from '@/components/ui/dialog';
 
 type Summary = { followers:number; following:number; isFollowing:boolean };
 type FollowPage = { items:{id:number;name:string;picture:string|null;isFollowing:boolean}[]; nextCursor:number|null };
@@ -78,16 +78,16 @@ function SocialControls({artistId,identity,profile=false,actions}:{artistId:numb
     {profile ? <div className="artist-profile-connection-counts">{counts}</div> : counts}
     {profile ? <div className="artist-profile-social-actions"><FollowButton artistId={artistId} following={query.data.isFollowing} profile />{actions}</div> : <FollowButton artistId={artistId} following={query.data.isFollowing} />}
     <Dialog open={!!direction} onOpenChange={open=>{if(!open)setDirection(null);}}>
-      <DialogPortal><DialogOverlay className="z-[80]" /><DialogPrimitive.Content className="follow-panel" aria-describedby={undefined} onCloseAutoFocus={event=>{event.preventDefault();if(trigger.current?.isConnected)trigger.current.focus();}}>
-        <header className="pr-12 shrink-0"><DialogClose className="absolute top-3 right-3 min-h-11 min-w-11 flex items-center justify-center" aria-label="Close artist connections"><X size={20} aria-hidden /></DialogClose>
+      <DialogPortal><ShareOverlay /><ShareSurface className="follow-panel" aria-describedby={undefined} onCloseAutoFocus={event=>{event.preventDefault();if(trigger.current?.isConnected)trigger.current.focus();}}>
+        <header className="app-modal-heading"><DialogClose className="app-modal-close" aria-label="Close artist connections"><X size={20} aria-hidden /></DialogClose>
         <DialogTitle>{direction==='followers'?'Followers':'Following'}</DialogTitle></header>
-        <div className="min-h-0 overflow-y-auto space-y-4">{list.isPending?<SectionSkeleton variant="list" label="Loading artists" rows={4}/>:list.isError?<div><p role="alert">{list.error.message}</p><button className={controlStyles.button} onClick={()=>void list.refetch()}>Retry artists</button></div>:<>
+        <div className="app-modal-body follow-list space-y-4">{list.isPending?<SectionSkeleton variant="list" label="Loading artists" rows={4}/>:list.isError?<div><p role="alert">{list.error.message}</p><button className={controlStyles.button} onClick={()=>void list.refetch()}>Retry artists</button></div>:<>
           {!items.length && <p className="text-muted">{direction==='followers'?'No followers yet.':'Not following any artists yet.'}</p>}
           <ul className="space-y-4 min-w-0">{items.map(a=><li key={a.id} className="flex flex-wrap gap-3 items-center border-b border-border pb-3"><Link href={`/artist/${a.id}`} onClick={()=>setDirection(null)} className="flex min-h-11 gap-3 items-center flex-1 min-w-0"><Avatar aria-hidden="true"><AvatarImage src={a.picture??undefined} alt=""/><AvatarFallback><StaticFace seed={a.id} size={40}/></AvatarFallback></Avatar><span className="break-words min-w-0">{a.name}</span></Link><FollowButton artistId={a.id} following={a.isFollowing}/></li>)}</ul>
           {list.isFetchingNextPage && <SectionSkeleton variant="list" label="Loading more artists" rows={1}/>}
           {list.hasNextPage && <button className={controlStyles.button} disabled={list.isFetchingNextPage} aria-busy={list.isFetchingNextPage} onClick={()=>void list.fetchNextPage()}>Load more artists</button>}
         </>}</div>
-      </DialogPrimitive.Content></DialogPortal>
+      </ShareSurface></DialogPortal>
     </Dialog>
   </div>;
 }

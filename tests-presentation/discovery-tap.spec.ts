@@ -24,7 +24,7 @@ for (const id of [3, 11, 14]) test(`tap publication ${id} preserves comments and
   await expect.poll(() => media(page).evaluate((element: HTMLMediaElement) => element.currentTime)).toBeCloseTo(5, 1);
 
   await activate(active(page).getByRole('button', { name: 'Comments', exact: true }), mobile);
-  const comments = page.getByRole('complementary', { name: 'Publication comments' });
+  const comments = page.getByRole('dialog', { name: 'Conversation', exact: true });
   await expect(comments).toBeVisible();
   const input = comments.getByLabel('Add a comment', { exact: true });
   const text = `Tap regression ${info.project.name} ${id}: space and k stay in comments`;
@@ -35,7 +35,7 @@ for (const id of [3, 11, 14]) test(`tap publication ${id} preserves comments and
   await expect(media(page)).toHaveJSProperty('paused', true);
   await comments.getByRole('button', { name: 'Post comment', exact: true }).click();
   await expect(comments.getByText(`${text} k`, { exact: true })).toBeVisible();
-  await comments.getByRole('button', { name: 'Close comments' }).click();
+  await comments.getByRole('button', { name: 'Close panel' }).click();
   await expect(comments).toHaveCount(0);
   await expect(media(page)).toHaveJSProperty('paused', true);
   expect(await source!.evaluate(element => element.isConnected)).toBe(true);
@@ -49,7 +49,7 @@ for (const id of [3, 11, 14]) test(`tap publication ${id} preserves comments and
   await expect(media(page)).toHaveJSProperty('paused', mobile);
   await input.fill('Another comment draft');
   await expect(media(page)).toHaveJSProperty('paused', mobile);
-  await comments.getByRole('button', { name: 'Close comments' }).click();
+  await comments.getByRole('button', { name: 'Close panel' }).click();
   await expect(active(page).getByRole('button', { name: 'Comments', exact: true })).toBeFocused();
   await expect(media(page)).toHaveJSProperty('paused', false);
   await expect.poll(() => page.locator('audio,video').evaluateAll((items: HTMLMediaElement[]) => items.filter(item => !item.paused).length)).toBe(1);

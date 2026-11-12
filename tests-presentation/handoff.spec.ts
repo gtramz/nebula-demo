@@ -27,7 +27,7 @@ test('handoff profile cleanup preserves artwork and destinations; empty search i
   await expect(page.getByRole('link', { name: /luna/i }).first()).toBeVisible({ timeout: 15000 });
 });
 
-test('handoff notifications anchor to the bell, read without deletion and preserve search', async ({ page }, info) => {
+test('handoff notifications use the shared modal, read without deletion and preserve search', async ({ page }, info) => {
   await page.goto('/search');
   await page.locator('input').first().fill('luna');
   const source = await page.locator('input').first().elementHandle();
@@ -38,11 +38,10 @@ test('handoff notifications anchor to the bell, read without deletion and preser
   const panel = page.getByRole('dialog', { name: 'Notifications', exact: true });
   await expect(panel).toBeVisible();
   await expect(panel.getByText('STAY IN THE LOOP')).toHaveCount(0);
-  const bounds = (await panel.boundingBox())!, anchor = (await bell.boundingBox())!;
-  expect(bounds.width).toBeLessThanOrEqual(380); expect(bounds.height).toBeLessThanOrEqual(480);
-  expect(bounds.x).toBeGreaterThanOrEqual(anchor.x);
+  const bounds = (await panel.boundingBox())!, viewport=page.viewportSize()!;
+  expect(bounds.width).toBeLessThanOrEqual(560); expect(bounds.height).toBeLessThanOrEqual(viewport.height*.88+1);
+  expect(Math.abs(bounds.x+bounds.width/2-viewport.width/2)).toBeLessThan(1);
   await expect(panel.locator('article').first()).toBeVisible();
-  await expect.poll(async () => { const p = (await panel.boundingBox())!, b = (await bell.boundingBox())!; return Math.abs(p.y + p.height - b.y - b.height); }).toBeLessThan(3);
   await page.screenshot({ path: info.outputPath('notifications-after.png'), animations: 'disabled' });
   await panel.getByRole('button', { name: 'Mark all as read', exact: true }).click();
   await expect(panel.getByText('You’re all caught up.', { exact: true })).toBeVisible();

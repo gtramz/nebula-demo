@@ -58,11 +58,11 @@ test('audio covers, backgrounds and controls fit Low Tide, Luna and CHILZ Remix 
     }
     const source = await audio(page).elementHandle();
     await card(page).getByRole('button',{name:'Comments',exact:true}).click();
-    await expect(page.getByRole('complementary',{name:'Publication comments'})).toBeVisible();
+    await expect(page.getByRole('dialog',{name:'Conversation',exact:true})).toBeVisible();
     await expect(audio(page)).toHaveJSProperty('paused',mobile);
     await expect(record(page)).toHaveAttribute('data-turning',String(!mobile));
     await fits(page);await page.screenshot({path:info.outputPath(`audio-${id}-comments.png`)});
-    await page.getByRole('button',{name:'Close comments',exact:true}).click();
+    await page.getByRole('button',{name:'Close panel',exact:true}).click();
     expect(await source!.evaluate(e=>e.isConnected)).toBe(true);
     await expect(record(page)).toHaveAttribute('data-turning','true');
   }
@@ -74,6 +74,8 @@ test('record follows actual play, pause, seek, waiting, visibility and feed navi
   const transform=()=>disc(page).evaluate(e=>getComputedStyle(e).transform);
   const first=await transform();await expect.poll(transform).not.toBe(first);
   await surface(page).click();await expect(audio(page)).toHaveJSProperty('paused',true);await expect(record(page)).toHaveAttribute('data-turning','false');
+  // CSS animation pause is committed on the rendering frame after React updates data-turning.
+  await disc(page).evaluate(async e=>{await e.getAnimations()[0].ready;await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));});
   const paused=await transform(),elapsed=await disc(page).evaluate(e=>Number(e.getAnimations()[0].currentTime));
   await page.waitForTimeout(250);expect(await transform()).toBe(paused);
   await card(page).getByRole('slider',{name:/^Seek /}).fill('5');expect(await transform()).toBe(paused);await expect(audio(page)).toHaveJSProperty('paused',true);
@@ -145,6 +147,6 @@ test('landscape keeps audio controls reachable without adding an inner scroller'
   }
   await surface(page).click();await expect(audio(page)).toHaveJSProperty('paused',true);
   await card(page).getByRole('button',{name:'Comments',exact:true}).click();
-  await expect(page.getByRole('complementary',{name:'Publication comments'})).toBeVisible();await fits(page);
+  await expect(page.getByRole('dialog',{name:'Conversation',exact:true})).toBeVisible();await fits(page);
   await page.screenshot({path:info.outputPath('audio-landscape-comments.png')});
 });
