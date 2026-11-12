@@ -26,8 +26,8 @@ Repositorio independiente de la demo. **No reemplaza ni actualiza `gtramz/nebula
 Requisitos: **Node 24.17+**, **pnpm 11.21.0**, **FFmpeg y FFprobe** disponibles en `PATH`.
 
 ```sh
-git clone https://github.com/manuellcossio/antiqnebula_demo2.git
-cd antiqnebula_demo2
+git clone https://github.com/gtramz/nebula-demo.git
+cd nebula-demo
 corepack enable
 corepack prepare pnpm@11.21.0 --activate
 # Si tu instalación de Node no incluye Corepack: npm install --global pnpm@11.21.0
@@ -85,3 +85,7 @@ Los ejemplos Marea/Afterglow usan videos generados con audio propio y mezcla loc
 El código conserva la licencia MIT existente. Los medios mantienen sus condiciones de origen: la licencia del código no concede derechos sobre las imágenes del catálogo ni sobre las grabaciones aportadas. Los recursos CC0 conservan las atribuciones de su manifiesto. Este repo no contiene la cuenta real, sus sesiones ni bases activas de la instalación de trabajo; los archivos de presentación incluidos están identificados como tales.
 
 Verificación de esta entrega: [Artist / CHILZ / LUNA](docs/artist-demo-verification.md).
+
+## Última entrega
+
+[Actualización del 11 de noviembre de 2026](docs/github-update-2026-11-11.md): handoff, proyectos y grabaciones, like animado, vinilo de Discovery, vista rápida, tarjetas de Home y ventanas al estilo Share. Los reportes enlazados incluyen capturas y resultados reales de validación.

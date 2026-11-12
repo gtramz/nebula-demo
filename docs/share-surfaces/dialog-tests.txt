@@ -1,0 +1,122 @@
+[WebServer] (node:36850) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 30 tests using 1 worker
+
+(node:36851) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/30] [desktop] › tests-presentation/comment-reference.spec.ts:4:1 › reference comments: portraits, likes, replies, compact composer and persistent playback
+[2/30] [desktop] › tests-presentation/comment-reference.spec.ts:23:1 › reply drafts stay with their publication and identity, and failed writes keep text
+  1) [desktop] › tests-presentation/comment-reference.spec.ts:23:1 › reply drafts stay with their publication and identity, and failed writes keep text 
+
+    Error: expect(locator).toHaveValue(expected) failed
+
+    Locator:  getByLabel('Add a comment', { exact: true })
+    Expected: ""
+    Received: "Unsent reply"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "toHaveValue" getByLabel('Add a comment', { exact: true }) with timeout 5000ms
+      - waiting for getByLabel('Add a comment', { exact: true })
+        14 × locator resolved to <textarea rows="1" maxlength="500" id="desktop-comment" placeholder="Add a reply…">Unsent reply</textarea>
+           - unexpected value "Unsent reply"
+
+
+      24 |  await page.goto('/discovery?post=post-3');await page.locator('article[data-active=true]').getByRole('button',{name:'Comments',exact:true}).click();
+      25 |  const panel=page.getByRole('dialog',{name:'Conversation',exact:true});await panel.getByRole('button',{name:'Reply',exact:true}).first().click();await page.getByLabel('Add a comment',{exact:true}).fill('Unsent reply');
+    > 26 |  await page.keyboard.press('Escape');await page.getByRole('button',{name:'Next post',exact:true}).click();await page.locator('article[data-active=true]').getByRole('button',{name:'Comments',exact:true}).click();await expect(page.getByLabel('Add a comment',{exact:true})).toHaveValue('');await expect(panel.getByText(/^Replying to/)).toHaveCount(0);
+         |                                                                                                                                                                                                                                                                                ^
+      27 |  await page.keyboard.press('Escape');await page.getByRole('button',{name:'Previous post',exact:true}).click();await page.locator('article[data-active=true]').getByRole('button',{name:'Comments',exact:true}).click();await expect(page.getByLabel('Add a comment',{exact:true})).toHaveValue('Unsent reply');await expect(panel.getByText(/^Replying to/)).toBeVisible();
+      28 |  await page.route('**/api/publications/3/comments',route=>route.request().method()==='POST'?route.fulfill({status:503,json:{error:'Temporary failure'}}):route.continue());await page.getByRole('button',{name:'Post comment',exact:true}).click();await expect(panel.getByRole('alert')).toBeVisible();await expect(page.getByLabel('Add a comment',{exact:true})).toHaveValue('Unsent reply');await page.unroute('**/api/publications/3/comments');
+      29 |  await page.request.post('/api/presentation/switch',{headers,data:{accountId:4}});await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await expect.poll(()=>page.locator('textarea').evaluateAll((els:HTMLTextAreaElement[])=>els.some(e=>e.value==='Unsent reply'))).toBe(false);
+        at /Users/luisgramz/Documents/ChatGPT/NEBULA DEMO/antiqnebula_demo2/tests-presentation/comment-reference.spec.ts:26:272
+
+    Error Context: test-results-presentation/comment-reference-reply-dr-1476b-and-failed-writes-keep-text-desktop/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results-presentation/comment-reference-reply-dr-1476b-and-failed-writes-keep-text-desktop/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results-presentation/comment-reference-reply-dr-1476b-and-failed-writes-keep-text-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:37012) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[3/30] [desktop] › tests-presentation/discovery-project-preview.spec.ts:33:1 › public audio, video and remix show the project overview at target widths and retain the song destination
+[4/30] [desktop] › tests-presentation/discovery-project-preview.spec.ts:59:1 › Escape and overlay close restore focus, manual pause, feed position and the same player
+[5/30] [desktop] › tests-presentation/discovery-project-preview.spec.ts:74:1 › long public summaries, more than three opportunities and missing or failed project covers keep the footer reachable
+[6/30] [desktop] › tests-presentation/discovery-project-preview.spec.ts:92:1 › a publication without a public project exposes no project preview
+[7/30] [desktop] › tests-presentation/discovery-share.spec.ts:5:1 › share delivers real requests and chats; partial retry does not duplicate completed sends
+[8/30] [desktop] › tests-presentation/discovery-share.spec.ts:28:1 › share layout, real avatars, search, clipboard fallback, links, focus and identity isolation
+[9/30] [desktop] › tests-presentation/share-surfaces.spec.ts:8:1 › Discovery details, artist and comments share the responsive surface without moving the feed
+[10/30] [desktop] › tests-presentation/share-surfaces.spec.ts:29:1 › comment failures retain drafts; successful writes and deletes keep the player and feed intact
+[11/30] [desktop] › tests-presentation/share-surfaces.spec.ts:37:1 › filters, connections, notifications and Julio retain actions and focus in the shared layout
+[12/30] [desktop] › tests-presentation/share-surfaces.spec.ts:44:1 › funding keeps validation, pending guards, recoverable errors and confirmation
+[13/30] [desktop] › tests-presentation/share-surfaces.spec.ts:52:1 › remix comparison and original sound keep their accessible content
+[14/30] [desktop] › tests-presentation/share-surfaces.spec.ts:56:1 › guest login prompt follows the common layout and returns focus
+[15/30] [desktop] › tests-presentation/share-surfaces.spec.ts:60:1 › mobile keyboard leaves the comment composer visible and closing restores the feed
+(node:37660) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[16/30] [mobile] › tests-presentation/comment-reference.spec.ts:4:1 › reference comments: portraits, likes, replies, compact composer and persistent playback
+[17/30] [mobile] › tests-presentation/comment-reference.spec.ts:23:1 › reply drafts stay with their publication and identity, and failed writes keep text
+[18/30] [mobile] › tests-presentation/discovery-project-preview.spec.ts:33:1 › public audio, video and remix show the project overview at target widths and retain the song destination
+[19/30] [mobile] › tests-presentation/discovery-project-preview.spec.ts:59:1 › Escape and overlay close restore focus, manual pause, feed position and the same player
+[20/30] [mobile] › tests-presentation/discovery-project-preview.spec.ts:74:1 › long public summaries, more than three opportunities and missing or failed project covers keep the footer reachable
+[21/30] [mobile] › tests-presentation/discovery-project-preview.spec.ts:92:1 › a publication without a public project exposes no project preview
+[22/30] [mobile] › tests-presentation/discovery-share.spec.ts:5:1 › share delivers real requests and chats; partial retry does not duplicate completed sends
+  2) [mobile] › tests-presentation/discovery-share.spec.ts:5:1 › share delivers real requests and chats; partial retry does not duplicate completed sends 
+
+    Test timeout of 60000ms exceeded.
+
+    Error: locator.click: Test timeout of 60000ms exceeded.
+    Call log:
+      - waiting for locator('article[data-active=true]').getByRole('button', { name: 'Share', exact: true })
+
+
+       8 |   await register(page.request,'Share Artist A');const B=await register(bContext.request,'Share Artist B'),C=await register(cContext.request,'Share Artist C');
+       9 |   for(const recipient of [B,C])expect((await page.request.put(`/api/artists/${recipient.artistId}/follow`,{headers,data:{enabled:true}})).ok()).toBe(true);
+    > 10 |   await page.goto('/discovery?post=post-3');const active=page.locator('article[data-active=true]');await active.getByRole('button',{name:'Share',exact:true}).click();const panel=page.getByRole('dialog',{name:'Share',exact:true});await expect(panel).toBeVisible();
+         |                                                                                                                                                               ^
+      11 |   await panel.getByRole('button',{name:'Select Share Artist B',exact:true}).click();await panel.getByLabel('Add a message',{exact:true}).fill('Listen to this with me');
+      12 |   const response=page.waitForResponse(r=>r.url().endsWith('/api/messages/share')&&r.request().method()==='POST');await panel.getByRole('button',{name:'Send (1)',exact:true}).click();const first=await(await response).json();await expect(panel.getByText('Request sent with Share Artist B.')).toBeVisible();
+      13 |   const bPage=await bContext.newPage();await bPage.goto(`/messages/general/${first.id}`);await expect(bPage.getByText(/Listen to this with me/)).toBeVisible();await expect(bPage.getByRole('link',{name:'Open shared publication',exact:true})).toHaveAttribute('href','/discovery?post=post-3');
+        at /Users/luisgramz/Documents/ChatGPT/NEBULA DEMO/antiqnebula_demo2/tests-presentation/discovery-share.spec.ts:10:159
+
+    Error Context: test-results-presentation/discovery-share-share-deli-c7e82-t-duplicate-completed-sends-mobile/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results-presentation/discovery-share-share-deli-c7e82-t-duplicate-completed-sends-mobile/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results-presentation/discovery-share-share-deli-c7e82-t-duplicate-completed-sends-mobile/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:38058) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[23/30] [mobile] › tests-presentation/discovery-share.spec.ts:28:1 › share layout, real avatars, search, clipboard fallback, links, focus and identity isolation
+[24/30] [mobile] › tests-presentation/share-surfaces.spec.ts:8:1 › Discovery details, artist and comments share the responsive surface without moving the feed
+[25/30] [mobile] › tests-presentation/share-surfaces.spec.ts:29:1 › comment failures retain drafts; successful writes and deletes keep the player and feed intact
+[26/30] [mobile] › tests-presentation/share-surfaces.spec.ts:37:1 › filters, connections, notifications and Julio retain actions and focus in the shared layout
+[27/30] [mobile] › tests-presentation/share-surfaces.spec.ts:44:1 › funding keeps validation, pending guards, recoverable errors and confirmation
+[28/30] [mobile] › tests-presentation/share-surfaces.spec.ts:52:1 › remix comparison and original sound keep their accessible content
+[29/30] [mobile] › tests-presentation/share-surfaces.spec.ts:56:1 › guest login prompt follows the common layout and returns focus
+[30/30] [mobile] › tests-presentation/share-surfaces.spec.ts:60:1 › mobile keyboard leaves the comment composer visible and closing restores the feed
+  2 failed
+    [desktop] › tests-presentation/comment-reference.spec.ts:23:1 › reply drafts stay with their publication and identity, and failed writes keep text 
+    [mobile] › tests-presentation/discovery-share.spec.ts:5:1 › share delivers real requests and chats; partial retry does not duplicate completed sends 
+  3 skipped
+  25 passed (6.4m)

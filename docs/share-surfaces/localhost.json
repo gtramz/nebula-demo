@@ -1,0 +1,34 @@
+[
+  {
+    "origin": "http://127.0.0.1:4187",
+    "pageStatus": 200,
+    "assets": [
+      {
+        "asset": "/assets/index-OoFogoMc.js",
+        "status": 200,
+        "bytes": 1093218
+      },
+      {
+        "asset": "/assets/index-D_muQo_A.css",
+        "status": 200,
+        "bytes": 252708
+      }
+    ]
+  },
+  {
+    "origin": "http://localhost:4188",
+    "pageStatus": 200,
+    "assets": [
+      {
+        "asset": "/assets/index-OoFogoMc.js",
+        "status": 200,
+        "bytes": 1093218
+      },
+      {
+        "asset": "/assets/index-D_muQo_A.css",
+        "status": 200,
+        "bytes": 252708
+      }
+    ]
+  }
+]

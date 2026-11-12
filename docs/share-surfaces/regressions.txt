@@ -1,0 +1,79 @@
+[WebServer] (node:41754) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 30 tests using 1 worker
+
+(node:41758) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/30] [desktop] › tests-presentation/discovery-audio-record.spec.ts:72:1 › record follows actual play, pause, seek, waiting, visibility and feed navigation without resetting its angle
+  1) [desktop] › tests-presentation/discovery-audio-record.spec.ts:72:1 › record follows actual play, pause, seek, waiting, visibility and feed navigation without resetting its angle 
+
+    Error: expect(received).toBe(expected) // Object.is equality
+
+    Expected: "matrix(0.913556, 0.406713, -0.406713, 0.913556, 0, 0)"
+    Received: "matrix(0.906319, 0.422594, -0.422594, 0.906319, 0, 0)"
+
+      76 |   await surface(page).click();await expect(audio(page)).toHaveJSProperty('paused',true);await expect(record(page)).toHaveAttribute('data-turning','false');
+      77 |   const paused=await transform(),elapsed=await disc(page).evaluate(e=>Number(e.getAnimations()[0].currentTime));
+    > 78 |   await page.waitForTimeout(250);expect(await transform()).toBe(paused);
+         |                                                            ^
+      79 |   await card(page).getByRole('slider',{name:/^Seek /}).fill('5');expect(await transform()).toBe(paused);await expect(audio(page)).toHaveJSProperty('paused',true);
+      80 |   await surface(page).click();await expect(record(page)).toHaveAttribute('data-turning','true');
+      81 |   await expect.poll(()=>disc(page).evaluate(e=>Number(e.getAnimations()[0].currentTime))).toBeGreaterThan(elapsed);
+        at /Users/luisgramz/Documents/ChatGPT/NEBULA DEMO/antiqnebula_demo2/tests-presentation/discovery-audio-record.spec.ts:78:60
+
+    Error Context: .data/share-dialogs/results-regression/discovery-audio-record-rec-d3c49-without-resetting-its-angle-desktop/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    .data/share-dialogs/results-regression/discovery-audio-record-rec-d3c49-without-resetting-its-angle-desktop/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace .data/share-dialogs/results-regression/discovery-audio-record-rec-d3c49-without-resetting-its-angle-desktop/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+(node:41820) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[2/30] [desktop] › tests-presentation/discovery-like.spec.ts:25:27 › like morph on publication 3 confirms once and preserves playback and layout
+[3/30] [desktop] › tests-presentation/discovery-like.spec.ts:25:27 › like morph on publication 11 confirms once and preserves playback and layout
+[4/30] [desktop] › tests-presentation/discovery-like.spec.ts:84:1 › failed like returns to its previous state and a retry succeeds without pausing or changing comments
+[5/30] [desktop] › tests-presentation/discovery-scroll-regression.spec.ts:16:1 › fractional viewport heights keep every successive piece aligned without returning to an older index
+[6/30] [desktop] › tests-presentation/discovery-scroll-regression.spec.ts:32:1 › a delayed decaying trackpad tail cannot skip a piece or bounce backwards
+[7/30] [desktop] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 3 preserves comments and manual pause
+[8/30] [desktop] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 11 preserves comments and manual pause
+[9/30] [desktop] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 14 preserves comments and manual pause
+[10/30] [desktop] › tests-presentation/discovery-tap.spec.ts:69:1 › swiping the playback surface advances the feed without pausing the next post
+[11/30] [desktop] › tests-presentation/handoff.spec.ts:30:1 › handoff notifications use the shared modal, read without deletion and preserve search
+[12/30] [desktop] › tests-presentation/handoff.spec.ts:137:1 › handoff notification navigation respects a cancelled dirty-form guard
+[13/30] [desktop] › tests-presentation/home-card-design.spec.ts:5:1 › artist cards fit target viewports and align rows without truncating controls
+[14/30] [desktop] › tests-presentation/home-playback.spec.ts:16:1 › Home audio is exclusive, including fast switches and silent catalog players
+[15/30] [desktop] › tests-presentation/home-playback.spec.ts:50:1 › entering a project stops Home audio; project playback and Back never duplicate it
+(node:42374) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[16/30] [mobile] › tests-presentation/discovery-audio-record.spec.ts:72:1 › record follows actual play, pause, seek, waiting, visibility and feed navigation without resetting its angle
+[17/30] [mobile] › tests-presentation/discovery-like.spec.ts:25:27 › like morph on publication 3 confirms once and preserves playback and layout
+[18/30] [mobile] › tests-presentation/discovery-like.spec.ts:25:27 › like morph on publication 11 confirms once and preserves playback and layout
+[19/30] [mobile] › tests-presentation/discovery-like.spec.ts:84:1 › failed like returns to its previous state and a retry succeeds without pausing or changing comments
+[20/30] [mobile] › tests-presentation/discovery-scroll-regression.spec.ts:16:1 › fractional viewport heights keep every successive piece aligned without returning to an older index
+[21/30] [mobile] › tests-presentation/discovery-scroll-regression.spec.ts:32:1 › a delayed decaying trackpad tail cannot skip a piece or bounce backwards
+[22/30] [mobile] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 3 preserves comments and manual pause
+[23/30] [mobile] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 11 preserves comments and manual pause
+[24/30] [mobile] › tests-presentation/discovery-tap.spec.ts:10:31 › tap publication 14 preserves comments and manual pause
+[25/30] [mobile] › tests-presentation/discovery-tap.spec.ts:69:1 › swiping the playback surface advances the feed without pausing the next post
+[26/30] [mobile] › tests-presentation/handoff.spec.ts:30:1 › handoff notifications use the shared modal, read without deletion and preserve search
+[27/30] [mobile] › tests-presentation/handoff.spec.ts:137:1 › handoff notification navigation respects a cancelled dirty-form guard
+[28/30] [mobile] › tests-presentation/home-card-design.spec.ts:5:1 › artist cards fit target viewports and align rows without truncating controls
+[29/30] [mobile] › tests-presentation/home-playback.spec.ts:16:1 › Home audio is exclusive, including fast switches and silent catalog players
+[30/30] [mobile] › tests-presentation/home-playback.spec.ts:50:1 › entering a project stops Home audio; project playback and Back never duplicate it
+  1 failed
+    [desktop] › tests-presentation/discovery-audio-record.spec.ts:72:1 › record follows actual play, pause, seek, waiting, visibility and feed navigation without resetting its angle 
+  4 skipped
+  25 passed (4.3m)

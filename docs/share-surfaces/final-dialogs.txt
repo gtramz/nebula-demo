@@ -1,0 +1,40 @@
+[WebServer] (node:38431) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+
+Running 24 tests using 1 worker
+
+(node:38432) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[1/24] [desktop] › tests-presentation/comment-reference.spec.ts:4:1 › reference comments: portraits, likes, replies, compact composer and persistent playback
+[2/24] [desktop] › tests-presentation/comment-reference.spec.ts:23:1 › reply drafts stay with their publication and identity, and failed writes keep text
+[3/24] [desktop] › tests-presentation/discovery-share.spec.ts:5:1 › share delivers real requests and chats; partial retry does not duplicate completed sends
+[4/24] [desktop] › tests-presentation/discovery-share.spec.ts:28:1 › share layout, real avatars, search, clipboard fallback, links, focus and identity isolation
+[5/24] [desktop] › tests-presentation/share-surfaces.spec.ts:8:1 › Discovery details, artist and comments share the responsive surface without moving the feed
+[6/24] [desktop] › tests-presentation/share-surfaces.spec.ts:29:1 › comment failures retain drafts; successful writes and deletes keep the player and feed intact
+[7/24] [desktop] › tests-presentation/share-surfaces.spec.ts:37:1 › filters, connections, notifications and Julio retain actions and focus in the shared layout
+[8/24] [desktop] › tests-presentation/share-surfaces.spec.ts:44:1 › funding keeps validation, pending guards, recoverable errors and confirmation
+[9/24] [desktop] › tests-presentation/share-surfaces.spec.ts:52:1 › remix comparison and original sound keep their accessible content
+[10/24] [desktop] › tests-presentation/share-surfaces.spec.ts:56:1 › guest login prompt follows the common layout and returns focus
+[11/24] [desktop] › tests-presentation/share-surfaces.spec.ts:60:1 › mobile keyboard leaves the comment composer visible and closing restores the feed
+[12/24] [desktop] › tests-presentation/share-surfaces.spec.ts:67:1 › long comment threads paginate inside the modal and leave the composer reachable
+(node:38980) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+
+[13/24] [mobile] › tests-presentation/comment-reference.spec.ts:4:1 › reference comments: portraits, likes, replies, compact composer and persistent playback
+[14/24] [mobile] › tests-presentation/comment-reference.spec.ts:23:1 › reply drafts stay with their publication and identity, and failed writes keep text
+[15/24] [mobile] › tests-presentation/discovery-share.spec.ts:5:1 › share delivers real requests and chats; partial retry does not duplicate completed sends
+[16/24] [mobile] › tests-presentation/discovery-share.spec.ts:28:1 › share layout, real avatars, search, clipboard fallback, links, focus and identity isolation
+[17/24] [mobile] › tests-presentation/share-surfaces.spec.ts:8:1 › Discovery details, artist and comments share the responsive surface without moving the feed
+[18/24] [mobile] › tests-presentation/share-surfaces.spec.ts:29:1 › comment failures retain drafts; successful writes and deletes keep the player and feed intact
+[19/24] [mobile] › tests-presentation/share-surfaces.spec.ts:37:1 › filters, connections, notifications and Julio retain actions and focus in the shared layout
+[20/24] [mobile] › tests-presentation/share-surfaces.spec.ts:44:1 › funding keeps validation, pending guards, recoverable errors and confirmation
+[21/24] [mobile] › tests-presentation/share-surfaces.spec.ts:52:1 › remix comparison and original sound keep their accessible content
+[22/24] [mobile] › tests-presentation/share-surfaces.spec.ts:56:1 › guest login prompt follows the common layout and returns focus
+[23/24] [mobile] › tests-presentation/share-surfaces.spec.ts:60:1 › mobile keyboard leaves the comment composer visible and closing restores the feed
+[24/24] [mobile] › tests-presentation/share-surfaces.spec.ts:67:1 › long comment threads paginate inside the modal and leave the composer reachable
+  3 skipped
+  21 passed (4.6m)

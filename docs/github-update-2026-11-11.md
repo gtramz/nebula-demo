@@ -1,0 +1,7 @@
+# Actualización pública de Nebula — 11 de noviembre de 2026
+
+Destino: https://github.com/gtramz/nebula-demo, rama pública predeterminada `codex/presentation-demo`. La entrega anterior era `485497edd27ccd7d4a305876969a658268417179`. La copia de trabajo posterior partía de otro historial, `b9cbf60`; se integran ambos historiales conservando el árbol de la demo local actual, sin force push.
+
+Esta entrega incluye los [cambios del handoff](handoff-2026-11/README.md), [grabaciones y proyectos](project-recordings-2026-11/README.md), [like animado](discovery-like/README.md), [tarjetas de audio con vinilo](discovery-audio-record/README.md), [vista rápida de proyecto](discovery-project-preview/README.md), [tarjetas de Home](home-card-redesign/README.md) y [ventanas comunes al estilo Share](share-surfaces/README.md). Cada reporte distingue su alcance y las pruebas ejecutadas; no implica una nueva ejecución de todas las suites históricas.
+
+Se publica el código, los assets de presentación ya autorizados, el fixture portátil y la documentación. Las bases activas, respaldos, sesiones, archivos de entorno, dependencias y builds locales continúan excluidos. La comparación final conserva los hashes de Luna/CHILZ y los datos de ensayo. El fixture versionado no contiene sesiones activas; las credenciales de demo se generan al preparar la instalación. Publicar el repositorio no despliega la aplicación: las instrucciones actualizadas de arranque están en el README.
